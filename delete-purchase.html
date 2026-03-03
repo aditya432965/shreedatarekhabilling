@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modify Purchase Entry</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI}
+
+body{
+background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+color:#fff;
+padding:15px;
+}
+
+.container{
+max-width:1700px;
+margin:auto;
+background:rgba(0,0,0,.75);
+border-radius:20px;
+padding:20px;
+}
+
+.title{
+background:#ff2f92;
+padding:8px;
+border-radius:8px;
+text-align:center;
+font-weight:600;
+margin-bottom:15px;
+}
+
+.filters{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:10px;
+margin-bottom:15px;
+}
+
+input{
+padding:7px;
+border:none;
+border-radius:6px;
+width:100%;
+}
+
+.main{
+display:grid;
+grid-template-columns:1fr 2fr;
+gap:20px;
+}
+
+.list{
+background:rgba(0,0,0,.45);
+padding:10px;
+border-radius:15px;
+max-height:500px;
+overflow:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid rgba(255,255,255,.2);
+padding:6px;
+font-size:12px;
+text-align:center;
+}
+
+th{background:#ff2f92}
+
+tr:hover{
+background:rgba(255,255,255,.1);
+cursor:pointer;
+}
+
+.paid{background:rgba(76,175,80,.3)}
+.unpaid{background:rgba(229,57,53,.3)}
+
+.form-section{
+background:rgba(0,0,0,.45);
+padding:15px;
+border-radius:15px;
+overflow:auto;
+}
+
+.buttons{
+margin-top:15px;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+}
+
+button{
+padding:8px 12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+color:white;
+font-weight:600;
+}
+
+.green{background:#4CAF50}
+.red{background:#e53935}
+.gray{background:#555}
+.blue{background:#2196F3}
+
+@media(max-width:900px){
+.main{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="title">Delete Purchase Entry</div>
+
+<!-- FILTER SECTION -->
+<div class="filters">
+<input type="text" id="searchBill" placeholder="Search Bill No" oninput="applyFilters()">
+<input type="date" id="fromDate" onchange="applyFilters()">
+<input type="date" id="toDate" onchange="applyFilters()">
+</div>
+
+<div class="main">
+
+<!-- LEFT LIST -->
+<div class="list">
+<table>
+<thead>
+<tr>
+<th>Bill</th>
+<th>Date</th>
+<th>Supplier</th>
+<th>Net</th>
+</tr>
+</thead>
+<tbody id="purchaseList"></tbody>
+</table>
+</div>
+
+<!-- RIGHT FULL EDIT -->
+<div class="form-section">
+
+<h3>Bill Information</h3>
+<input id="billNo" placeholder="Bill No"><br><br>
+<input id="billDate" placeholder="Bill Date"><br><br>
+<input id="supplier" placeholder="Supplier"><br><br>
+<input id="payment" placeholder="Payment Type"><br><br>
+
+<h3>Item Details</h3>
+<div style="overflow-x:auto;">
+<table id="itemTable">
+<thead>
+<tr>
+<th>Item Code</th>
+<th>Name</th>
+<th>Rate</th>
+<th>Qty</th>
+<th>Amount</th>
+<th>CGST</th>
+<th>SGST</th>
+<th>Net</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<h3>Summary</h3>
+<input id="netAmt" placeholder="Net Amount"><br><br>
+<input id="paidAmt" placeholder="Paid Amount"><br><br>
+<input id="balanceAmt" placeholder="Balance"><br><br>
+
+<div class="buttons">
+<button class="red" onclick="deletePurchase()">Delete</button>
+<button class="gray" onclick="goBack()">Back</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
+/* 📦 DATA STATE */
+let purchases = [];
+let selectedDocId = null;
+
+/* ☁️ LOAD PURCHASES FROM CLOUD */
+async function loadPurchases() {
+    try {
+        const q = query(collection(db, "purchases"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        purchases = querySnapshot.docs.map(d => ({
+            id: d.id, 
+            ...d.data()
+        }));
+        
+        renderList(purchases);
+    } catch (err) {
+        console.error("Cloud Fetch Error:", err);
+    }
+}
+
+/* 📊 RENDER LIST WITH STATUS COLOR */
+function renderList(list) {
+    const tbody = document.getElementById("purchaseList");
+    tbody.innerHTML = "";
+    
+    list.forEach(p => {
+        // Checking balance for paid/unpaid status
+        const balance = parseFloat(p.summary.unpaidAmt || p.summary.balanceAmt) || 0;
+        const statusClass = balance === 0 ? "paid" : "unpaid";
+
+        tbody.innerHTML += `
+            <tr class="${statusClass}" onclick="selectPurchase('${p.id}')" style="cursor:pointer">
+                <td>${p.header.billNo}</td>
+                <td>${p.header.billDate}</td>
+                <td>${p.header.supplier}</td>
+                <td>${p.summary.total || p.summary.netAmt}</td>
+            </tr>`;
+    });
+}
+
+/* 🔍 WINDOW BRIDGE: FILTER */
+window.applyFilters = function() {
+    let search = document.getElementById("searchBill").value.toLowerCase();
+    let from = document.getElementById("fromDate").value;
+    let to = document.getElementById("toDate").value;
+
+    let filtered = purchases.filter(p => {
+        let matchBill = p.header.billNo.toLowerCase().includes(search) || 
+                        p.header.supplier.toLowerCase().includes(search);
+
+        let billDateObj = new Date(p.header.billDate);
+        let matchFrom = !from || billDateObj >= new Date(from);
+        let matchTo = !to || billDateObj <= new Date(to);
+
+        return matchBill && matchFrom && matchTo;
+    });
+
+    renderList(filtered);
+};
+
+/* 🖱️ WINDOW BRIDGE: SELECT (Click to Box) */
+window.selectPurchase = function(id) {
+    const p = purchases.find(item => item.id === id);
+    if (!p) return;
+
+    selectedDocId = id;
+
+    // Fill Header Info
+    document.getElementById("billNo").value = p.header.billNo;
+    document.getElementById("billDate").value = p.header.billDate;
+    document.getElementById("supplier").value = p.header.supplier || p.header.supplierName;
+    document.getElementById("payment").value = p.header.payment || p.header.paymentType;
+    
+    // Fill Summary Info
+    document.getElementById("netAmt").value = p.summary.total || p.summary.netAmt;
+    document.getElementById("paidAmt").value = p.summary.paid || p.summary.paidAmt;
+    document.getElementById("balanceAmt").value = p.summary.unpaid || p.summary.balanceAmt;
+
+    /* LOAD ITEMS INTO TABLE */
+    let tbody = document.querySelector("#itemTable tbody");
+    tbody.innerHTML = "";
+
+    p.items.forEach(item => {
+        tbody.innerHTML += `
+            <tr>
+                <td><input value="${item.code || item.itemCode}"></td>
+                <td><input value="${item.name || item.itemName}"></td>
+                <td><input value="${item.rate || item.purchaseRate}"></td>
+                <td><input value="${item.qty}"></td>
+                <td><input value="${item.amount || (item.rate * item.qty)}"></td>
+                <td><input value="${item.cgstAmt || 0}"></td>
+                <td><input value="${item.sgstAmt || 0}"></td>
+                <td><input value="${item.net || item.netAmt}"></td>
+            </tr>`;
+    });
+};
+
+/* 🆙 WINDOW BRIDGE: UPDATE */
+window.updatePurchase = async function() {
+    if (!selectedDocId) return alert("Select a bill first");
+
+    let updatedItems = [];
+    document.querySelectorAll("#itemTable tbody tr").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        updatedItems.push({
+            code: inputs[0].value,
+            name: inputs[1].value,
+            rate: parseFloat(inputs[2].value),
+            qty: parseFloat(inputs[3].value),
+            net: parseFloat(inputs[7].value)
+        });
+    });
+
+    const updatedData = {
+        "header.billNo": document.getElementById("billNo").value,
+        "header.billDate": document.getElementById("billDate").value,
+        "header.supplier": document.getElementById("supplier").value,
+        "summary.total": document.getElementById("netAmt").value,
+        "summary.paid": document.getElementById("paidAmt").value,
+        "summary.unpaid": document.getElementById("balanceAmt").value,
+        items: updatedItems
+    };
+
+    try {
+        const docRef = doc(db, "purchases", selectedDocId);
+        await updateDoc(docRef, updatedData);
+        alert("Purchase Updated Successfully ✅");
+        await loadPurchases();
+    } catch (e) {
+        alert("Update Failed: " + e.message);
+    }
+};
+
+/* 🗑️ WINDOW BRIDGE: DELETE */
+window.deletePurchase = async function() {
+    if (!selectedDocId) return alert("Select a bill first");
+
+    if (confirm("Delete this bill permanently from Cloud?")) {
+        try {
+            await deleteDoc(doc(db, "purchases", selectedDocId));
+            alert("Bill Deleted ❌");
+            selectedDocId = null;
+            await loadPurchases();
+            // Optional: Clear form
+            location.reload();
+        } catch (e) {
+            alert("Delete Failed: " + e.message);
+        }
+    }
+};
+
+window.goBack = () => location.href = "purchase-entry.html";
+
+/* 🚀 INITIALIZE */
+loadPurchases();
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Delete Sale Record | Shree Datarekha Enterprises</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        --primary: #007ea7;
+        --danger: #ef4444;
+        --bg: #0b0f19;
+        --card: #1e293b;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg); color: white; padding: 20px; }
+
+    .container { max-width: 800px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--danger); padding-bottom: 10px; }
+
+    .search-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 10px; }
+    input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: white; outline: none; }
+    
+    .bill-preview { display: none; background: var(--card); padding: 25px; border-radius: 12px; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+    .label { color: #a0d8ef; font-size: 12px; display: block; }
+    .val { font-size: 18px; font-weight: bold; }
+
+    .warning-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+
+    .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; }
+    .btn-search { background: var(--primary); color: white; }
+    .btn-delete { background: var(--danger); color: white; width: 100%; margin-top: 10px; }
+    .btn-cancel { background: #444; color: white; }
+
+    /* Checkbox styling */
+    .resequence-opt { margin: 15px 0; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>🗑️ Delete Sale Record</h2>
+        <a href="add-sale.html" class="btn-cancel btn" style="font-size: 12px;">Back</a>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="deleteKey" placeholder="Enter Exact Bill No (e.g. S-1001)">
+        <button class="btn btn-search" onclick="searchForDeletion()">Find Bill</button>
+    </div>
+
+    <div id="deletePreview" class="bill-preview">
+        <div class="warning-box">
+            <strong>Warning:</strong> Deleting a record is permanent. This will remove the sale from your history and update your totals.
+        </div>
+
+        <div class="info-grid">
+            <div>
+                <span class="label">Bill No</span>
+                <span class="val" id="dispBillNo">--</span>
+            </div>
+            <div>
+                <span class="label">Date</span>
+                <span class="val" id="dispDate">--</span>
+            </div>
+            <div>
+                <span class="label">Customer</span>
+                <span class="val" id="dispCust">--</span>
+            </div>
+            <div>
+                <span class="label">Net Amount</span>
+                <span class="val" id="dispTotal" style="color: #10b981;">₹0.00</span>
+            </div>
+        </div>
+
+        <label class="resequence-opt">
+            <input type="checkbox" id="resequenceCheck" checked> 
+            Automatically re-sequence remaining Bill Numbers
+        </label>
+
+        <button class="btn btn-delete" onclick="executeDeletion()">Permanently Delete Bill</button>
+    </div>
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    doc, 
+    deleteDoc, 
+    query, 
+    where, 
+    limit 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
+/* 📦 STATE */
+let targetDocId = null;
+
+/* 🔍 SEARCH FOR DELETION */
+window.searchForDeletion = async function() {
+    const key = document.getElementById('deleteKey').value.trim();
+    if(!key) return alert("Please enter a Bill Number");
+
+    try {
+        const salesRef = collection(db, "sales");
+        // Search for the specific Bill Number
+        const q = query(salesRef, where("billNo", "==", key), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if(!querySnapshot.empty) {
+            const saleDoc = querySnapshot.docs[0];
+            const sale = saleDoc.data();
+            targetDocId = saleDoc.id; // Store Firebase ID
+
+            // Display Preview
+            document.getElementById('dispBillNo').innerText = sale.billNo;
+            document.getElementById('dispDate').innerText = sale.date;
+            document.getElementById('dispCust').innerText = sale.customerName;
+            document.getElementById('dispTotal').innerText = "₹" + (sale.summary?.total || sale.netTotal);
+            
+            document.getElementById('deletePreview').style.display = 'block';
+        } else {
+            document.getElementById('deletePreview').style.display = 'none';
+            targetDocId = null;
+            alert("Bill not found in Cloud records.");
+        }
+    } catch (err) {
+        console.error("Search Error:", err);
+        alert("Error searching Cloud database.");
+    }
+};
+
+/* 🗑️ EXECUTE DELETION */
+window.executeDeletion = async function() {
+    if(!targetDocId) return;
+
+    // Double Confirmation
+    const confirm1 = confirm("Are you ABSOLUTELY sure? This will permanently remove the record from the Cloud.");
+    if(!confirm1) return;
+
+    const confirm2 = prompt("To confirm, please type 'DELETE' below:");
+    if(confirm2 !== "DELETE") {
+        alert("Deletion cancelled. Typing 'DELETE' is required.");
+        return;
+    }
+
+    try {
+        // Delete from Firebase
+        await deleteDoc(doc(db, "sales", targetDocId));
+        
+        alert("Bill has been successfully deleted from Cloud ✅");
+        
+        // Note: Resequencing is skipped in Cloud versions to maintain 
+        // data integrity across multiple users/devices.
+        
+        location.reload();
+    } catch (err) {
+        console.error("Delete Error:", err);
+        alert("Failed to delete: " + err.message);
+    }
+};
+
+window.goBack = () => window.location.href = "billing.html";
+</script>
+</body>
+</html>

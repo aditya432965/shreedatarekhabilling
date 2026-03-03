@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Master Brand Group</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:white;
+}
+
+.container{
+  width:100%;
+  max-width:800px;
+  background:rgba(0,0,0,.6);
+  border-radius:22px;
+  padding:25px;
+}
+
+/* ===== HEADER ===== */
+h1{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+/* ===== FORM ===== */
+.form{
+  display:grid;
+  gap:14px;
+}
+
+label{
+  font-size:14px;
+  color:#ffb3d9;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  outline:none;
+}
+
+/* ===== BUTTONS ===== */
+.buttons{
+  display:flex;
+  gap:12px;
+  margin-top:10px;
+}
+
+button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  color:white;
+}
+
+.add{
+  background:linear-gradient(135deg,#ff2f92,#ff7bbd);
+}
+.save{
+  background:#4CAF50;
+}
+
+/* ===== TABLE ===== */
+.table-box{
+  margin-top:30px;
+}
+
+.table-box h2{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  border:1px solid #ff9fc555;
+  padding:10px;
+  text-align:center;
+  font-size:14px;
+}
+
+th{
+  background:#ff2f92;
+}
+
+tr:nth-child(even){
+  background:rgba(255,255,255,.05);
+}
+
+/* ===== BACK ===== */
+.back{
+  margin-top:20px;
+  background:#555;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:600px){
+  th,td{
+    font-size:13px;
+    padding:8px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Master Brand Group</h1>
+
+  <!-- ===== INPUT FORM ===== -->
+  <div class="form">
+    <div>
+      <label>Group Code</label>
+      <input type="text" id="groupCode" placeholder="Enter group code">
+    </div>
+
+    <div>
+      <label>Group Name</label>
+      <input type="text" id="groupName" placeholder="Enter group name">
+    </div>
+
+    <div class="buttons">
+      <button class="add" onclick="addGroup()">Add New Group</button>
+      <button class="save" onclick="saveGroup()">Save</button>
+    </div>
+  </div>
+
+  <!-- ===== VIEW TABLE ===== -->
+  <div class="table-box">
+    <h2>View Brand Groups</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sr. No</th>
+          <th>Group Code</th>
+          <th>Group Name</th>
+        </tr>
+      </thead>
+      <tbody id="groupTable"></tbody>
+    </table>
+  </div>
+
+  <button class="back" onclick="goBack()">⬅ Back</button>
+
+</div>
+
+<script type="module">
+    // 1. IMPORT (Make sure firebase-config.js is in the same folder)
+    import { db } from './firebase-config.js';
+    import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 2. CONFIGURATION
+    const COLLECTION_ID = "brandGroups";
+    let groups = [];
+
+    /* ===== LOGIN CHECK ===== */
+    if(localStorage.getItem("loggedIn") !== "true"){
+        window.location.href = "index.html";
+    }
+
+    /* ===== REBUILD TABLE (THE "VIEW" PART) ===== */
+    function renderTable(){
+        const tbody = document.getElementById("groupTable");
+        if(!tbody) return;
+        
+        tbody.innerHTML = "";
+        groups.forEach((g, index)=>{
+            tbody.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${g.code}</td>
+                    <td>${g.name}</td>
+                </tr>
+            `;
+        });
+    }
+
+    /* ===== FETCH DATA (SYNCING CLOUD TO VIEW) ===== */
+    async function fetchAllGroups() {
+        try {
+            // We order by timestamp so newest entries appear in order
+            const q = query(collection(db, COLLECTION_ID), orderBy("createdAt", "asc"));
+            const querySnapshot = await getDocs(q);
+            
+            groups = querySnapshot.docs.map(doc => doc.data());
+            renderTable();
+        } catch (error) {
+            console.error("Cloud Fetch Error:", error);
+        }
+    }
+
+    /* ===== ATTACHING TO WINDOW (THE "BUTTON" FIX) ===== */
+    
+    // This makes onclick="addGroup()" work
+    window.addGroup = function() {
+        document.getElementById("groupCode").value = "";
+        document.getElementById("groupName").value = "";
+        document.getElementById("groupCode").focus();
+    };
+
+    // This makes onclick="saveGroup()" work
+    window.saveGroup = async function() {
+        const codeInput = document.getElementById("groupCode");
+        const nameInput = document.getElementById("groupName");
+        
+        const code = codeInput.value.trim();
+        const name = nameInput.value.trim();
+
+        // 1. Validation
+        if(!code || !name){
+            alert("Please enter both Code and Name");
+            return;
+        }
+
+        // 2. Duplicate Check (Checking against the local 'groups' array)
+        const exists = groups.some(g => g.code.toLowerCase() === code.toLowerCase());
+        if(exists){
+            alert("Error: This Group Code already exists in the database.");
+            return;
+        }
+
+        // 3. Data Object
+        const newGroupData = {
+            code: code,
+            name: name,
+            createdAt: serverTimestamp() // Uses Google's server time
+        };
+
+        try {
+            // 4. Save to Firebase
+            await addDoc(collection(db, COLLECTION_ID), newGroupData);
+            
+            // 5. Success Logic: Update local array and UI immediately
+            groups.push(newGroupData);
+            renderTable();
+            window.addGroup(); // Clear form
+            
+            alert("Brand Group Saved to Cloud! ✅");
+        } catch (err) {
+            alert("Failed to save: " + err.message);
+        }
+    };
+
+    window.goBack = function() {
+        window.location.href = "master-entry.html";
+    };
+
+    // START: Load data when the page opens
+    fetchAllGroups();
+
+</script>
+
+</body>
+</html>

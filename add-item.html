@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Item Master Entry</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:white;
+}
+
+.container{
+  width:100%;
+  max-width:1200px;
+  background:rgba(0,0,0,.65);
+  border-radius:22px;
+  padding:25px;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+/* ===== FORM ===== */
+.form{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.form div{
+  display:flex;
+  flex-direction:column;
+}
+
+label{
+  font-size:13px;
+  color:#ffb3d9;
+  margin-bottom:4px;
+}
+
+input, select{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  outline:none;
+  font-size:14px;
+}
+
+.buttons{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:12px;
+  margin-top:10px;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  color:white;
+}
+
+.add{background:#ff2f92;}
+.save{background:#4CAF50;}
+.cancel{background:#777;}
+.exit{background:#444;}
+
+/* ===== GROUP VIEW ===== */
+.group-box{
+  margin-top:35px;
+}
+
+.group{
+  margin-bottom:25px;
+  border:1px solid #ff9fc555;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.group-title{
+  background:#ff2f92;
+  padding:10px;
+  text-align:center;
+  font-weight:700;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  text-align:center;
+  font-size:13px;
+}
+
+th{
+  background:rgba(0,0,0,.6);
+}
+
+td{
+  background:rgba(0,0,0,.35);
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  .form{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Item Master Entry</h1>
+
+<div class="form">
+
+  <div><label>Item Code</label><input id="itemCode"></div>
+  <div><label>Item Name</label><input id="itemName"></div>
+  <div><label>HSN Code</label><input id="hsn"></div>
+
+  <div><label>MRP Rate</label><input type="number" id="mrp"></div>
+  <div><label>Sale Rate</label><input type="number" id="sale"></div>
+  <div><label>Purchase Rate</label><input type="number" id="purchase"></div>
+
+  <div><label>GST %</label><input type="number" id="gst"></div>
+  <div><label>Opening Qty</label><input type="number" id="qty"></div>
+
+  <div>
+    <label>Group Name</label>
+    <select id="groupSelect"></select>
+  </div>
+
+  <div class="buttons">
+    <button class="add" onclick="newItem()">Add New</button>
+    <button class="save" onclick="saveItem()">Save</button>
+    <button class="cancel" onclick="newItem()">Cancel</button>
+    <button class="exit" onclick="goBack()">Exit</button>
+  </div>
+
+</div>
+
+<div class="group-box" id="groupBox"></div>
+
+</div>
+
+<script type="module">
+/* 1. FIREBASE IMPORTS */
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    addDoc, 
+    getDocs, 
+    query, 
+    orderBy, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* ===== LOGIN CHECK (Keep Local) ===== */
+if(localStorage.getItem("loggedIn") !== "true"){
+    window.location.href = "index.html";
+}
+
+/* ===== STATE MANAGEMENT ===== */
+let brandGroups = [];
+let items = [];
+
+/* ===== LOAD ALL DATA FROM CLOUD ===== */
+async function loadAllData() {
+    try {
+        // 1. Fetch Brand Groups (to fill the dropdown)
+        const groupSnap = await getDocs(collection(db, "brandGroups"));
+        brandGroups = groupSnap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        loadGroupDropdown();
+
+        // 2. Fetch Items (to fill the table)
+        const itemQuery = query(collection(db, "items"), orderBy("createdAt", "desc"));
+        const itemSnap = await getDocs(itemQuery);
+        items = itemSnap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        renderItems();
+    } catch (err) {
+        console.error("Cloud Connection Error:", err);
+        alert("Failed to connect to Firebase. Check your internet.");
+    }
+}
+
+/* ===== UI: LOAD DROPDOWN ===== */
+function loadGroupDropdown(){
+    const sel = document.getElementById("groupSelect");
+    if(!sel) return;
+    sel.innerHTML = "<option value=''>Select Brand Group</option>";
+
+    brandGroups.forEach(g => {
+        sel.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+    });
+}
+
+/* ===== UI: RENDER ITEMS (GROUP-WISE) ===== */
+function renderItems(){
+    const box = document.getElementById("groupBox");
+    if(!box) return;
+    box.innerHTML = "";
+
+    // We filter items based on the Brand Groups found in the cloud
+    brandGroups.forEach(g => {
+        const filteredItems = items.filter(i => i.group === g.name);
+        if(filteredItems.length === 0) return;
+
+        let tableHtml = `
+            <div class="group-section" style="margin-bottom: 30px;">
+                <h3 style="background:#ff2f92; color:white; padding:8px; border-radius:8px 8px 0 0;">${g.name}</h3>
+                <table style="width:100%; border-collapse: collapse; background: rgba(255,255,255,0.05);">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #ff2f92;">
+                            <th>Code</th><th>Name</th><th>Brand</th><th>MRP</th>
+                            <th>Sale</th><th>Purchase</th><th>GST%</th><th>Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        filteredItems.forEach(i => {
+            tableHtml += `
+                <tr style="border-bottom: 1px solid rgba(255,159,197,0.3);">
+                    <td>${i.code}</td>
+                    <td>${i.name}</td>
+                    <td>${i.brand || '-'}</td>
+                    <td>${i.mrp}</td>
+                    <td>${i.sale}</td>
+                    <td>${i.purchase}</td>
+                    <td>${i.gst}</td>
+                    <td>${i.qty}</td>
+                </tr>`;
+        });
+
+        tableHtml += `</tbody></table></div>`;
+        box.innerHTML += tableHtml;
+    });
+}
+
+/* ===== WINDOW BRIDGE (FOR BUTTONS) ===== */
+
+window.newItem = function(){
+    document.querySelectorAll("input").forEach(i => i.value = "");
+    const select = document.getElementById("groupSelect");
+    if(select) select.value = "";
+    document.getElementById("itemCode").focus();
+};
+
+window.saveItem = async function(){
+    // Capture values
+    const code = document.getElementById("itemCode").value.trim();
+    const name = document.getElementById("itemName").value.trim();
+    const group = document.getElementById("groupSelect").value;
+    const brand = document.getElementById("brand") ? document.getElementById("brand").value.trim() : "";
+
+    // Validation
+    if(!code || !name || !group){
+        alert("Please fill Code, Name, and Group.");
+        return;
+    }
+
+    // Cloud Duplicate Check
+    if(items.some(i => i.code === code)){
+        alert("This Item Code already exists!");
+        return;
+    }
+
+    const itemData = {
+        code: code,
+        name: name,
+        brand: brand,
+        group: group,
+        hsn: document.getElementById("hsn").value.trim(),
+        mrp: document.getElementById("mrp").value.trim(),
+        sale: document.getElementById("sale").value.trim(),
+        purchase: document.getElementById("purchase").value.trim(),
+        gst: document.getElementById("gst").value.trim(),
+        qty: document.getElementById("qty").value.trim(),
+        createdAt: serverTimestamp()
+    };
+
+    try {
+        // Save to Firebase
+        await addDoc(collection(db, "items"), itemData);
+        alert("Product saved to Cloud! ✅");
+        
+        // Refresh the list from cloud to ensure accuracy
+        await loadAllData(); 
+        window.newItem();
+    } catch (e) {
+        alert("Error saving to Firebase: " + e.message);
+    }
+};
+
+window.goBack = function(){
+    window.location.href = "master-entry.html";
+};
+
+/* ===== INITIALIZE ===== */
+loadAllData();
+
+</script>
+</body>
+</html>

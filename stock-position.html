@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Inventory | Shree Datarekha Enterprises</title>
+<style>
+    :root {
+        --primary: #8b5cf6; /* Inventory Purple */
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f1f5f9;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 15px; }
+
+    .header-box { 
+        background: linear-gradient(135deg, #4c1d95, var(--primary)); 
+        padding: 25px; border-radius: 15px; margin-bottom: 20px;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+    }
+
+    /* Stock Alerts Dashboard */
+    .dashboard { 
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+        gap: 15px; margin-bottom: 20px; 
+    }
+    .dash-card { 
+        background: var(--card); padding: 20px; border-radius: 12px; 
+        text-align: center; border-bottom: 3px solid var(--primary);
+    }
+    .dash-card small { color: #94a3b8; font-size: 11px; text-transform: uppercase; }
+    .dash-card h2 { font-size: 22px; margin-top: 5px; }
+
+    /* Search & Filters */
+    .filter-section { 
+        background: var(--card); padding: 15px; border-radius: 12px; 
+        margin-bottom: 20px; display: flex; gap: 10px;
+    }
+    input { 
+        flex: 1; background: #0f172a; border: 1px solid #334155; 
+        padding: 12px; border-radius: 8px; color: white; outline: none;
+    }
+
+    /* Table Styling */
+    .table-container { background: var(--card); border-radius: 15px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: rgba(0,0,0,0.2); color: var(--primary); padding: 15px; text-align: left; font-size: 12px; }
+    td { padding: 15px; border-bottom: 1px solid #334155; font-size: 14px; }
+
+    /* Stock Status Badges */
+    .status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+    .status-in { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .status-low { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+    .status-out { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+    @media (max-width: 600px) {
+        th:nth-child(4), td:nth-child(4) { display: none; } /* Hide Total Sold on tiny screens */
+    }
+</style>
+</head>
+<body>
+
+<div class="header-box">
+    <h1>Stock Position Report</h1>
+    <p>Real-time Inventory tracking for Shree Datarekha Enterprises</p>
+</div>
+
+<div class="dashboard">
+    <div class="dash-card">
+        <small>Total Items</small>
+        <h2 id="totalItems">0</h2>
+    </div>
+    <div class="dash-card">
+        <small>Out of Stock</small>
+        <h2 id="outOfStock" style="color: var(--danger);">0</h2>
+    </div>
+    <div class="dash-card">
+        <small>Inventory Value</small>
+        <h2 id="stockVal" style="color: var(--success);">₹ 0</h2>
+    </div>
+</div>
+
+<div class="filter-section">
+    <input type="text" id="stockSearch" placeholder="Search by Product Name..." oninput="calculateStock()">
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Purchased</th>
+                <th>Sold</th>
+                <th>Available Stock</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="stockTableBody">
+            </tbody>
+    </table>
+</div>
+
+<script type="module">
+/* 1. FIREBASE IMPORTS */
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
+/**
+ * ☁️ CALCULATE STOCK FROM CLOUD
+ * Fetches Purchases (In) and Sales (Out) to determine current position
+ */
+async function calculateStock() {
+    const tbody = document.getElementById('stockTableBody');
+    const searchQuery = document.getElementById('stockSearch').value.toLowerCase();
+    
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Calculating live stock...</td></tr>";
+
+    try {
+        // 1. Fetch both collections simultaneously
+        const [purchaseSnap, salesSnap] = await Promise.all([
+            getDocs(collection(db, "purchases")),
+            getDocs(collection(db, "sales"))
+        ]);
+
+        const inventory = {};
+
+        // 2. Process Purchases (STOCK IN)
+        purchaseSnap.forEach(doc => {
+            const bill = doc.data();
+            const items = bill.items || [];
+            items.forEach(item => {
+                const name = item.itemName || item.name;
+                if (!inventory[name]) {
+                    inventory[name] = { in: 0, out: 0, lastPurRate: 0 };
+                }
+                inventory[name].in += parseFloat(item.qty || 0);
+                // Update valuation based on purchase rate
+                inventory[name].lastPurRate = parseFloat(item.purchaseRate || item.rate || 0);
+            });
+        });
+
+        // 3. Process Sales (STOCK OUT)
+        salesSnap.forEach(doc => {
+            const sale = doc.data();
+            const items = sale.items || [];
+            items.forEach(item => {
+                const name = item.name;
+                if (!inventory[name]) {
+                    inventory[name] = { in: 0, out: 0, lastPurRate: 0 };
+                }
+                inventory[name].out += parseFloat(item.qty || 0);
+            });
+        });
+
+        // 4. Render Table & Dashboard
+        tbody.innerHTML = "";
+        let totalItemsCount = 0;
+        let outCount = 0;
+        let totalInvValue = 0;
+
+        // Convert inventory object to array for searching/sorting
+        const products = Object.entries(inventory);
+
+        if (products.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No inventory data found.</td></tr>";
+        }
+
+        products.forEach(([prodName, data]) => {
+            // Filter Logic
+            if (searchQuery && !prodName.toLowerCase().includes(searchQuery)) return;
+
+            const currentStock = data.in - data.out;
+            totalItemsCount++;
+            totalInvValue += (currentStock > 0 ? currentStock * data.lastPurRate : 0);
+
+            // Status Badge Logic
+            let statusHTML = "";
+            if (currentStock <= 0) {
+                statusHTML = '<span class="status status-out" style="background:#ff4d4d; padding:2px 8px; border-radius:4px; font-size:11px;">Out of Stock</span>';
+                outCount++;
+            } else if (currentStock < 10) {
+                statusHTML = '<span class="status status-low" style="background:#ff9800; padding:2px 8px; border-radius:4px; font-size:11px;">Low Stock</span>';
+            } else {
+                statusHTML = '<span class="status status-in" style="background:#00ff88; padding:2px 8px; border-radius:4px; font-size:11px; color:#000;">In Stock</span>';
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${prodName}</strong></td>
+                <td>${data.in}</td>
+                <td>${data.out}</td>
+                <td style="font-weight:bold; color:${currentStock > 0 ? '#00ff88' : '#ff4d4d'}">${currentStock}</td>
+                <td>${statusHTML}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // 5. Update Dashboard Stats
+        document.getElementById('totalItems').innerText = totalItemsCount;
+        document.getElementById('outOfStock').innerText = outCount;
+        document.getElementById('stockVal').innerText = "₹ " + totalInvValue.toLocaleString('en-IN', {
+            maximumFractionDigits: 0
+        });
+
+    } catch (err) {
+        console.error("Stock Calculation Error:", err);
+        tbody.innerHTML = `<tr><td colspan='5' style='color:red;'>Error calculating stock: ${err.message}</td></tr>`;
+    }
+}
+
+/* 🔍 ATTACH SEARCH EVENT */
+window.searchStock = () => calculateStock();
+
+/* 🚀 INITIALIZE */
+calculateStock();
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Master Entry</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+
+/* ===== BACKGROUND ===== */
+body{
+  min-height:100vh;
+  background:
+    linear-gradient(rgba(0,0,0,.65),rgba(0,0,0,.65)),
+    linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+}
+
+/* ===== CONTAINER ===== */
+.panel{
+  width:100%;
+  max-width:460px;
+  background:rgba(0,0,0,.6);
+  border-radius:22px;
+  padding:25px;
+}
+
+/* ===== HEADER ===== */
+.panel h1{
+  text-align:center;
+  font-size:23px;
+}
+.panel p{
+  text-align:center;
+  font-size:13px;
+  color:#ffb3d9;
+  margin-bottom:20px;
+}
+
+/* ===== BUTTON GRID ===== */
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+
+/* ===== BUTTON STYLE ===== */
+.grid button{
+  padding:15px;
+  border:none;
+  border-radius:15px;
+  font-size:15px;
+  font-weight:600;
+  color:white;
+  cursor:pointer;
+  background:linear-gradient(135deg,#ff2f92,#ff7bbd);
+  box-shadow:0 8px 18px rgba(0,0,0,.35);
+}
+.grid button:hover{
+  opacity:.92;
+}
+
+/* ===== BACK BUTTON ===== */
+.back{
+  margin-top:20px;
+  background:#555 !important;
+  color:black;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:480px){
+  .panel{
+    margin:15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+  <h1>Master Entry</h1>
+  <p>Manage all base data</p>
+
+  <div class="grid">
+    <button onclick="go('add-brand-group.html')">Add New Brand / Group</button>
+    <button onclick="go('add-customer.html')">Add New Customer</button>
+    <button onclick="go('modify-customer.html')">Modify Customer Data</button>
+    <button onclick="go('view-customers.html')">View All Customer List</button>
+
+    <button onclick="go('add-item.html')">Add New Item</button>
+    <button onclick="go('modify-item.html')">Modify Item Data</button>
+    <button onclick="go('view-items.html')">View All Item Master List</button>
+
+    <button onclick="go('add-supplier.html')">Add New Supplier</button>
+    <button onclick="go('modify-supplier.html')">Modify Supplier</button>
+    <button onclick="go('view-suppliers.html')">View All Supplier List</button>
+
+    
+  </div>
+
+  <button class="grid back" onclick="goBack()">⬅ Back to Main</button>
+</div>
+
+<script>
+/* ===== SESSION PROTECTION ===== */
+if(localStorage.getItem("loggedIn") !== "true"){
+  window.location.href = "index.html";
+}
+
+/* ===== NAVIGATION ===== */
+function go(page){
+  window.location.href = page;
+}
+
+function goBack(){
+  window.location.href = "main.html";
+}
+</script>
+
+</body>
+</html>

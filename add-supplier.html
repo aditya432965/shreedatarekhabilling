@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Supplier Master</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:white;
+}
+.container{
+  width:100%;
+  max-width:1100px;
+  background:rgba(0,0,0,.65);
+  border-radius:22px;
+  padding:25px;
+}
+h1{text-align:center;margin-bottom:18px}
+
+/* FORM */
+.form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+label{
+  font-size:13px;
+  color:#ffb3d9;
+}
+input{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  outline:none;
+  font-size:14px;
+}
+input[disabled]{
+  background:#ccc;
+  color:#333;
+}
+
+/* BUTTONS */
+.buttons{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:12px;
+  margin-top:10px;
+}
+button{
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  color:white;
+}
+.add{background:#ff2f92;}
+.save{background:#4CAF50;}
+.cancel{background:#777;}
+.exit{background:#444;}
+
+/* LIST */
+.list{
+  margin-top:30px;
+  border:1px solid #ff9fc555;
+  border-radius:18px;
+  overflow:hidden;
+}
+.list-title{
+  background:#ff2f92;
+  padding:12px;
+  text-align:center;
+  font-weight:700;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  text-align:center;
+  font-size:13px;
+}
+th{background:rgba(0,0,0,.6)}
+td{background:rgba(0,0,0,.35)}
+tr:hover td{background:rgba(255,255,255,.08)}
+
+@media(max-width:900px){
+  .form{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Supplier Master</h1>
+
+<!-- FORM -->
+<div class="form">
+
+  <div>
+    <label>Supplier Code</label>
+    <input id="supplierCode" disabled>
+  </div>
+
+  <div>
+    <label>Supplier Name</label>
+    <input id="supplierName" placeholder="Enter supplier name">
+  </div>
+
+  <div>
+    <label>Contact Number</label>
+    <input id="contact" placeholder="Enter contact number">
+  </div>
+
+  <div>
+    <label>Brand / Group Provided</label>
+    <input id="brand" placeholder="Enter brand or group">
+  </div>
+
+  <div class="buttons">
+    <button class="add" onclick="addNew()">Add New</button>
+    <button class="save" onclick="saveSupplier()">Save</button>
+    <button class="cancel" onclick="addNew()">Cancel</button>
+    <button class="exit" onclick="goBack()">Exit</button>
+  </div>
+
+</div>
+
+<!-- LIST -->
+<div class="list">
+  <div class="list-title">Supplier Master List</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Sr</th>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Contact</th>
+        <th>Brand / Group</th>
+      </tr>
+    </thead>
+    <tbody id="supplierList"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script type="module">
+/* 1. FIREBASE IMPORTS */
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    addDoc, 
+    getDocs, 
+    query, 
+    orderBy, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true"){
+    window.location.href = "index.html";
+}
+
+/* DATA STATE */
+let suppliers = [];
+
+/* ☁️ LOAD FROM CLOUD */
+async function loadSuppliers() {
+    const tbody = document.getElementById("supplierList");
+    if(tbody) tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Syncing with Cloud...</td></tr>";
+
+    try {
+        // Querying all suppliers ordered by code
+        const q = query(collection(db, "suppliers"), orderBy("code", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        suppliers = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        renderSuppliers();
+        window.addNew(); // Calculate next available code
+    } catch (err) {
+        console.error("Cloud Fetch Error:", err);
+    }
+}
+
+/* 🔢 SMART AUTO-CODE (Cloud Based) */
+window.addNew = function() {
+    // Finds the highest existing code and adds 1
+    const nextCode = suppliers.length === 0 
+        ? 1 
+        : Math.max(...suppliers.map(s => Number(s.code || 0))) + 1;
+
+    // Reset Form Fields
+    document.getElementById("supplierCode").value = nextCode;
+    document.getElementById("supplierName").value = "";
+    document.getElementById("contact").value = "";
+    document.getElementById("brand").value = "";
+    document.getElementById("supplierName").focus();
+};
+
+/* 💾 SAVE TO CLOUD */
+window.saveSupplier = async function() {
+    const nameInput = document.getElementById("supplierName");
+    const name = nameInput.value.trim();
+    const code = Number(document.getElementById("supplierCode").value);
+    const contact = document.getElementById("contact").value.trim();
+    const brand = document.getElementById("brand").value.trim();
+
+    if(!name){
+        alert("Please enter a Supplier Name");
+        nameInput.focus();
+        return;
+    }
+
+    // Check for duplicate names locally before uploading
+    const isDuplicate = suppliers.some(s => s.name.toLowerCase() === name.toLowerCase());
+    if(isDuplicate) {
+        if(!confirm("A supplier with this name already exists. Save anyway?")) return;
+    }
+
+    const supplierData = {
+        code: code,
+        name: name,
+        contact: contact,
+        brand: brand,
+        createdAt: serverTimestamp()
+    };
+
+    try {
+        await addDoc(collection(db, "suppliers"), supplierData);
+        alert("Supplier successfully synced to Cloud ✅");
+        
+        // Refresh local list to keep UI updated
+        await loadSuppliers();
+    } catch (e) {
+        alert("Cloud Save Error: " + e.message);
+    }
+};
+
+/* 📊 RENDER TABLE */
+function renderSuppliers() {
+    const tbody = document.getElementById("supplierList");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    if(suppliers.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>No suppliers found in database.</td></tr>";
+        return;
+    }
+
+    suppliers.forEach((s, i) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${i + 1}</td>
+                <td><strong>${s.code}</strong></td>
+                <td>${s.name}</td>
+                <td>${s.contact || "-"}</td>
+                <td>${s.brand || "-"}</td>
+            </tr>`;
+    });
+}
+
+/* ⬅️ EXIT */
+window.goBack = function() {
+    window.location.href = "master-entry.html";
+};
+
+/* 🚀 INITIALIZE */
+loadSuppliers();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Business Reports</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== BACKGROUND - Emerald/Green Theme for Reports ===== */
+body {
+  min-height: 100vh;
+  background: 
+    linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    linear-gradient(135deg, #064e3b, #065f46, #10b981);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+/* ===== CONTAINER ===== */
+.panel {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 35px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== HEADER ===== */
+.panel h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #ecfdf5;
+}
+
+.panel p {
+  text-align: center;
+  font-size: 14px;
+  color: #a7f3d0;
+  margin-bottom: 30px;
+}
+
+/* ===== BUTTON GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+/* ===== REPORT BUTTONS ===== */
+.grid button {
+  display: flex;
+  align-items: center;
+  padding: 18px 25px;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.grid button:hover {
+  background: #10b981;
+  transform: translateX(8px);
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* ===== ICON STYLE ===== */
+.icon {
+  margin-right: 15px;
+  font-size: 20px;
+}
+
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  background: transparent;
+  border: 2px solid #374151;
+  border-radius: 16px;
+  color: #9ca3af;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  border-color: #9ca3af;
+  color: white;
+  background: rgba(255,255,255,0.05);
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:480px) {
+  .panel { margin: 20px; padding: 25px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+  <h1>Business Reports</h1>
+  <p>Analyze your business performance</p>
+
+  <div class="grid">
+    <button onclick="nav('sale-register-details.html')">
+      <span class="icon">📋</span> Sale Register Details
+    </button>
+    
+    <button onclick="nav('customer-sale-summary.html')">
+      <span class="icon">👥</span> Customer Sale Summary
+    </button>
+    
+    <button onclick="nav('purchase-register.html')">
+      <span class="icon">📥</span> Purchase Register
+    </button>
+    
+    <button onclick="nav('stock-position.html')">
+      <span class="icon">📦</span> Stock Position
+    </button>
+  </div>
+
+  <button class="back-btn" onclick="goBack()">↩ Return to Main Menu</button>
+</div>
+
+<script>
+/* ===== AUTH CHECK ===== */
+if(localStorage.getItem("loggedIn") !== "true"){
+  window.location.href = "index.html";
+}
+
+/* ===== NAVIGATION ===== */
+function nav(url) {
+  window.location.href = url;
+}
+
+function goBack() {
+  window.location.href = "main.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>View Purchase Register</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+        background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
+        color: #fff;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1600px;
+        margin: auto;
+        background: rgba(0, 0, 0, 0.85);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* HEADER & SEARCH */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #ff2f92;
+        padding-bottom: 15px;
+    }
+
+    .title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #ffb3d9;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .search-box input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px 15px;
+        border-radius: 8px;
+        color: white;
+        outline: none;
+    }
+
+    .search-box input:focus { border-color: #ff2f92; }
+
+    /* TABLE STYLES */
+    .table-container {
+        overflow-x: auto;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1200px;
+    }
+
+    th {
+        background: #ff2f92;
+        color: white;
+        padding: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        text-align: left;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 14px;
+        color: #ddd;
+    }
+
+    tr:hover { background: rgba(255, 47, 146, 0.15); }
+
+    /* INPUTS INSIDE TABLE FOR EDITING */
+    td input, td select {
+        background: transparent;
+        border: 1px solid transparent;
+        color: white;
+        padding: 4px;
+        width: 100%;
+        border-radius: 4px;
+    }
+
+    td input:focus, td select:focus {
+        background: rgba(0,0,0,0.5);
+        border-color: #ff2f92;
+    }
+
+    /* ACTION BUTTONS */
+    .btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        margin-right: 5px;
+        transition: 0.3s;
+    }
+
+    .btn-view { background: #2196F3; } /* Blue */
+    .btn-update { background: #4CAF50; } /* Green */
+    .btn-delete { background: #e53935; } /* Red */
+    .btn-back { background: #555; padding: 10px 20px; font-size: 14px; }
+
+    .btn:hover { opacity: 0.8; transform: scale(1.05); }
+
+    /* MODAL FOR ITEMS */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: #1a0510;
+        padding: 25px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 900px;
+        border: 1px solid #ff2f92;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        color: #ff2f92;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="title">📋 View Purchase Registry</div>
+        
+        <div class="search-box">
+            <input type="text" id="searchBill" placeholder="🔍 Search Bill No..." onkeyup="filterData()">
+            <input type="date" id="searchDate" onchange="filterData()">
+            <button class="btn btn-back" onclick="location.href='purchase-entry.html'">⬅ Back to Entry</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="purchaseTable">
+            <thead>
+                <tr>
+                    <th width="5%">S.No</th>
+                    <th width="10%">Bill No</th>
+                    <th width="10%">Bill Date</th>
+                    <th width="20%">Supplier Name</th>
+                    <th width="10%">Payment</th>
+                    <th width="10%">Total Amount</th>
+                    <th width="10%">Paid</th>
+                    <th width="10%">Balance</th>
+                    <th width="15%">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="itemModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Bill Items</h2>
+            <button class="close-modal" onclick="closeModal()">×</button>
+        </div>
+        <div class="table-container">
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Qty</th>
+                        <th>Unit</th>
+                        <th>Rate</th>
+                        <th>GST %</th>
+                        <th>Net Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+/* 1. FIREBASE IMPORTS */
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
+/* 📦 DATA STATE */
+let purchaseData = [];
+
+/* ☁️ LOAD DATA FROM CLOUD */
+async function loadData() {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Fetching Cloud Data...</td></tr>";
+
+    try {
+        const q = query(collection(db, "purchases"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        purchaseData = querySnapshot.docs.map(d => ({
+            id: d.id, // Unique Firebase ID
+            ...d.data()
+        }));
+        
+        renderTable(purchaseData);
+    } catch (err) {
+        console.error("Cloud Error:", err);
+        tbody.innerHTML = "<tr><td colspan='9' style='color:red;'>Error connecting to Firebase.</td></tr>";
+    }
+}
+
+/* 📊 RENDER TABLE */
+function renderTable(data) {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    if(data.length === 0){
+        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center; padding:20px;'>No Purchase Records Found</td></tr>";
+        return;
+    }
+
+    data.forEach((bill) => {
+        // We use the unique Firebase 'id' for element IDs and function calls
+        tbody.innerHTML += `
+            <tr>
+                <td>#</td>
+                <td>${bill.header.billNo}</td>
+                <td>${bill.header.billDate}</td>
+                
+                <td><input type="text" value="${bill.header.supplier || bill.header.supplierName}" id="supp-${bill.id}"></td>
+                
+                <td>
+                    <select id="pay-${bill.id}">
+                        <option value="Cash" ${bill.header.payment === 'Cash' || bill.header.paymentType === 'Cash' ? 'selected' : ''}>Cash</option>
+                        <option value="Credit" ${bill.header.payment === 'Credit' || bill.header.paymentType === 'Credit' ? 'selected' : ''}>Credit</option>
+                    </select>
+                </td>
+
+                <td style="font-weight:bold; color:#00ff88;">₹ ${bill.summary.total || bill.summary.netAmt}</td>
+                
+                <td><input type="number" value="${bill.summary.paid || bill.summary.paidAmt}" id="paid-${bill.id}" style="width:80px"></td>
+                
+                <td style="color:#ff9800;">₹ ${bill.summary.unpaid || bill.summary.balanceAmt}</td>
+
+                <td>
+                    <button class="btn btn-view" onclick="viewItems('${bill.id}')">👁️</button>
+                    <button class="btn btn-update" onclick="updateBill('${bill.id}')">💾</button>
+                    <button class="btn btn-delete" onclick="deleteBill('${bill.id}')">🗑️</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+/* 🔍 WINDOW BRIDGE: FILTER / SEARCH */
+window.filterData = function() {
+    const billQuery = document.getElementById("searchBill").value.toLowerCase();
+    const dateQuery = document.getElementById("searchDate").value;
+
+    const filtered = purchaseData.filter(item => {
+        const billNo = item.header.billNo.toString().toLowerCase();
+        const billDate = item.header.billDate; // Expected YYYY-MM-DD
+        
+        const matchesBill = billNo.includes(billQuery) || (item.header.supplier || "").toLowerCase().includes(billQuery);
+        const matchesDate = !dateQuery || billDate === dateQuery;
+
+        return matchesBill && matchesDate;
+    });
+
+    renderTable(filtered);
+};
+
+/* 💾 WINDOW BRIDGE: UPDATE CLOUD DOCUMENT */
+window.updateBill = async function(docId) {
+    const newSupplier = document.getElementById(`supp-${docId}`).value;
+    const newPayment = document.getElementById(`pay-${docId}`).value;
+    const newPaid = parseFloat(document.getElementById(`paid-${docId}`).value) || 0;
+    
+    // Find local object to get the total amount
+    const bill = purchaseData.find(b => b.id === docId);
+    const totalNet = parseFloat(bill.summary.total || bill.summary.netAmt);
+    const newBalance = (totalNet - newPaid).toFixed(2);
+
+    const updatedData = {
+        "header.supplier": newSupplier,
+        "header.payment": newPayment,
+        "summary.paid": newPaid,
+        "summary.unpaid": newBalance
+    };
+
+    try {
+        const docRef = doc(db, "purchases", docId);
+        await updateDoc(docRef, updatedData);
+        alert("Bill Updated in Cloud! ✅");
+        loadData(); // Refresh to sync memory and UI
+    } catch (e) {
+        alert("Update failed: " + e.message);
+    }
+};
+
+/* 🗑️ WINDOW BRIDGE: DELETE FROM CLOUD */
+window.deleteBill = async function(docId) {
+    if(confirm("Delete this Purchase Bill permanently from Cloud?")) {
+        try {
+            await deleteDoc(doc(db, "purchases", docId));
+            alert("Deleted successfully 🗑️");
+            loadData();
+        } catch (e) {
+            alert("Error deleting: " + e.message);
+        }
+    }
+};
+
+/* 👁️ WINDOW BRIDGE: VIEW ITEMS MODAL */
+window.viewItems = function(docId) {
+    const modal = document.getElementById("itemModal");
+    const itemsBody = document.getElementById("itemsBody");
+    const title = document.getElementById("modalTitle");
+
+    const bill = purchaseData.find(b => b.id === docId);
+    title.innerText = `Items for Bill No: ${bill.header.billNo}`;
+    itemsBody.innerHTML = "";
+
+    bill.items.forEach(item => {
+        itemsBody.innerHTML += `
+            <tr>
+                <td>${item.name || item.itemName}</td>
+                <td>${item.qty}</td>
+                <td>${item.unit || "PCS"}</td>
+                <td>${item.rate || item.purchaseRate}</td>
+                <td>${item.taxPercent || item.taxP || 0}%</td>
+                <td style="color:#00ff88; font-weight:bold;">${item.net || item.netAmt}</td>
+            </tr>
+        `;
+    });
+
+    modal.style.display = "flex";
+};
+
+window.closeModal = function() {
+    document.getElementById("itemModal").style.display = "none";
+};
+
+// Start loading on launch
+loadData();
+
+</script>
+
+</body>
+</html>

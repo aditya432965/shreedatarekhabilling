@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Modify/Delete Sale | Shree Datarekha Enterprises</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        --primary: #007ea7;
+        --secondary: #001f3f;
+        --accent: #10b981;
+        --bg: #0b0f19;
+        --danger: #ef4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg); color: white; padding: 10px; min-height: 100vh; }
+
+    .search-panel { 
+        background: rgba(255,255,255,0.05); 
+        padding: 20px; 
+        border-radius: 15px; 
+        margin-bottom: 15px; 
+        border: 1px dashed var(--primary);
+    }
+    .search-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: flex-end; }
+
+    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+    
+    .party-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .input-group { display: flex; flex-direction: column; }
+    .input-group label { font-size: 12px; color: #a0d8ef; margin-bottom: 5px; }
+    select, input { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
+
+    .table-container { overflow-x: auto; background: #1e293b; border-radius: 12px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+    th { background: #334155; padding: 12px; font-size: 13px; color: #a0d8ef; }
+    td { padding: 8px; border-bottom: 1px solid #334155; }
+    .row-input { width: 100%; background: transparent; border: none; color: white; text-align: center; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; }
+    .summary-box { border-bottom: 1px solid #334155; padding-bottom: 5px; }
+    .summary-box span { display: block; font-size: 11px; color: #94a3b8; }
+    .summary-box strong { font-size: 18px; color: #10b981; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+    button { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-update { background: #10b981; color: white; }
+    .btn-delete { background: var(--danger); color: white; }
+    .btn-search { background: var(--primary); color: white; }
+    .btn-cancel { background: #444; color: white; }
+
+    /* Modal for Multiple Bills */
+    #billModal {
+        display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); justify-content: center; align-items: center;
+    }
+    .modal-content { background: #1e293b; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--primary); }
+    .bill-item { padding: 12px; border-bottom: 1px solid #334155; cursor: pointer; display: flex; justify-content: space-between; }
+    .bill-item:hover { background: var(--primary); }
+
+    #mainInterface { display: none; } 
+</style>
+</head>
+<body>
+
+<div id="billModal">
+    <div class="modal-content">
+        <h3>Multiple Bills Found</h3>
+        <p style="font-size: 12px; color: #a0d8ef; margin-bottom: 15px;">Select the bill you want to modify:</p>
+        <div id="modalList"></div>
+        <button class="btn-cancel" style="width: 100%; margin-top: 15px;" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<div class="header-section">
+    <h2>Modify / Delete Sale Entry</h2>
+    <button class="btn-cancel" onclick="window.location.href='add-sale.html'">Back to Billing</button>
+</div>
+
+<div class="search-panel">
+    <div class="search-grid">
+        <div class="input-group">
+            <label>Search by Bill No / Name</label>
+            <input type="text" id="searchKey" placeholder="e.g. S-1001 or Customer Name">
+        </div>
+        <button class="btn-search" onclick="findBill()">🔍 Search Bill</button>
+    </div>
+</div>
+
+<div id="mainInterface">
+    <div class="party-info">
+        <div class="input-group">
+            <label>Party Name</label>
+            <input type="text" id="partyName" readonly>
+        </div>
+        <div class="input-group">
+            <label>Bill Number</label>
+            <input type="text" id="billNoDisplay" readonly>
+        </div>
+        <div class="input-group">
+            <label>Date</label>
+            <input type="date" id="saleDate">
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="saleTable">
+            <thead>
+                <tr>
+                    <th width="50">S.No</th>
+                    <th width="150">Item Code</th>
+                    <th>Item Name</th>
+                    <th>MRP</th>
+                    <th>Rate</th>
+                    <th>Disc %</th>
+                    <th>Qty</th>
+                    <th>Free</th>
+                    <th>CGST %</th>
+                    <th>SGST %</th>
+                    <th>Net Amt</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-box"><span>Total Sale Amt</span><strong id="sumTotalSale">0.00</strong></div>
+        <div class="summary-box"><span>Total Disc</span><strong id="sumTotalDisc">0.00</strong></div>
+        <div class="summary-box"><span>Net Amount</span><strong id="sumNet">0.00</strong></div>
+        <div class="summary-box"><span>Balance</span><strong id="sumBalance">0.00</strong></div>
+    </div>
+
+    <div class="actions">
+        <div class="input-group" style="width: 150px; margin-right: 10px;">
+            <label>Paid Amount</label>
+            <input type="number" id="paidAmt" oninput="calculateFinal()">
+        </div>
+        <button class="btn-update" onclick="updateSale()">Update Changes</button>
+        <button class="btn-delete" onclick="deleteSale()">Delete Bill</button>
+        <button class="btn-cancel" onclick="location.reload()">Clear</button>
+    </div>
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    where,
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 AUTH CHECK */
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
+/* 📦 STATE MANAGEMENT */
+let itemsList = [];
+let currentSaleDocId = null;
+let currentSaleData = null;
+
+/* 🚀 INITIAL LOAD (Items for Auto-fill) */
+async function loadResources() {
+    const itemSnap = await getDocs(collection(db, "items"));
+    itemsList = itemSnap.docs.map(d => d.data());
+}
+loadResources();
+
+/* 🔍 FIND BILL (Cloud Search) */
+window.findBill = async function() {
+    const key = document.getElementById('searchKey').value.trim();
+    if(!key) return alert("Please enter a Bill No or Customer Name");
+
+    try {
+        const salesRef = collection(db, "sales");
+        const querySnapshot = await getDocs(query(salesRef, orderBy("createdAt", "desc")));
+        
+        const searchLower = key.toLowerCase();
+        const matches = [];
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            if(data.billNo.toLowerCase() === searchLower || 
+               data.customerName.toLowerCase().includes(searchLower)) {
+                matches.push({ id: doc.id, ...data });
+            }
+        });
+
+        if(matches.length === 0) {
+            alert("No matching bill found.");
+        } else if (matches.length === 1) {
+            selectBill(matches[0]);
+        } else {
+            // Show modal for multiple results
+            const modal = document.getElementById('billModal');
+            const list = document.getElementById('modalList');
+            list.innerHTML = "";
+            matches.forEach(m => {
+                const div = document.createElement('div');
+                div.className = "bill-item";
+                div.style = "padding:10px; border-bottom:1px solid #444; cursor:pointer;";
+                div.innerHTML = `<span>${m.billNo} - ${m.customerName}</span> <strong style="float:right;">₹${m.summary?.total || m.netTotal}</strong>`;
+                div.onclick = () => { selectBill(m); closeModal(); };
+                list.appendChild(div);
+            });
+            modal.style.display = "flex";
+        }
+    } catch (err) {
+        console.error("Search Error:", err);
+    }
+};
+
+/* 🖱️ SELECT BILL */
+function selectBill(sale) {
+    currentSaleDocId = sale.id;
+    currentSaleData = sale;
+    loadBillData(sale);
+}
+
+window.closeModal = function() {
+    document.getElementById('billModal').style.display = "none";
+};
+
+/* 📥 LOAD DATA INTO INTERFACE */
+function loadBillData(bill) {
+    document.getElementById('mainInterface').style.display = 'block';
+    document.getElementById('partyName').value = bill.customerName;
+    document.getElementById('billNoDisplay').value = bill.billNo;
+    document.getElementById('saleDate').value = bill.date;
+    document.getElementById('paidAmt').value = bill.summary?.paid || bill.paidAmt;
+
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = "";
+    
+    const items = bill.items || [];
+    items.forEach((item, i) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${i+1}</td>
+            <td><input type="text" class="row-input" value="${item.code}" onchange="window.autoFillItem(this)"></td>
+            <td><input type="text" class="row-input" value="${item.name}"></td>
+            <td><input type="number" class="row-input mrp" value="${item.mrp}"></td>
+            <td><input type="number" class="row-input sale-rate" value="${item.rate}" oninput="window.calcRow(this)"></td>
+            <td><input type="number" class="row-input disc-p" value="${item.disc || 0}" oninput="window.calcRow(this)"></td>
+            <td><input type="number" class="row-input qty" value="${item.qty}" oninput="window.calcRow(this)"></td>
+            <td><input type="number" class="row-input free" value="${item.free || 0}"></td>
+            <td><input type="number" class="row-input cgst-p" value="${item.cgst || 0}" readonly></td>
+            <td><input type="number" class="row-input sgst-p" value="${item.sgst || 0}" readonly></td>
+            <td><input type="number" class="row-input net-amt" value="${item.net}" readonly></td>
+        `;
+    });
+    window.calculateFinal();
+}
+
+/* ⚡ ROW CALCULATIONS & AUTOFILL */
+window.autoFillItem = function(input) {
+    const row = input.parentElement.parentElement;
+    const item = itemsList.find(i => i.code.toLowerCase() === input.value.toLowerCase());
+    if(item) {
+        row.cells[2].children[0].value = item.name;
+        row.cells[3].children[0].value = item.mrp || 0;
+        row.cells[4].children[0].value = item.sale || 0;
+        const halfGst = (item.gst / 2) || 0;
+        row.cells[8].children[0].value = halfGst;
+        row.cells[9].children[0].value = halfGst;
+        window.calcRow(row.cells[4].children[0]);
+    }
+};
+
+window.calcRow = function(el) {
+    const row = el.parentElement.parentElement;
+    const rate = parseFloat(row.querySelector('.sale-rate').value) || 0;
+    const discPer = parseFloat(row.querySelector('.disc-p').value) || 0;
+    const qty = parseFloat(row.querySelector('.qty').value) || 0;
+    const cgstPer = parseFloat(row.querySelector('.cgst-p').value) || 0;
+    const sgstPer = parseFloat(row.querySelector('.sgst-p').value) || 0;
+
+    const taxable = (rate * qty) * (1 - discPer / 100);
+    const net = taxable * (1 + (cgstPer + sgstPer) / 100);
+
+    row.querySelector('.net-amt').value = net.toFixed(2);
+    window.calculateFinal();
+};
+
+window.calculateFinal = function() {
+    let totalSale = 0, totalDisc = 0, netGrand = 0;
+    document.querySelectorAll('#tableBody tr').forEach(row => {
+        const rate = parseFloat(row.querySelector('.sale-rate').value) || 0;
+        const discP = parseFloat(row.querySelector('.disc-p').value) || 0;
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        
+        totalSale += (rate * qty);
+        totalDisc += (rate * qty) * (discP / 100);
+        netGrand += parseFloat(row.querySelector('.net-amt').value) || 0;
+    });
+
+    document.getElementById('sumTotalSale').innerText = totalSale.toFixed(2);
+    document.getElementById('sumTotalDisc').innerText = totalDisc.toFixed(2);
+    document.getElementById('sumNet').innerText = netGrand.toFixed(2);
+    const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
+    document.getElementById('sumBalance').innerText = (netGrand - paid).toFixed(2);
+};
+
+/* 🆙 UPDATE CLOUD DATA */
+window.updateSale = async function() {
+    if(!currentSaleDocId) return;
+    if(!confirm("Confirm update for this bill in the Cloud?")) return;
+
+    const updatedItems = [];
+    document.querySelectorAll('#tableBody tr').forEach(row => {
+        updatedItems.push({
+            code: row.cells[1].children[0].value,
+            name: row.cells[2].children[0].value,
+            mrp: row.cells[3].children[0].value,
+            rate: parseFloat(row.cells[4].children[0].value),
+            disc: parseFloat(row.cells[5].children[0].value),
+            qty: parseFloat(row.cells[6].children[0].value),
+            free: parseFloat(row.cells[7].children[0].value),
+            cgst: parseFloat(row.cells[8].children[0].value),
+            sgst: parseFloat(row.cells[9].children[0].value),
+            net: parseFloat(row.cells[10].children[0].value)
+        });
+    });
+
+    const updateObj = {
+        date: document.getElementById('saleDate').value,
+        "summary.paid": parseFloat(document.getElementById('paidAmt').value),
+        "summary.total": document.getElementById('sumNet').innerText,
+        "summary.balance": document.getElementById('sumBalance').innerText,
+        items: updatedItems
+    };
+
+    try {
+        await updateDoc(doc(db, "sales", currentSaleDocId), updateObj);
+        alert("Bill updated successfully in Cloud! ✅");
+        location.reload();
+    } catch (err) {
+        alert("Update Failed: " + err.message);
+    }
+};
+
+/* 🗑️ DELETE FROM CLOUD */
+window.deleteSale = async function() {
+    if(!currentSaleDocId) return;
+    if(!confirm("Warning: Are you sure you want to PERMANENTLY delete this bill from Cloud?")) return;
+    
+    try {
+        await deleteDoc(doc(db, "sales", currentSaleDocId));
+        alert("Bill deleted successfully.");
+        location.reload();
+    } catch (err) {
+        alert("Delete Failed: " + err.message);
+    }
+};
+
+window.goBack = () => window.location.href = "billing.html";
+</script>
+</body>
+</html>

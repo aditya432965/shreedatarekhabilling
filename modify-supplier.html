@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Modify Supplier Master</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:white;
+}
+.container{
+  width:100%;
+  max-width:1100px;
+  background:rgba(0,0,0,.65);
+  border-radius:22px;
+  padding:25px;
+}
+h1{text-align:center;margin-bottom:15px}
+
+/* SEARCH */
+.search-box{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+}
+.search-box input{
+  width:100%;
+  max-width:400px;
+  padding:12px;
+  border-radius:14px;
+  border:none;
+  outline:none;
+}
+
+/* MAIN */
+.main{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+/* LIST */
+.list{
+  border:1px solid #ff9fc555;
+  border-radius:16px;
+  overflow:auto;
+  max-height:450px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,.15);
+  font-size:13px;
+  text-align:center;
+}
+th{background:#ff2f92}
+tr:hover{background:rgba(255,255,255,.08);cursor:pointer}
+
+/* FORM */
+.form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+label{
+  font-size:13px;
+  color:#ffb3d9;
+}
+input{
+  padding:11px;
+  border:none;
+  border-radius:12px;
+}
+input[disabled]{background:#ccc}
+
+/* BUTTONS */
+.buttons{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;
+  margin-top:10px;
+}
+button{
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-weight:600;
+  color:white;
+  cursor:pointer;
+}
+.update{background:#4CAF50}
+.reset{background:#777}
+.back{background:#444}
+
+@media(max-width:900px){
+  .main{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Modify Supplier Master</h1>
+
+<div class="search-box">
+  <input id="search" placeholder="Search by name / contact / brand" oninput="filterSuppliers()">
+</div>
+
+<div class="main">
+
+<!-- LIST -->
+<div class="list">
+<table>
+<thead>
+<tr>
+  <th>Code</th>
+  <th>Name</th>
+  <th>Contact</th>
+</tr>
+</thead>
+<tbody id="supplierList"></tbody>
+</table>
+</div>
+
+<!-- FORM -->
+<div class="form">
+
+  <div>
+    <label>Supplier Code</label>
+    <input id="code" disabled>
+  </div>
+
+  <div>
+    <label>Supplier Name</label>
+    <input id="name">
+  </div>
+
+  <div>
+    <label>Contact Number</label>
+    <input id="contact">
+  </div>
+
+  <div>
+    <label>Brand / Group</label>
+    <input id="brand">
+  </div>
+
+  <div class="buttons">
+    <button class="update" onclick="updateSupplier()">Update</button>
+    <button class="reset" onclick="resetForm()">Reset</button>
+    <button class="back" onclick="location.href='master-entry.html'">Back</button>
+  </div>
+
+</div>
+</div>
+</div>
+
+<script type="module">
+/* 1. FIREBASE IMPORTS */
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true"){
+    window.location.href = "index.html";
+}
+
+/* DATA STATE */
+const COLL_NAME = "suppliers";
+let suppliers = [];        // Master list from cloud
+let selectedDocId = null;  // Stores the unique Firebase ID
+
+/* ☁️ LOAD DATA FROM CLOUD */
+async function loadSuppliers() {
+    try {
+        const q = query(collection(db, COLL_NAME), orderBy("name", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        // Map the data and include the Firebase Document ID
+        suppliers = querySnapshot.docs.map(d => ({
+            id: d.id, 
+            ...d.data()
+        }));
+        
+        render(suppliers);
+    } catch (err) {
+        console.error("Fetch Error:", err);
+    }
+}
+
+/* 📊 RENDER TABLE */
+function render(list) {
+    const tbody = document.getElementById("supplierList");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    list.forEach(s => {
+        // We use the unique Firebase ID (s.id) for the click event
+        tbody.innerHTML += `
+            <tr onclick="selectSupplier('${s.id}')" style="cursor:pointer">
+                <td>${s.code}</td>
+                <td>${s.name}</td>
+                <td>${s.contact || "-"}</td>
+            </tr>`;
+    });
+}
+
+/* 🔍 WINDOW BRIDGE: FILTERING */
+window.filterSuppliers = function() {
+    const q = document.getElementById("search").value.toLowerCase();
+    const filtered = suppliers.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.contact || "").includes(q) ||
+        (s.brand || "").toLowerCase().includes(q) ||
+        s.code.toString().includes(q)
+    );
+    render(filtered);
+};
+
+/* 🖱️ WINDOW BRIDGE: SELECT (Click to Box) */
+window.selectSupplier = function(docId) {
+    const s = suppliers.find(item => item.id === docId);
+    if(!s) return;
+
+    selectedDocId = docId;
+
+    // Mapping Cloud Data to your Input IDs
+    document.getElementById("code").value = s.code;
+    document.getElementById("name").value = s.name;
+    document.getElementById("contact").value = s.contact || "";
+    document.getElementById("brand").value = s.brand || "";
+    
+    // Disable code editing for security
+    document.getElementById("code").disabled = true;
+};
+
+/* 🆙 WINDOW BRIDGE: UPDATE */
+window.updateSupplier = async function() {
+    if(!selectedDocId) {
+        alert("Please select a supplier from the list first");
+        return;
+    }
+
+    const updatedData = {
+        name: document.getElementById("name").value.trim(),
+        contact: document.getElementById("contact").value.trim(),
+        brand: document.getElementById("brand").value.trim()
+    };
+
+    if(!updatedData.name) return alert("Supplier name is required");
+
+    try {
+        const docRef = doc(db, COLL_NAME, selectedDocId);
+        await updateDoc(docRef, updatedData);
+        
+        alert("Supplier updated successfully in Cloud ✅");
+        
+        // Refresh local data and table
+        await loadSuppliers();
+    } catch (e) {
+        alert("Update Failed: " + e.message);
+    }
+};
+
+/* 🔄 WINDOW BRIDGE: RESET */
+window.resetForm = function() {
+    if(selectedDocId) window.selectSupplier(selectedDocId);
+};
+
+/* ⬅️ EXIT */
+window.goBack = function() {
+    window.location.href = "master-entry.html";
+};
+
+/* 🚀 INITIALIZE */
+loadSuppliers();
+
+</script>
+
+</body>
+</html>

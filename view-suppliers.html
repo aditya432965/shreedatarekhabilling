@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>View Supplier List</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI, Arial;
+}
+
+body{
+  min-height:100vh;
+  background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
+  display:flex;
+  justify-content:center;
+  padding:20px;
+  color:white;
+}
+
+.container{
+  width:100%;
+  max-width:1100px;
+  background:rgba(0,0,0,.65);
+  border-radius:22px;
+  padding:25px;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:18px;
+}
+
+/* SEARCH */
+.search-box{
+  display:flex;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+.search-box input{
+  width:100%;
+  max-width:420px;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  outline:none;
+  font-size:14px;
+}
+
+/* LIST */
+.list{
+  border:1px solid #ff9fc555;
+  border-radius:18px;
+  overflow:hidden;
+}
+
+.list-title{
+  background:#ff2f92;
+  padding:12px;
+  text-align:center;
+  font-weight:700;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  text-align:center;
+  font-size:13px;
+}
+
+th{
+  background:rgba(0,0,0,.6);
+}
+
+td{
+  background:rgba(0,0,0,.35);
+}
+
+tr:hover td{
+  background:rgba(255,255,255,.08);
+}
+
+/* BUTTON */
+.back-btn{
+  margin-top:18px;
+  display:flex;
+  justify-content:center;
+}
+
+button{
+  padding:12px 22px;
+  border:none;
+  border-radius:14px;
+  background:#444;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+
+@media(max-width:900px){
+  th,td{font-size:12px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>View Supplier List</h1>
+
+<!-- SEARCH -->
+<div class="search-box">
+  <input id="search" placeholder="Search by name / contact / brand" oninput="applySearch()">
+</div>
+
+<!-- TABLE -->
+<div class="list">
+  <div class="list-title">Supplier Master</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Sr No</th>
+        <th>Supplier Code</th>
+        <th>Supplier Name</th>
+        <th>Contact</th>
+        <th>Brand / Group</th>
+      </tr>
+    </thead>
+    <tbody id="supplierTable"></tbody>
+  </table>
+</div>
+
+<!-- BACK -->
+<div class="back-btn">
+  <button onclick="goBack()">Back</button>
+</div>
+
+</div>
+
+<script type="module">
+/* 1. FIREBASE IMPORTS */
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    getDocs, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+/* 🔐 LOGIN CHECK */
+if(localStorage.getItem("loggedIn") !== "true"){
+    window.location.href = "index.html";
+}
+
+/* DATA STATE */
+let suppliers = [];
+
+/* ☁️ LOAD FROM CLOUD */
+async function loadSuppliers() {
+    const tbody = document.getElementById("supplierTable");
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Loading suppliers...</td></tr>";
+
+    try {
+        // Fetching from 'suppliers' collection, sorted by Code
+        const q = query(collection(db, "suppliers"), orderBy("code", "asc"));
+        const querySnapshot = await getDocs(q);
+        
+        suppliers = querySnapshot.docs.map(doc => doc.data());
+        
+        renderTable(suppliers);
+    } catch (err) {
+        console.error("Cloud Error:", err);
+        tbody.innerHTML = "<tr><td colspan='5' style='color:red; text-align:center;'>Error loading data.</td></tr>";
+    }
+}
+
+/* 📊 RENDER TABLE */
+function renderTable(list) {
+    const tbody = document.getElementById("supplierTable");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    if(list.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>No suppliers found.</td></tr>";
+        return;
+    }
+
+    list.forEach((s, i) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${s.code}</td>
+                <td>${s.name}</td>
+                <td>${s.contact || "-"}</td>
+                <td>${s.brand || "-"}</td>
+            </tr>`;
+    });
+}
+
+/* 🔍 WINDOW BRIDGE: SEARCH */
+window.applySearch = function() {
+    const q = document.getElementById("search").value.toLowerCase();
+
+    const filtered = suppliers.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        (s.contact || "").includes(q) ||
+        (s.brand || "").toLowerCase().includes(q) ||
+        s.code.toString().includes(q)
+    );
+
+    renderTable(filtered);
+};
+
+/* ⬅️ EXIT */
+window.goBack = function() {
+    window.location.href = "master-entry.html";
+};
+
+/* 🚀 INITIALIZE */
+loadSuppliers();
+
+</script>
+</body>
+</html>
