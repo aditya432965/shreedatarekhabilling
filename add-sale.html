@@ -230,7 +230,6 @@ window.calculateFinal = function() {
         tC += cgstAmt;
         tSg += sgstAmt;
         
-        // Net amount ALWAYS includes tax calculation (Business Skill)
         const rowNet = taxable + cgstAmt + sgstAmt;
         row.querySelector('.net').value = rowNet.toFixed(2);
         nG += rowNet;
@@ -248,7 +247,10 @@ window.calculateFinal = function() {
 
 window.preparePrint = function() {
     const pSel = document.getElementById('partySelect');
-    if(!pSel.value) return alert("Please select a Customer first!");
+    if(!pSel.value) {
+        alert("Please select a Customer first!");
+        return false;
+    }
 
     const taxMode = document.getElementById('taxMode').value;
     const billItems = [];
@@ -286,6 +288,7 @@ window.preparePrint = function() {
 
     localStorage.setItem("lastBill", JSON.stringify(printData));
     window.open('print.html', '_blank');
+    return true;
 };
 
 window.sendWhatsApp = function() {
@@ -329,8 +332,14 @@ window.saveSale = async function() {
 
     try {
         await addDoc(collection(db, "sales"), saleData);
-        alert("Success! Bill Saved to Cloud.");
-        location.reload();
+        alert("Success! Bill Saved to Cloud. Opening Print/PDF...");
+        
+        // Automated Print/PDF download trigger
+        window.preparePrint();
+        
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
     } catch (e) { alert("Save Error: " + e.message); }
 };
 
