@@ -105,6 +105,7 @@ button{
   cursor:pointer;
 }
 .update{background:#4CAF50}
+.delete{background:#d32f2f} /* New Delete Button Style */
 .reset{background:#777}
 .back{background:#444}
 
@@ -125,7 +126,6 @@ button{
 
 <div class="main">
 
-<!-- LIST -->
 <div class="list">
 <table>
 <thead>
@@ -139,7 +139,6 @@ button{
 </table>
 </div>
 
-<!-- FORM -->
 <div class="form">
 
   <div>
@@ -164,7 +163,7 @@ button{
 
   <div class="buttons">
     <button class="update" onclick="updateSupplier()">Update</button>
-    <button class="reset" onclick="resetForm()">Reset</button>
+    <button class="delete" onclick="deleteSupplier()">Delete</button> <button class="reset" onclick="resetForm()">Reset</button>
     <button class="back" onclick="location.href='master-entry.html'">Back</button>
   </div>
 
@@ -180,6 +179,7 @@ import {
     getDocs, 
     doc, 
     updateDoc, 
+    deleteDoc, 
     query, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -200,7 +200,6 @@ async function loadSuppliers() {
         const q = query(collection(db, COLL_NAME), orderBy("name", "asc"));
         const querySnapshot = await getDocs(q);
         
-        // Map the data and include the Firebase Document ID
         suppliers = querySnapshot.docs.map(d => ({
             id: d.id, 
             ...d.data()
@@ -219,7 +218,6 @@ function render(list) {
     tbody.innerHTML = "";
 
     list.forEach(s => {
-        // We use the unique Firebase ID (s.id) for the click event
         tbody.innerHTML += `
             <tr onclick="selectSupplier('${s.id}')" style="cursor:pointer">
                 <td>${s.code}</td>
@@ -241,20 +239,18 @@ window.filterSuppliers = function() {
     render(filtered);
 };
 
-/* 🖱️ WINDOW BRIDGE: SELECT (Click to Box) */
+/* 🖱️ WINDOW BRIDGE: SELECT */
 window.selectSupplier = function(docId) {
     const s = suppliers.find(item => item.id === docId);
     if(!s) return;
 
     selectedDocId = docId;
 
-    // Mapping Cloud Data to your Input IDs
     document.getElementById("code").value = s.code;
     document.getElementById("name").value = s.name;
     document.getElementById("contact").value = s.contact || "";
     document.getElementById("brand").value = s.brand || "";
     
-    // Disable code editing for security
     document.getElementById("code").disabled = true;
 };
 
@@ -276,24 +272,42 @@ window.updateSupplier = async function() {
     try {
         const docRef = doc(db, COLL_NAME, selectedDocId);
         await updateDoc(docRef, updatedData);
-        
         alert("Supplier updated successfully in Cloud ✅");
-        
-        // Refresh local data and table
         await loadSuppliers();
     } catch (e) {
         alert("Update Failed: " + e.message);
     }
 };
 
+/* 🗑️ WINDOW BRIDGE: DELETE */
+window.deleteSupplier = async function() {
+    if(!selectedDocId) {
+        alert("Please select a supplier to delete");
+        return;
+    }
+
+    if(!confirm("Are you sure you want to permanently delete this supplier?")) return;
+
+    try {
+        await deleteDoc(doc(db, COLL_NAME, selectedDocId));
+        alert("Supplier deleted successfully 🗑️");
+        
+        // Clear form and reload
+        selectedDocId = null;
+        document.getElementById("code").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("contact").value = "";
+        document.getElementById("brand").value = "";
+        
+        await loadSuppliers();
+    } catch (e) {
+        alert("Delete Failed: " + e.message);
+    }
+};
+
 /* 🔄 WINDOW BRIDGE: RESET */
 window.resetForm = function() {
     if(selectedDocId) window.selectSupplier(selectedDocId);
-};
-
-/* ⬅️ EXIT */
-window.goBack = function() {
-    window.location.href = "master-entry.html";
 };
 
 /* 🚀 INITIALIZE */
