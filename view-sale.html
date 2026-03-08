@@ -14,29 +14,26 @@
     * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
     body { background: var(--bg); color: white; padding: 20px; }
 
-    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
     
-    /* Search & Filter Bar */
     .filter-bar { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
     input { padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #0b0f19; color: white; outline: none; }
 
-    /* Sales Table */
     .table-container { background: #1e293b; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th { background: #334155; padding: 15px; color: #a0d8ef; font-size: 14px; text-transform: uppercase; }
     td { padding: 12px 15px; border-bottom: 1px solid #334155; font-size: 14px; }
     tr:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
 
-    .status-paid { color: #10b981; font-weight: bold; }
-    .status-due { color: #ef4444; font-weight: bold; }
-
-    /* Detail Modal */
+    /* Detail Modal - Enhanced Visibility */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); padding: 20px; overflow-y: auto; align-items: center; justify-content: center; }
-    .modal-content { background: white; color: black; max-width: 800px; width: 100%; margin: auto; padding: 30px; border-radius: 8px; }
-    .modal-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+    .modal-content { background: white; color: black; max-width: 800px; width: 100%; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    .modal-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
     
+    .customer-info-box { background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid var(--primary); margin-bottom: 20px; }
+
     .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; }
-    .btn-back { background: #444; color: white; }
+    .btn-back { background: #334155; color: white; }
     .btn-print { background: var(--primary); color: white; margin-top: 10px; }
     .btn-gst { background: #10b981; color: white; margin-top: 10px; }
     .btn-close { background: #ef4444; color: white; }
@@ -44,7 +41,7 @@
     @media print {
         body * { visibility: hidden; }
         .modal-content, .modal-content * { visibility: visible; }
-        .modal-content { position: absolute; left: 0; top: 0; width: 100%; }
+        .modal-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
         .btn-print, .btn-close, .btn-gst { display: none; }
     }
 </style>
@@ -85,43 +82,44 @@
     <div class="modal-content">
         <div class="modal-header">
             <div>
-                <h1 style="color: #007ea7;">INVOICE</h1>
-                <p>Shree Datarekha Enterprises</p>
+                <h1 style="color: #007ea7; margin:0; font-size: 28px;">INVOICE</h1>
+                <p style="margin:0; font-weight: bold;">Shree Datarekha Enterprises</p>
+                <p style="margin:0; font-size: 12px; color: #666;">Gunwadi Rd, Baramati</p>
             </div>
             <div style="text-align: right;">
-                <h3 id="invBillNo"></h3>
-                <p id="invDate"></p>
+                <h3 id="invBillNo" style="margin:0; color: #334155;"></h3>
+                <p id="invDate" style="margin:0; font-weight: bold;"></p>
             </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <strong>Bill To:</strong>
-            <p id="invCustName" style="font-weight: bold; font-size: 1.1em;"></p>
-            <p id="invCustMeta" style="font-size: 0.9em; color: #555;"></p>
+        <div class="customer-info-box">
+            <strong style="color: #64748b; text-transform: uppercase; font-size: 11px;">Bill To:</strong>
+            <p id="invCustName" style="font-weight: 800; font-size: 1.2em; margin: 5px 0; color: #000;"></p>
+            <p id="invCustMeta" style="font-size: 0.95em; color: #334155; line-height: 1.4;"></p>
         </div>
 
         <table style="width: 100%; border: 1px solid #ddd; color: black; margin-bottom: 20px; border-collapse: collapse;">
-            <thead style="background: #f4f4f4;">
+            <thead style="background: #f1f5f9;">
                 <tr>
-                    <th style="color: black; border: 1px solid #ddd; padding: 8px;">Item</th>
-                    <th style="color: black; border: 1px solid #ddd; padding: 8px;">Qty</th>
-                    <th style="color: black; border: 1px solid #ddd; padding: 8px;">Rate</th>
-                    <th style="color: black; border: 1px solid #ddd; padding: 8px;">Total</th>
+                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: left;">Item Description</th>
+                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: center;">Qty</th>
+                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: center;">Rate</th>
+                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody id="invItems"></tbody>
         </table>
 
-        <div style="text-align: right; line-height: 1.8;">
-            <p>Net Total: <strong id="invNet"></strong></p>
-            <p>Paid Amount: <span id="invPaid"></span></p>
-            <p>Remaining Balance: <strong id="invBalance" style="color: red;"></strong></p>
+        <div style="text-align: right; line-height: 2;">
+            <p style="margin:0; border-bottom: 1px solid #eee;">Gross Total: <span id="invNet" style="font-weight: bold;">0.00</span></p>
+            <p style="margin:0; border-bottom: 1px solid #eee;">Amount Paid: <span id="invPaid" style="color: #10b981;">0.00</span></p>
+            <p style="margin:0;">Balance Due: <strong id="invBalance" style="color: #ef4444; font-size: 1.2em;">0.00</strong></p>
         </div>
 
-        <div style="margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-gst" onclick="preparePrint('WITH_GST')">Print With GST</button>
-            <button class="btn btn-print" onclick="preparePrint('WITHOUT_GST')">Print Cash Memo</button>
-            <button class="btn btn-close" onclick="closeModal()">Close</button>
+        <div style="margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid #eee; pt: 20px;">
+            <button class="btn btn-gst" onclick="reprintBill('WITH_GST')">Print Tax Invoice</button>
+            <button class="btn btn-print" onclick="reprintBill('WITHOUT_GST')">Print Cash Memo</button>
+            <button class="btn btn-close" onclick="closeModal()">Close Window</button>
         </div>
     </div>
 </div>
@@ -178,10 +176,10 @@ function renderTable(data) {
             <td>${sale.customerName}</td>
             <td>₹${netTotal.toFixed(2)}</td>
             <td>₹${paidAmt.toFixed(2)}</td>
-            <td style="color: ${balance > 1 ? '#ff4d4d' : '#10b981'}; font-weight: bold;">
+            <td style="color: ${balance > 1 ? '#ef4444' : '#10b981'}; font-weight: bold;">
                 ₹${balance.toFixed(2)}
             </td>
-            <td><button class="btn btn-print" style="padding: 5px 10px; font-size: 11px; margin-top:0;">View</button></td>
+            <td><button class="btn btn-print" style="padding: 5px 10px; font-size: 11px; margin-top:0;">View Bill</button></td>
         `;
         log.appendChild(row);
     });
@@ -210,10 +208,13 @@ window.showInvoice = function(docId) {
     const paidAmt = parseFloat(sale.paid || 0);
     const balance = netTotal - paidAmt;
 
-    document.getElementById('invBillNo').innerText = "Bill No: " + sale.billNo;
-    document.getElementById('invDate').innerText = "Date: " + sale.date;
-    document.getElementById('invCustName').innerText = sale.customerName;
-    document.getElementById('invCustMeta').innerText = sale.custMeta || "Details not available";
+    // Billing Header
+    document.getElementById('invBillNo').innerText = "Bill No: " + (sale.billNo || 'N/A');
+    document.getElementById('invDate').innerText = "Date: " + (sale.date || 'N/A');
+    
+    // CUSTOMER DETAILS - These lines fix your visibility issue
+    document.getElementById('invCustName').innerText = sale.customerName || "Walking Customer";
+    document.getElementById('invCustMeta').innerText = sale.custMeta || "Contact details not recorded";
     
     const itemBody = document.getElementById('invItems');
     itemBody.innerHTML = "";
@@ -222,14 +223,15 @@ window.showInvoice = function(docId) {
     items.forEach(item => {
         itemBody.innerHTML += `
             <tr>
-                <td style="border: 1px solid #ddd; padding: 8px;">${item.name}</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.qty}</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${item.rate}</td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${parseFloat(item.net || 0).toFixed(2)}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${item.name}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${item.qty}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${item.rate}</td>
+                <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">${parseFloat(item.net || 0).toFixed(2)}</td>
             </tr>
         `;
     });
 
+    // Summary
     document.getElementById('invNet').innerText = "₹" + netTotal.toFixed(2);
     document.getElementById('invPaid').innerText = "₹" + paidAmt.toFixed(2);
     document.getElementById('invBalance').innerText = "₹" + balance.toFixed(2);
@@ -237,10 +239,9 @@ window.showInvoice = function(docId) {
     document.getElementById('invoiceModal').style.display = "flex";
 };
 
-window.preparePrint = function(mode) {
+window.reprintBill = function(mode) {
     if(!selectedSale) return;
 
-    // Construct print data to match your print.html expectations
     const printData = {
         taxMode: mode,
         billNo: selectedSale.billNo,
@@ -254,12 +255,12 @@ window.preparePrint = function(mode) {
             mrp: i.mrp || i.rate,
             rate: i.rate,
             disc: i.disc || 0,
-            cgst: i.cgst || (mode === 'WITH_GST' ? 2.5 : 0),
+            cgst: i.cgst || (mode === 'WITH_GST' ? 2.5 : 0), 
             sgst: i.sgst || (mode === 'WITH_GST' ? 2.5 : 0),
             net: i.net
         })),
         summary: {
-            gross: selectedSale.netTotal, // Approximation for history view
+            gross: selectedSale.netTotal,
             disc: 0,
             cgst: selectedSale.cgstTotal || 0,
             sgst: selectedSale.sgstTotal || 0,
