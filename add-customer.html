@@ -61,6 +61,356 @@ input{
   outline:none;
 }
 
+input:disabled {
+  background: #444;
+  color: #aaa;
+}
+
+.full{
+  grid-column:1 / -1;
+}
+
+/* ===== BUTTONS ===== */
+.buttons{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:12px;
+  margin-top:10px;
+}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  color:white;
+}
+
+.add{background:#ff2f92;}
+.save{background:#4CAF50;}
+.cancel{background:#777;}
+.back{background:#444;}
+
+/* ===== TABLE ===== */
+.table-box{
+  margin-top:35px;
+}
+
+.table-box h2{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width: 600px;
+}
+
+th,td{
+  border:1px solid #ff9fc555;
+  padding:10px;
+  font-size:13px;
+  text-align:center;
+}
+
+th{
+  background:#ff2f92;
+}
+
+tr:nth-child(even){
+  background:rgba(255,255,255,.05);
+}
+
+tr:hover{
+  background:rgba(255,255,255,.15);
+  cursor:pointer;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:700px){
+  .form{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Customer Master</h1>
+
+<div class="form">
+
+  <div>
+    <label>Sr. No</label>
+    <input id="srNo" readonly placeholder="Auto-generated">
+  </div>
+
+  <div>
+    <label>Customer Code</label>
+    <input id="custCode" placeholder="Customer code">
+  </div>
+
+  <div class="full">
+    <label>Customer Name</label>
+    <input id="custName" placeholder="Customer name">
+  </div>
+
+  <div class="full">
+    <label>Address Line 1</label>
+    <input id="addr1">
+  </div>
+
+  <div class="full">
+    <label>Address Line 2</label>
+    <input id="addr2">
+  </div>
+
+  <div>
+    <label>Contact No</label>
+    <input id="contact">
+  </div>
+
+  <div>
+    <label>GST No</label>
+    <input id="gst">
+  </div>
+
+  <div>
+    <label>Food Licence No (FSSAI)</label>
+    <input id="fssai">
+  </div>
+
+  <div class="buttons full">
+    <button class="add" onclick="newCustomer()">Add New</button>
+    <button class="save" onclick="saveCustomer()">Save</button>
+    <button class="cancel" onclick="resetForm()">Cancel</button>
+    <button class="back" onclick="goBack()">Back</button>
+  </div>
+
+</div>
+
+<div class="table-box">
+  <h2>Customer Master List</h2>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Sr. No</th>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Address</th>
+          <th>Contact</th>
+          <th>GST</th>
+          <th>FSSAI</th>
+        </tr>
+      </thead>
+      <tbody id="customerTable"></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script type="module">
+import { db } from './firebase-config.js';
+import { 
+    collection, 
+    addDoc, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    query, 
+    orderBy, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+if(localStorage.getItem("loggedIn") !== "true"){
+    window.location.href = "index.html";
+}
+
+const COLL_NAME = "customers";
+let customers = [];
+let editingDocId = null;
+
+/* ===== FETCH FROM CLOUD ===== */
+async function loadCustomers() {
+    try {
+        // Order by srNo so the count is predictable
+        const q = query(collection(db, COLL_NAME), orderBy("srNo", "asc"));
+        const querySnapshot = await getDocs(q);
+        customers = querySnapshot.docs.map(d => ({
+            id: d.id,
+            ...d.data()
+        }));
+        
+        renderCustomers();
+        updateNextSrNo();
+    } catch (err) {
+        console.error("Load failed:", err);
+    }
+}
+
+/* ===== AUTO-GENERATE SR NO ===== */
+function updateNextSrNo() {
+    if (editingDocId) return; // Don't change Sr No if editing
+    
+    let maxSr = 0;
+    customers.forEach(c => {
+        if(Number(c.srNo) > maxSr) maxSr = Number(c.srNo);
+    });
+    document.getElementById("srNo").value = maxSr + 1;
+}
+
+/* ===== RENDER TABLE ===== */
+function renderCustomers(){
+    const tbody = document.getElementById("customerTable");
+    tbody.innerHTML = "";
+    
+    // Sort for display (newest first)
+    const displayList = [...customers].reverse();
+
+    displayList.forEach(c => {
+        tbody.innerHTML += `
+            <tr onclick="editCustomer('${c.id}')">
+                <td style="font-weight:bold; color:#ffb3d9;">${c.srNo || '-'}</td>
+                <td>${c.code}</td>
+                <td>${c.name}</td>
+                <td>${c.address1 || ''} ${c.address2 || ''}</td>
+                <td>${c.contact}</td>
+                <td>${c.gst || ''}</td>
+                <td>${c.fssai || ''}</td>
+            </tr>
+        `;
+    });
+}
+
+/* ===== BUTTON ACTIONS ===== */
+
+window.newCustomer = function(){
+    resetForm();
+    document.getElementById("custCode").focus();
+};
+
+window.editCustomer = function(id){
+    const c = customers.find(x => x.id === id);
+    if(!c) return;
+
+    editingDocId = id;
+    document.getElementById("srNo").value = c.srNo || "";
+    document.getElementById("custCode").value = c.code;
+    document.getElementById("custName").value = c.name;
+    document.getElementById("addr1").value = c.address1 || "";
+    document.getElementById("addr2").value = c.address2 || "";
+    document.getElementById("contact").value = c.contact;
+    document.getElementById("gst").value = c.gst || "";
+    document.getElementById("fssai").value = c.fssai || "";
+    
+    document.getElementById("custCode").disabled = true;
+};
+
+window.saveCustomer = async function(){
+    const srNo = Number(document.getElementById("srNo").value);
+    const code = document.getElementById("custCode").value.trim();
+    const name = document.getElementById("custName").value.trim();
+    const contact = document.getElementById("contact").value.trim();
+
+    if(!code || !name || !contact){
+        alert("Code, Name & Contact required");
+        return;
+    }
+
+    const customerData = {
+        srNo: srNo,
+        name: name,
+        address1: document.getElementById("addr1").value.trim(),
+        address2: document.getElementById("addr2").value.trim(),
+        contact: contact,
+        gst: document.getElementById("gst").value.trim(),
+        fssai: document.getElementById("fssai").value.trim()
+    };
+
+    try {
+        if(editingDocId){
+            const docRef = doc(db, COLL_NAME, editingDocId);
+            await updateDoc(docRef, customerData);
+            alert("Customer updated ✅");
+        } else {
+            // Check for duplicate code
+            if(customers.some(c => c.code === code)){
+                alert("Customer code already exists");
+                return;
+            }
+            
+            customerData.code = code;
+            customerData.createdAt = serverTimestamp();
+            
+            await addDoc(collection(db, COLL_NAME), customerData);
+            alert("Customer saved ✅");
+        }
+
+        resetForm();
+        await loadCustomers();
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
+};
+
+window.resetForm = function(){
+    document.querySelectorAll("input").forEach(i => i.value = "");
+    document.getElementById("custCode").disabled = false;
+    editingDocId = null;
+    updateNextSrNo();
+};
+
+window.goBack = function(){
+    window.location.href = "master-entry.html";
+};
+
+/* ===== INITIAL LOAD ===== */
+loadCustomers();
+
+</script>
+
+</body>
+</html>
+
+/* ===== FORM ===== */
+.form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.form div{
+  display:flex;
+  flex-direction:column;
+}
+
+label{
+  font-size:14px;
+  color:#ffb3d9;
+  margin-bottom:5px;
+}
+
+input{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-size:14px;
+  outline:none;
+}
+
 .full{
   grid-column:1 / -1;
 }
@@ -351,3 +701,4 @@ loadCustomers();
 
 </body>
 </html>
+
