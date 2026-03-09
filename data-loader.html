@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulk Data Injector | Shree Datarekha Enterprises</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root { --primary: #38bdf8; --success: #10b981; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; padding: 30px; }
+        .container { background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: 100%; max-width: 700px; border: 1px solid #334155; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+        
+        .setup-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--primary); font-weight: 600; }
+        select, input[type="file"] { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; cursor: pointer; }
+        
+        .btn-start { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-start:hover { background: #059669; transform: translateY(-2px); }
+        .btn-start:disabled { background: #444; cursor: not-allowed; }
+
+        #logBox { margin-top: 20px; padding: 15px; border-radius: 8px; background: #000; font-family: monospace; font-size: 12px; height: 150px; overflow-y: auto; border: 1px solid #334155; display: none; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Data Injector Pro 🚀</h1>
+    <p class="subtitle">Bulk upload your Excel data to the Cloud Database</p>
+
+    <div class="setup-box">
+        <label>1. Select Data Type (Where to Save?)</label>
+        <select id="dataType">
+            <option value="customers">Customer List (Master)</option>
+            <option value="items">Item List (Inventory)</option>
+            <option value="suppliers">Supplier List (Vendors)</option>
+        </select>
+
+        <label>2. Choose Excel File (.xlsx or .csv)</label>
+        <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
+        
+        <div id="mappingHint" style="font-size: 11px; color: #94a3b8; line-height: 1.5;">
+        </div>
+    </div>
+
+    <button id="injectBtn" class="btn-start" onclick="processFile()">Inject Data to Cloud</button>
+
+    <div id="logBox"></div>
+</div>
+
+<script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, doc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const hints = {
+        customers: "Required Headers: Customer Code, Customer Name, Address Line 1, Address Line 2, Contact No, GST No, Food Licence No",
+        items: "Required Headers: Item Code, Item Name, HSN Code, MRP Rate, Sale Rate, Purchase Rate, GST %, Opening Qty, Group Name",
+        suppliers: "Required Headers: Supplier Code, Supplier Name, Contact Number, Brand / Group Provided"
+    };
+
+    const typeDropdown = document.getElementById('dataType');
+    const hintDiv = document.getElementById('mappingHint');
+    
+    typeDropdown.onchange = () => { hintDiv.innerText = hints[typeDropdown.value]; };
+    hintDiv.innerText = hints.customers;
+
+    window.processFile = async function() {
+        const fileInput = document.getElementById('excelFile');
+        const target = typeDropdown.value;
+        const logBox = document.getElementById('logBox');
+        const btn = document.getElementById('injectBtn');
+
+        if (!fileInput.files[0]) return alert("Please select an Excel file!");
+
+        btn.disabled = true;
+        logBox.style.display = "block";
+        logBox.innerHTML = `<div class="log-entry" style="color: #fbbf24;">Reading file...</div>`;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+                if (jsonData.length === 0) throw new Error("Excel is empty!");
+
+                logBox.innerHTML += `<div class="log-entry">Found ${jsonData.length} rows. Starting injection...</div>`;
+
+                const batch = writeBatch(db);
+                
+                jsonData.forEach((row) => {
+                    const docRef = doc(collection(db, target));
+                    let cleanData = { createdAt: serverTimestamp() };
+
+                    if (target === 'customers') {
+                        cleanData.code = String(row["Customer Code"] || '');
+                        cleanData.name = row["Customer Name"] || '';
+                        cleanData.address1 = row["Address Line 1"] || '';
+                        cleanData.address2 = row["Address Line 2"] || '';
+                        cleanData.contact = String(row["Contact No"] || '');
+                        cleanData.gst = row["GST No"] || '';
+                        cleanData.fssai = row["Food Licence No"] || '';
+                    } 
+                    else if (target === 'items') {
+                        // FIX: Ensure types match what add-item.html expects (Strings for rates as per your saveItem function)
+                        cleanData.code = String(row["Item Code"] || '');
+                        cleanData.name = row["Item Name"] || '';
+                        cleanData.hsn = String(row["HSN Code"] || '');
+                        cleanData.mrp = String(row["MRP Rate"] || '0');
+                        cleanData.sale = String(row["Sale Rate"] || '0');
+                        cleanData.purchase = String(row["Purchase Rate"] || '0');
+                        cleanData.gst = String(row["GST %"] || '0');
+                        cleanData.qty = String(row["Opening Qty"] || '0');
+                        // IMPORTANT: 'group' must match a name in your 'brandGroups' collection to be visible
+                        cleanData.group = row["Group Name"] || 'General'; 
+                    }
+                    else if (target === 'suppliers') {
+                        cleanData.code = String(row["Supplier Code"] || '');
+                        cleanData.name = row["Supplier Name"] || '';
+                        cleanData.contact = String(row["Contact Number"] || '');
+                        cleanData.brand = row["Brand / Group Provided"] || '';
+                    }
+
+                    batch.set(docRef, cleanData);
+                });
+
+                await batch.commit();
+                logBox.innerHTML += `<div class="log-entry" style="color: #10b981;">✅ SUCCESS: ${jsonData.length} records added to ${target}.</div>`;
+                alert("Data Injection Complete!");
+                
+            } catch (err) {
+                logBox.innerHTML += `<div class="log-entry" style="color: #ef4444;">❌ ERROR: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        };
+        reader.readAsArrayBuffer(fileInput.files[0]);
+    };
+</script>
+
+</body>
+</html>

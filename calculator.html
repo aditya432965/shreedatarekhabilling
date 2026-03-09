@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Enterprise Master Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --accent: #f472b6;
+            --success: #10b981;
+            --warning: #fbbf24;
+            --text: #f8fafc;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .calc-wrapper {
+            background: var(--card);
+            width: 100%;
+            max-width: 500px; /* Adapts to mobile and desktop */
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+        }
+
+        /* Display Area */
+        .display-container {
+            background: #020617;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: right;
+            margin-bottom: 20px;
+            border: 1px solid #1e293b;
+        }
+
+        #history { font-size: 14px; color: #64748b; min-height: 20px; margin-bottom: 5px; }
+        #main-display { font-size: 42px; font-weight: 700; overflow-x: auto; white-space: nowrap; }
+
+        /* Business Panel */
+        .biz-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .panel-label {
+            grid-column: span 4;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        /* Buttons */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 18px 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            background: #334155;
+            user-select: none;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        /* Color Coding */
+        .btn-num { background: #1e293b; }
+        .btn-op { background: #334155; color: var(--primary); }
+        .btn-biz { background: rgba(56, 189, 248, 0.15); color: var(--primary); font-size: 13px; padding: 12px 5px; }
+        .btn-biz:hover { background: var(--primary); color: var(--bg); }
+        .btn-action { background: var(--accent); }
+        .btn-equal { background: var(--success); grid-column: span 2; }
+        .btn-clear { background: #ef4444; }
+
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            button { padding: 15px 5px; font-size: 16px; }
+            #main-display { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calc-wrapper">
+    <div class="display-container">
+        <div id="history">Ready</div>
+        <div id="main-display">0</div>
+    </div>
+
+    <div class="biz-panel">
+        <div class="panel-label">Profit & Tax Intelligence</div>
+        <button class="btn-biz" onclick="bizCalc('margin')">Margin %</button>
+        <button class="btn-biz" onclick="bizCalc('markup')">Markup %</button>
+        <button class="btn-biz" onclick="bizCalc('addGST')">+ GST</button>
+        <button class="btn-biz" onclick="bizCalc('subGST')">- GST</button>
+    </div>
+
+    <div class="grid">
+        <button class="btn-clear" onclick="clearCalc()">AC</button>
+        <button class="btn-op" onclick="appendOp('/')">÷</button>
+        <button class="btn-op" onclick="appendOp('*')">×</button>
+        <button class="btn-op" onclick="backspace()">⌫</button>
+
+        <button class="btn-num" onclick="append('7')">7</button>
+        <button class="btn-num" onclick="append('8')">8</button>
+        <button class="btn-num" onclick="append('9')">9</button>
+        <button class="btn-op" onclick="appendOp('-')">−</button>
+
+        <button class="btn-num" onclick="append('4')">4</button>
+        <button class="btn-num" onclick="append('5')">5</button>
+        <button class="btn-num" onclick="append('6')">6</button>
+        <button class="btn-op" onclick="appendOp('+')">+</button>
+
+        <button class="btn-num" onclick="append('1')">1</button>
+        <button class="btn-num" onclick="append('2')">2</button>
+        <button class="btn-num" onclick="append('3')">3</button>
+        <button class="btn-num" onclick="append('.')">.</button>
+
+        <button class="btn-num" onclick="append('0')">0</button>
+        <button class="btn-num" onclick="append('00')">00</button>
+        <button class="btn-equal" onclick="solve()">=</button>
+    </div>
+</div>
+
+<script>
+    let currentInput = '0';
+    let historyStr = '';
+    const display = document.getElementById('main-display');
+    const historyDisp = document.getElementById('history');
+
+    function updateUI() {
+        display.innerText = currentInput;
+        historyDisp.innerText = historyStr;
+    }
+
+    function append(val) {
+        if (currentInput === '0' && val !== '.') currentInput = val;
+        else currentInput += val;
+        updateUI();
+    }
+
+    function appendOp(op) {
+        historyStr = currentInput + ' ' + op;
+        currentInput = '0';
+        updateUI();
+    }
+
+    function clearCalc() {
+        currentInput = '0';
+        historyStr = '';
+        updateUI();
+    }
+
+    function backspace() {
+        currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : '0';
+        updateUI();
+    }
+
+    function solve() {
+        try {
+            let result = eval(historyStr + currentInput);
+            historyStr = historyStr + ' ' + currentInput + ' =';
+            currentInput = Number(result.toFixed(4)).toString();
+            updateUI();
+        } catch (e) {
+            currentInput = 'Error';
+            updateUI();
+        }
+    }
+
+    // Advanced Business Logic
+    function bizCalc(type) {
+        let val = parseFloat(currentInput);
+        
+        switch(type) {
+            case 'addGST':
+                let gstAdd = prompt("Enter GST % to ADD (e.g. 5, 12, 18, 28):", "18");
+                if (gstAdd) {
+                    let rate = parseFloat(gstAdd);
+                    historyStr = `${val} + ${rate}% GST`;
+                    currentInput = (val * (1 + rate/100)).toFixed(2);
+                }
+                break;
+
+            case 'subGST':
+                let gstSub = prompt("Enter GST % included in price:", "18");
+                if (gstSub) {
+                    let rate = parseFloat(gstSub);
+                    historyStr = `${val} (Reverse ${rate}% GST)`;
+                    currentInput = (val / (1 + rate/100)).toFixed(2);
+                }
+                break;
+
+            case 'margin':
+                let costMar = prompt("Enter Purchase/Cost Price:");
+                if (costMar) {
+                    let margin = ((val - costMar) / val) * 100;
+                    historyStr = `Cost: ${costMar} | Sale: ${val}`;
+                    currentInput = margin.toFixed(2) + "% Margin";
+                }
+                break;
+
+            case 'markup':
+                let costMark = prompt("Enter Purchase/Cost Price:");
+                if (costMark) {
+                    let markup = ((val - costMark) / costMark) * 100;
+                    historyStr = `Cost: ${costMark} | Sale: ${val}`;
+                    currentInput = markup.toFixed(2) + "% Markup";
+                }
+                break;
+        }
+        updateUI();
+    }
+</script>
+
+</body>
+</html>
