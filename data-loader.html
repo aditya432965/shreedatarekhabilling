@@ -2,30 +2,115 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bulk Data Injector | Shree Datarekha Enterprises</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         :root { --primary: #38bdf8; --success: #10b981; --bg: #0f172a; --card: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; padding: 30px; }
-        .container { background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: 100%; max-width: 700px; border: 1px solid #334155; }
-        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg); 
+            color: white; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            padding: 15px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Customize Size Feature Style */
+        .size-control {
+            background: rgba(255,255,255,0.05);
+            padding: 10px 20px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #334155;
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        .container { 
+            background: var(--card); 
+            padding: 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); 
+            width: 100%; 
+            max-width: 700px; /* Default */
+            border: 1px solid #334155; 
+            transition: max-width 0.3s ease;
+        }
+
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; font-size: 24px; }
+        p.subtitle { text-align: center; color: #94a3b8; font-size: 13px; margin-bottom: 25px; }
         
         .setup-box { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
         label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--primary); font-weight: 600; }
-        select, input[type="file"] { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; cursor: pointer; }
         
-        .btn-start { width: 100%; padding: 15px; background: var(--success); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        select, input[type="file"] { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 1px solid #334155; 
+            background: #0f172a; 
+            color: white; 
+            cursor: pointer;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        
+        .btn-start { 
+            width: 100%; 
+            padding: 15px; 
+            background: var(--success); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
         .btn-start:hover { background: #059669; transform: translateY(-2px); }
         .btn-start:disabled { background: #444; cursor: not-allowed; }
 
-        #logBox { margin-top: 20px; padding: 15px; border-radius: 8px; background: #000; font-family: monospace; font-size: 12px; height: 150px; overflow-y: auto; border: 1px solid #334155; display: none; }
+        #logBox { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            background: #000; 
+            font-family: monospace; 
+            font-size: 11px; 
+            height: 150px; 
+            overflow-y: auto; 
+            border: 1px solid #334155; 
+            display: none; 
+            line-height: 1.6;
+        }
         .log-entry { margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 2px; }
+
+        /* Mobile Specific Adjustments */
+        @media (max-width: 480px) {
+            .container { padding: 15px; }
+            h1 { font-size: 20px; }
+            .size-control { display: none; } /* Hide size control on very small screens to save space */
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+    <div class="size-control">
+        <span>Container Width:</span>
+        <input type="range" id="widthSlider" min="300" max="1200" value="700" oninput="adjustWidth(this.value)">
+        <span id="widthVal">700px</span>
+    </div>
+
+<div class="container" id="mainContainer">
     <h1>Data Injector Pro 🚀</h1>
     <p class="subtitle">Bulk upload your Excel data to the Cloud Database</p>
 
@@ -48,6 +133,14 @@
 
     <div id="logBox"></div>
 </div>
+
+<script>
+    // Adjust Width Function
+    function adjustWidth(val) {
+        document.getElementById('mainContainer').style.maxWidth = val + 'px';
+        document.getElementById('widthVal').innerText = val + 'px';
+    }
+</script>
 
 <script type="module">
     import { db } from './firebase-config.js';
@@ -105,7 +198,6 @@
                         cleanData.fssai = row["Food Licence No"] || '';
                     } 
                     else if (target === 'items') {
-                        // FIX: Ensure types match what add-item.html expects (Strings for rates as per your saveItem function)
                         cleanData.code = String(row["Item Code"] || '');
                         cleanData.name = row["Item Name"] || '';
                         cleanData.hsn = String(row["HSN Code"] || '');
@@ -114,7 +206,6 @@
                         cleanData.purchase = String(row["Purchase Rate"] || '0');
                         cleanData.gst = String(row["GST %"] || '0');
                         cleanData.qty = String(row["Opening Qty"] || '0');
-                        // IMPORTANT: 'group' must match a name in your 'brandGroups' collection to be visible
                         cleanData.group = row["Group Name"] || 'General'; 
                     }
                     else if (target === 'suppliers') {
