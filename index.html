@@ -29,7 +29,6 @@
             position: relative;
         }
 
-        /* Dynamic Mesh & Glow */
         .bg-canvas {
             position: absolute;
             width: 100%;
@@ -40,7 +39,6 @@
             z-index: 1;
         }
 
-        /* Floating Business Symbols */
         .float-icon {
             position: absolute;
             z-index: 2;
@@ -56,7 +54,6 @@
             66% { transform: translate(-20px, 20px) rotate(-10deg) scale(0.9); }
         }
 
-        /* Moving Particles (CSS simulated) */
         .particle {
             position: absolute;
             background: var(--accent);
@@ -95,11 +92,10 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        /* THE ONE-LINE NAME */
         .shop-name {
             font-size: clamp(20px, 5vw, 24px);
             font-weight: 800;
-            white-space: nowrap; /* Forces one line */
+            white-space: nowrap;
             letter-spacing: -0.5px;
             margin-bottom: 5px;
             background: linear-gradient(90deg, #fff, var(--accent), #fff);
@@ -109,9 +105,7 @@
             animation: shine 3s linear infinite;
         }
 
-        @keyframes shine {
-            to { background-position: 200% center; }
-        }
+        @keyframes shine { to { background-position: 200% center; } }
 
         .subtitle {
             font-size: 12px;
@@ -122,11 +116,7 @@
         }
 
         /* ===== INPUT DESIGN ===== */
-        .field {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
+        .field { margin-bottom: 20px; position: relative; }
         .field input {
             width: 100%;
             padding: 20px 25px;
@@ -138,7 +128,6 @@
             outline: none;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         .field input:focus {
             background: rgba(255, 255, 255, 0.08);
             border-color: var(--accent);
@@ -146,12 +135,8 @@
             transform: translateY(-2px);
         }
 
-        /* ===== MIND-BLOWING BUTTON ===== */
-        .btn-container {
-            margin-top: 10px;
-            position: relative;
-        }
-
+        /* ===== BUTTON ===== */
+        .btn-container { margin-top: 10px; position: relative; }
         button {
             width: 100%;
             padding: 20px;
@@ -169,27 +154,8 @@
             transition: 0.3s ease;
             box-shadow: 0 15px 35px rgba(255, 47, 146, 0.3);
         }
-
-        button::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255,255,255,0.1);
-            transform: rotate(45deg);
-            transition: 0.5s;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(255, 47, 146, 0.5);
-        }
-
-        button:active {
-            transform: scale(0.97);
-        }
+        button:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(255, 47, 146, 0.5); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .footer {
             margin-top: 35px;
@@ -198,7 +164,12 @@
             letter-spacing: 1px;
         }
 
-        /* MOBILE OPTIMIZATION */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
         @media (max-width: 480px) {
             .login-card { padding: 40px 20px; }
             .shop-name { font-size: 18px; }
@@ -217,12 +188,12 @@
     <div class="float-icon" style="top:10%; right:15%; font-size:40px;">📈</div>
     <div class="float-icon" style="bottom:20%; left:10%; font-size:35px; animation-delay: -3s;">📦</div>
 
-    <div class="login-card">
+    <div class="login-card" id="loginCard">
         <div class="shop-name">SHREE DATAREKHA ENTERPRISES</div>
         <div class="subtitle">Next-Gen Billing Solution</div>
 
         <div class="field">
-            <input type="text" id="username" placeholder="Employee ID" autocomplete="off">
+            <input type="email" id="email" placeholder="Employee Email" autocomplete="email">
         </div>
 
         <div class="field">
@@ -230,7 +201,7 @@
         </div>
 
         <div class="btn-container">
-            <button onclick="login()">Enter Ecosystem</button>
+            <button id="loginBtn">Enter Ecosystem</button>
         </div>
 
         <div class="footer">
@@ -238,44 +209,63 @@
         </div>
     </div>
 
-    <script>
-        function login() {
-            const user = document.getElementById("username").value.trim();
-            const pass = document.getElementById("password").value.trim();
-            const btn = document.querySelector('button');
+    <script type="module">
+        import { auth } from './firebase-config.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-            if (user === "admin" && pass === "asdfghjkl") {
-                // Mind-blowing success animation
-                btn.innerHTML = "AUTHORIZING ACCESS...";
-                btn.style.background = "#00ff88";
-                btn.style.color = "#000";
+        const loginBtn = document.getElementById('loginBtn');
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+        const card = document.getElementById('loginCard');
+
+        async function handleLogin() {
+            const email = emailInput.value.trim();
+            const password = passInput.value.trim();
+
+            if (!email || !password) {
+                triggerError("Please enter credentials");
+                return;
+            }
+
+            // UI Feedback
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = "AUTHORIZING ACCESS...";
+            loginBtn.style.background = "linear-gradient(135deg, #00ff88, #007ea7)";
+            loginBtn.style.color = "#000";
+
+            try {
+                // Real Firebase Authentication
+                await signInWithEmailAndPassword(auth, email, password);
                 
+                // Success
+                localStorage.setItem("loggedIn", "true");
                 setTimeout(() => {
-                    localStorage.setItem("loggedIn", "true");
                     window.location.href = "main.html";
-                }, 1200);
-            } else {
-                // Shake effect on error
-                const card = document.querySelector('.login-card');
-                card.style.animation = "shake 0.4s";
-                setTimeout(() => card.style.animation = "", 400);
-                alert("ACCESS DENIED: Unauthorized Credentials");
+                }, 800);
+
+            } catch (error) {
+                // Error Animation
+                triggerError("ACCESS DENIED: Unauthorized Credentials");
+                console.error(error.code);
+                
+                // Reset Button
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = "Enter Ecosystem";
+                loginBtn.style.background = "";
+                loginBtn.style.color = "";
             }
         }
 
-        // Keyframe for shake
-        const style = document.createElement('style');
-        style.innerHTML = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-10px); }
-                75% { transform: translateX(10px); }
-            }
-        `;
-        document.head.appendChild(style);
+        function triggerError(msg) {
+            card.style.animation = "shake 0.4s";
+            setTimeout(() => card.style.animation = "cardAppear 1s", 400);
+            alert(msg);
+        }
 
+        // Event Listeners
+        loginBtn.addEventListener('click', handleLogin);
         document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') login();
+            if (e.key === 'Enter') handleLogin();
         });
     </script>
 </body>
