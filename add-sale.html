@@ -43,6 +43,8 @@
 </head>
 <body>
 
+<datalist id="itemList"></datalist>
+
 <div class="header-section">
     <div>
         <h2 style="color: var(--primary);">Sale Entry</h2>
@@ -83,7 +85,7 @@
             <tr>
                 <th width="50">Sr.</th>
                 <th width="150">Code</th>
-                <th>Item Name</th>
+                <th>Item Name (Search)</th>
                 <th>MRP</th>
                 <th>Rate</th>
                 <th>Disc %</th>
@@ -139,6 +141,14 @@ async function init() {
 
         const iSnap = await getDocs(collection(db, "items"));
         items = iSnap.docs.map(d => ({id: d.id, ...d.data()}));
+        
+        // FILL DATALIST FOR SEARCH
+        const dList = document.getElementById('itemList');
+        items.forEach(item => {
+            let opt = document.createElement('option');
+            opt.value = item.name;
+            dList.appendChild(opt);
+        });
 
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"), limit(1));
         const lastS = await getDocs(q);
@@ -169,32 +179,47 @@ window.addRow = function() {
     const row = tbody.insertRow();
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><input type="text" class="row-input" onchange="window.autoFillItem(this)" placeholder="Code"></td>
-        <td><input type="text" class="row-input i-name"></td>
+        <td><input type="text" class="row-input i-code" onchange="window.autoFillByCode(this)" placeholder="Code"></td>
+        <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)" placeholder="Search Item..."></td>
         <td><input type="number" class="row-input mrp" value="0" readonly></td>
         <td><input type="number" class="row-input rate" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input disc" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input qty" value="1" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input free" value="0"></td>
-        <td><input type="number" class="row-input cgst" value="2.5" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input sgst" value="2.5" oninput="window.calc(this)"></td>
+        <td><input type="number" class="row-input cgst" value="0" oninput="window.calc(this)"></td>
+        <td><input type="number" class="row-input sgst" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input net" value="0.00" readonly style="font-weight:bold;"></td>
     `;
 };
 
-window.autoFillItem = function(input) {
+// AUTOFILL WHEN TYPING NAME (SEARCHABLE)
+window.autoFillByName = function(input) {
+    const row = input.closest('tr');
+    const item = items.find(i => i.name === input.value);
+    if(item) {
+        fillRowData(row, item);
+    }
+};
+
+// AUTOFILL WHEN TYPING CODE
+window.autoFillByCode = function(input) {
     const row = input.closest('tr');
     const item = items.find(i => i.code.toLowerCase() === input.value.toLowerCase());
     if(item) {
-        row.querySelector('.i-name').value = item.name;
-        row.querySelector('.mrp').value = item.mrp || 0;
-        row.querySelector('.rate').value = item.sale || 0;
-        const hGst = (parseFloat(item.gst) / 2) || 2.5;
-        row.querySelector('.cgst').value = hGst;
-        row.querySelector('.sgst').value = hGst;
-        window.calculateFinal();
+        fillRowData(row, item);
     }
 };
+
+function fillRowData(row, item) {
+    row.querySelector('.i-code').value = item.code;
+    row.querySelector('.i-name').value = item.name;
+    row.querySelector('.mrp').value = item.mrp || 0;
+    row.querySelector('.rate').value = item.sale || 0;
+    const hGst = (parseFloat(item.gst) / 2) || 0;
+    row.querySelector('.cgst').value = hGst;
+    row.querySelector('.sgst').value = hGst;
+    window.calculateFinal();
+}
 
 window.calc = function(el) {
     window.calculateFinal();
@@ -219,11 +244,13 @@ window.calculateFinal = function() {
         const dAmt = sub * ((parseFloat(row.querySelector('.disc').value) || 0) / 100);
         const taxable = sub - dAmt;
         
-        const cP = parseFloat(row.querySelector('.cgst').value) || 0;
-        const sP = parseFloat(row.querySelector('.sgst').value) || 0;
-
-        const cgstAmt = (taxable * (cP/100));
-        const sgstAmt = (taxable * (sP/100));
+        let cgstAmt = 0, sgstAmt = 0;
+        if(taxMode !== "WITHOUT_GST") {
+            const cP = parseFloat(row.querySelector('.cgst').value) || 0;
+            const sP = parseFloat(row.querySelector('.sgst').value) || 0;
+            cgstAmt = (taxable * (cP/100));
+            sgstAmt = (taxable * (sP/100));
+        }
         
         tS += sub; 
         tD += dAmt;
@@ -332,14 +359,9 @@ window.saveSale = async function() {
 
     try {
         await addDoc(collection(db, "sales"), saleData);
-        alert("Success! Bill Saved to Cloud. Opening Print/PDF...");
-        
-        // Automated Print/PDF download trigger
+        alert("Success! Bill Saved to Cloud.");
         window.preparePrint();
-        
-        setTimeout(() => {
-            location.reload();
-        }, 1000);
+        setTimeout(() => { location.reload(); }, 1000);
     } catch (e) { alert("Save Error: " + e.message); }
 };
 
