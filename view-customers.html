@@ -46,7 +46,7 @@ body{
     font-size:14px;
 }
 
-/* SEARCH BAR STYLING */
+/* ACTIVE SEARCH BAR */
 .search-container {
     margin: 20px 0;
     display: flex;
@@ -55,21 +55,21 @@ body{
 
 #searchInput {
     width: 100%;
-    max-width: 400px;
-    padding: 12px 20px;
+    max-width: 450px;
+    padding: 14px 25px;
     border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
     color: white;
     outline: none;
-    font-size: 14px;
-    transition: 0.3s;
+    font-size: 15px;
+    transition: all 0.3s ease;
 }
 
 #searchInput:focus {
     border-color: #ff9fcf;
-    background: rgba(0, 0, 0, 0.6);
-    box-shadow: 0 0 10px rgba(255, 159, 207, 0.3);
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 15px rgba(255, 159, 207, 0.4);
 }
 
 hr{
@@ -111,7 +111,7 @@ td{
 }
 
 tr:hover td {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .back{
@@ -133,7 +133,7 @@ tr:hover td {
 
 .back:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    background:linear-gradient(135deg,#1a1a1a,#5e0047);
 }
 
 @media(max-width:480px){
@@ -151,7 +151,7 @@ tr:hover td {
     <div class="subtitle">View All Customers</div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search by name, contact, or GST..." onkeyup="filterTable()">
+        <input type="text" id="searchInput" placeholder="Search by name, contact, or GST..." oninput="filterTable()">
     </div>
 
     <hr>
@@ -187,12 +187,14 @@ import {
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+/* LOGIN CHECK */
 if(localStorage.getItem("loggedIn") !== "true"){
     window.location.href = "index.html";
 }
 
 let allCustomers = [];
 
+/* LOAD DATA */
 async function loadCustomers(){
     const tableBody = document.getElementById("customerTable");
     tableBody.innerHTML = "<tr><td colspan='7'>Loading customers from cloud...</td></tr>";
@@ -209,17 +211,18 @@ async function loadCustomers(){
         renderTable(allCustomers);
 
     } catch (error) {
-        console.error("Firebase Read Error:", error);
-        tableBody.innerHTML = `<tr><td colspan="7" style="color:red;">Error loading data.</td></tr>`;
+        console.error("Firebase Error:", error);
+        tableBody.innerHTML = `<tr><td colspan="7" style="color:#ff6b6b;">Error loading data.</td></tr>`;
     }
 }
 
+/* RENDER TABLE WITH SR. NO */
 function renderTable(data) {
     const tableBody = document.getElementById("customerTable");
     tableBody.innerHTML = "";
 
     if(data.length === 0){
-        tableBody.innerHTML = `<tr><td colspan="7">No customers found.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7">No matching customers found.</td></tr>`;
         return;
     }
 
@@ -227,7 +230,7 @@ function renderTable(data) {
         const row = `
             <tr>
                 <td style="color:#ff9fcf; font-weight:bold;">${index + 1}</td>
-                <td>${c.name || ""}</td>
+                <td style="text-align:left;">${c.name || ""}</td>
                 <td>${c.address1 || ""}</td>
                 <td>${c.address2 || ""}</td>
                 <td>${c.contact || ""}</td>
@@ -239,7 +242,7 @@ function renderTable(data) {
     });
 }
 
-/* ===== ACTIVE SEARCH FILTER ===== */
+/* ACTIVE SEARCH FILTER */
 window.filterTable = function() {
     const searchTerm = document.getElementById("searchInput").value.toLowerCase();
     const filteredData = allCustomers.filter(c => {
@@ -261,6 +264,8 @@ loadCustomers();
 
 </body>
 </html>
+
+
 
 
 
