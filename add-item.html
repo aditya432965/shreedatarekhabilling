@@ -124,13 +124,13 @@ button:active { transform: scale(0.96); }
 }
 
 .table-wrapper {
-  overflow-x: auto; /* Critical for mobile */
+  overflow-x: auto;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width: 700px; /* Keeps columns readable */
+  min-width: 850px; 
 }
 
 th, td{
@@ -148,13 +148,13 @@ th{
 
 /* ===== MOBILE ADAPTATION ===== */
 @media(max-width:768px){
-  .col-4 { grid-column: span 6; } /* 3-column items become 2-column */
+  .col-4 { grid-column: span 6; }
   .container { padding: 15px; }
 }
 
 @media(max-width:480px){
-  .col-6, .col-4 { grid-column: span 12; } /* All items become full width */
-  .buttons { grid-template-columns: 1fr; } /* Stack buttons */
+  .col-6, .col-4 { grid-column: span 12; }
+  .buttons { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -176,14 +176,19 @@ th{
     <input id="itemName" placeholder="e.g. Milk 1L">
   </div>
 
-  <div class="col-6">
+  <div class="col-12">
     <label>HSN Code</label>
-    <input id="hsn" placeholder="Optional">
+    <input id="hsn" placeholder="Optional HSN">
   </div>
 
   <div class="col-6">
-    <label>GST %</label>
-    <input type="number" id="gst" value="0">
+    <label>CGST %</label>
+    <input type="number" id="cgst" value="0">
+  </div>
+
+  <div class="col-6">
+    <label>SGST %</label>
+    <input type="number" id="sgst" value="0">
   </div>
 
   <div class="col-4">
@@ -283,7 +288,7 @@ function renderItems(){
                   <table>
                       <thead>
                           <tr>
-                              <th>Name</th><th>MRP</th><th>Sale</th><th>Pur.</th><th>GST%</th><th>Qty</th>
+                              <th>Name</th><th>MRP</th><th>Sale</th><th>Pur.</th><th>CGST%</th><th>SGST%</th><th>Qty</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -296,7 +301,8 @@ function renderItems(){
                     <td>${i.mrp || '0'}</td>
                     <td>${i.sale || '0'}</td>
                     <td>${i.purchase || '0'}</td>
-                    <td>${i.gst || '0'}%</td>
+                    <td>${i.cgst || '0'}%</td>
+                    <td>${i.sgst || '0'}%</td>
                     <td>${i.qty || '0'}</td>
                 </tr>`;
         });
@@ -308,6 +314,8 @@ function renderItems(){
 
 window.newItem = function(){
     document.querySelectorAll("input").forEach(i => i.value = "");
+    document.getElementById("cgst").value = "0";
+    document.getElementById("sgst").value = "0";
     const select = document.getElementById("groupSelect");
     if(select) select.value = "";
     document.getElementById("groupSelect").focus();
@@ -329,7 +337,8 @@ window.saveItem = async function(){
         mrp: document.getElementById("mrp").value.trim(),
         sale: document.getElementById("sale").value.trim(),
         purchase: document.getElementById("purchase").value.trim(),
-        gst: document.getElementById("gst").value.trim(),
+        cgst: document.getElementById("cgst").value.trim(),
+        sgst: document.getElementById("sgst").value.trim(),
         qty: document.getElementById("qty").value.trim(),
         createdAt: serverTimestamp()
     };
@@ -352,6 +361,8 @@ loadAllData();
 </script>
 </body>
 </html>
+
+
 
 
 
