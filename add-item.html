@@ -89,23 +89,15 @@ button{
   margin-top:35px;
 }
 
-.group{
-  margin-bottom:25px;
-  border:1px solid #ff9fc555;
-  border-radius:16px;
-  overflow:hidden;
-}
-
-.group-title{
-  background:#ff2f92;
-  padding:10px;
-  text-align:center;
-  font-weight:700;
+.group-section {
+  margin-bottom: 30px;
+  overflow-x: auto; /* Mobile scroll */
 }
 
 table{
   width:100%;
   border-collapse:collapse;
+  min-width: 600px; /* Ensures data is visible on mobile */
 }
 
 th,td{
@@ -126,6 +118,7 @@ td{
 /* ===== MOBILE ===== */
 @media(max-width:900px){
   .form{grid-template-columns:1fr;}
+  .container{padding: 15px;}
 }
 </style>
 </head>
@@ -138,8 +131,7 @@ td{
 
 <div class="form">
 
-  <div><label>Item Code</label><input id="itemCode"></div>
-  <div><label>Item Name</label><input id="itemName"></div>
+  <div style="grid-column: span 2;"><label>Item Name</label><input id="itemName"></div>
   <div><label>HSN Code</label><input id="hsn"></div>
 
   <div><label>MRP Rate</label><input type="number" id="mrp"></div>
@@ -168,7 +160,6 @@ td{
 </div>
 
 <script type="module">
-/* 1. FIREBASE IMPORTS */
 import { db } from './firebase-config.js';
 import { 
     collection, 
@@ -179,19 +170,15 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* ===== LOGIN CHECK (Keep Local) ===== */
 if(localStorage.getItem("loggedIn") !== "true"){
     window.location.href = "index.html";
 }
 
-/* ===== STATE MANAGEMENT ===== */
 let brandGroups = [];
 let items = [];
 
-/* ===== LOAD ALL DATA FROM CLOUD ===== */
 async function loadAllData() {
     try {
-        // 1. Fetch Brand Groups (to fill the dropdown)
         const groupSnap = await getDocs(collection(db, "brandGroups"));
         brandGroups = groupSnap.docs.map(doc => ({
             id: doc.id,
@@ -199,7 +186,6 @@ async function loadAllData() {
         }));
         loadGroupDropdown();
 
-        // 2. Fetch Items (to fill the table)
         const itemQuery = query(collection(db, "items"), orderBy("createdAt", "desc"));
         const itemSnap = await getDocs(itemQuery);
         items = itemSnap.docs.map(doc => ({
@@ -210,39 +196,34 @@ async function loadAllData() {
         renderItems();
     } catch (err) {
         console.error("Cloud Connection Error:", err);
-        alert("Failed to connect to Firebase. Check your internet.");
     }
 }
 
-/* ===== UI: LOAD DROPDOWN ===== */
 function loadGroupDropdown(){
     const sel = document.getElementById("groupSelect");
     if(!sel) return;
     sel.innerHTML = "<option value=''>Select Brand Group</option>";
-
     brandGroups.forEach(g => {
         sel.innerHTML += `<option value="${g.name}">${g.name}</option>`;
     });
 }
 
-/* ===== UI: RENDER ITEMS (GROUP-WISE) ===== */
 function renderItems(){
     const box = document.getElementById("groupBox");
     if(!box) return;
     box.innerHTML = "";
 
-    // We filter items based on the Brand Groups found in the cloud
     brandGroups.forEach(g => {
         const filteredItems = items.filter(i => i.group === g.name);
         if(filteredItems.length === 0) return;
 
         let tableHtml = `
-            <div class="group-section" style="margin-bottom: 30px;">
+            <div class="group-section">
                 <h3 style="background:#ff2f92; color:white; padding:8px; border-radius:8px 8px 0 0;">${g.name}</h3>
-                <table style="width:100%; border-collapse: collapse; background: rgba(255,255,255,0.05);">
+                <table>
                     <thead>
                         <tr style="border-bottom: 2px solid #ff2f92;">
-                            <th>Code</th><th>Name</th><th>Brand</th><th>MRP</th>
+                            <th>Name</th><th>Brand</th><th>MRP</th>
                             <th>Sale</th><th>Purchase</th><th>GST%</th><th>Qty</th>
                         </tr>
                     </thead>
@@ -252,7 +233,6 @@ function renderItems(){
         filteredItems.forEach(i => {
             tableHtml += `
                 <tr style="border-bottom: 1px solid rgba(255,159,197,0.3);">
-                    <td>${i.code}</td>
                     <td>${i.name}</td>
                     <td>${i.brand || '-'}</td>
                     <td>${i.mrp}</td>
@@ -268,36 +248,24 @@ function renderItems(){
     });
 }
 
-/* ===== WINDOW BRIDGE (FOR BUTTONS) ===== */
-
 window.newItem = function(){
     document.querySelectorAll("input").forEach(i => i.value = "");
     const select = document.getElementById("groupSelect");
     if(select) select.value = "";
-    document.getElementById("itemCode").focus();
+    document.getElementById("itemName").focus();
 };
 
 window.saveItem = async function(){
-    // Capture values
-    const code = document.getElementById("itemCode").value.trim();
     const name = document.getElementById("itemName").value.trim();
     const group = document.getElementById("groupSelect").value;
     const brand = document.getElementById("brand") ? document.getElementById("brand").value.trim() : "";
 
-    // Validation
-    if(!code || !name || !group){
-        alert("Please fill Code, Name, and Group.");
-        return;
-    }
-
-    // Cloud Duplicate Check
-    if(items.some(i => i.code === code)){
-        alert("This Item Code already exists!");
+    if(!name || !group){
+        alert("Please fill Item Name and Group.");
         return;
     }
 
     const itemData = {
-        code: code,
         name: name,
         brand: brand,
         group: group,
@@ -311,15 +279,12 @@ window.saveItem = async function(){
     };
 
     try {
-        // Save to Firebase
         await addDoc(collection(db, "items"), itemData);
         alert("Product saved to Cloud! ✅");
-        
-        // Refresh the list from cloud to ensure accuracy
         await loadAllData(); 
         window.newItem();
     } catch (e) {
-        alert("Error saving to Firebase: " + e.message);
+        alert("Error saving: " + e.message);
     }
 };
 
@@ -327,9 +292,9 @@ window.goBack = function(){
     window.location.href = "master-entry.html";
 };
 
-/* ===== INITIALIZE ===== */
 loadAllData();
-
 </script>
 </body>
 </html>
+
+
