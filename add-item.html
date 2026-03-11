@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <title>Item Master Entry</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:Segoe UI, Arial;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body{
@@ -18,28 +18,32 @@ body{
   background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
   display:flex;
   justify-content:center;
-  padding:20px;
+  padding:15px;
   color:white;
 }
 
 .container{
   width:100%;
   max-width:1200px;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.7);
+  backdrop-filter: blur(10px);
   border-radius:22px;
-  padding:25px;
+  padding:20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 h1{
   text-align:center;
   margin-bottom:20px;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
 }
 
-/* ===== FORM ===== */
+/* ===== FORM SEQUENCE ===== */
 .form{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
+  grid-template-columns: repeat(12, 1fr);
+  gap:12px;
 }
 
 .form div{
@@ -48,77 +52,109 @@ h1{
 }
 
 label{
-  font-size:13px;
+  font-size:12px;
   color:#ffb3d9;
-  margin-bottom:4px;
+  margin-bottom:5px;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 input, select{
-  padding:12px;
+  padding:14px;
   border:none;
   border-radius:12px;
   outline:none;
-  font-size:14px;
+  font-size:15px;
+  background: #fff;
+  color: #333;
 }
 
+/* Responsive Grid Logic */
+.col-12 { grid-column: span 12; }
+.col-6 { grid-column: span 6; }
+.col-4 { grid-column: span 4; }
+
+/* ===== BUTTONS ===== */
 .buttons{
-  grid-column:1 / -1;
+  grid-column: span 12;
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
-  gap:12px;
-  margin-top:10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap:10px;
+  margin-top:15px;
 }
 
 button{
-  padding:12px;
+  padding:14px;
   border:none;
   border-radius:14px;
-  font-size:15px;
-  font-weight:600;
+  font-size:14px;
+  font-weight:700;
   cursor:pointer;
   color:white;
+  transition: transform 0.2s, opacity 0.2s;
 }
 
-.add{background:#ff2f92;}
-.save{background:#4CAF50;}
-.cancel{background:#777;}
-.exit{background:#444;}
+button:active { transform: scale(0.96); }
 
-/* ===== GROUP VIEW ===== */
+.add{ background:#ff2f92; }
+.save{ background:#4CAF50; }
+.cancel{ background:#777; }
+.exit{ background:#444; }
+
+/* ===== DATA VIEW ===== */
 .group-box{
-  margin-top:35px;
+  margin-top:30px;
 }
 
 .group-section {
-  margin-bottom: 30px;
-  overflow-x: auto; /* Mobile scroll */
+  margin-bottom: 25px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 47, 146, 0.3);
+}
+
+.group-header {
+  background:#ff2f92;
+  color:white;
+  padding:12px;
+  font-weight:700;
+  font-size: 14px;
+  text-align: center;
+}
+
+.table-wrapper {
+  overflow-x: auto; /* Critical for mobile */
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width: 600px; /* Ensures data is visible on mobile */
+  min-width: 700px; /* Keeps columns readable */
 }
 
-th,td{
-  padding:10px;
-  border-bottom:1px solid rgba(255,255,255,.1);
+th, td{
+  padding:12px 8px;
+  border-bottom:1px solid rgba(255,255,255,.05);
   text-align:center;
   font-size:13px;
 }
 
 th{
-  background:rgba(0,0,0,.6);
+  background:rgba(0,0,0,.4);
+  color: #ffb3d9;
+  font-weight: 600;
 }
 
-td{
-  background:rgba(0,0,0,.35);
+/* ===== MOBILE ADAPTATION ===== */
+@media(max-width:768px){
+  .col-4 { grid-column: span 6; } /* 3-column items become 2-column */
+  .container { padding: 15px; }
 }
 
-/* ===== MOBILE ===== */
-@media(max-width:900px){
-  .form{grid-template-columns:1fr;}
-  .container{padding: 15px;}
+@media(max-width:480px){
+  .col-6, .col-4 { grid-column: span 12; } /* All items become full width */
+  .buttons { grid-template-columns: 1fr; } /* Stack buttons */
 }
 </style>
 </head>
@@ -130,29 +166,52 @@ td{
 <h1>Item Master Entry</h1>
 
 <div class="form">
-
-  <div style="grid-column: span 2;"><label>Item Name</label><input id="itemName"></div>
-  <div><label>HSN Code</label><input id="hsn"></div>
-
-  <div><label>MRP Rate</label><input type="number" id="mrp"></div>
-  <div><label>Sale Rate</label><input type="number" id="sale"></div>
-  <div><label>Purchase Rate</label><input type="number" id="purchase"></div>
-
-  <div><label>GST %</label><input type="number" id="gst"></div>
-  <div><label>Opening Qty</label><input type="number" id="qty"></div>
-
-  <div>
-    <label>Group Name</label>
+  <div class="col-12">
+    <label>Select Brand Group</label>
     <select id="groupSelect"></select>
+  </div>
+
+  <div class="col-12">
+    <label>Item Name</label>
+    <input id="itemName" placeholder="e.g. Milk 1L">
+  </div>
+
+  <div class="col-6">
+    <label>HSN Code</label>
+    <input id="hsn" placeholder="Optional">
+  </div>
+
+  <div class="col-6">
+    <label>GST %</label>
+    <input type="number" id="gst" value="0">
+  </div>
+
+  <div class="col-4">
+    <label>Purchase Rate</label>
+    <input type="number" id="purchase" placeholder="0.00">
+  </div>
+
+  <div class="col-4">
+    <label>Sale Rate</label>
+    <input type="number" id="sale" placeholder="0.00">
+  </div>
+
+  <div class="col-4">
+    <label>MRP Rate</label>
+    <input type="number" id="mrp" placeholder="0.00">
+  </div>
+
+  <div class="col-12">
+    <label>Opening Stock Quantity</label>
+    <input type="number" id="qty" placeholder="0">
   </div>
 
   <div class="buttons">
     <button class="add" onclick="newItem()">Add New</button>
-    <button class="save" onclick="saveItem()">Save</button>
-    <button class="cancel" onclick="newItem()">Cancel</button>
+    <button class="save" onclick="saveItem()">Save Product</button>
+    <button class="cancel" onclick="newItem()">Clear Form</button>
     <button class="exit" onclick="goBack()">Exit</button>
   </div>
-
 </div>
 
 <div class="group-box" id="groupBox"></div>
@@ -202,7 +261,7 @@ async function loadAllData() {
 function loadGroupDropdown(){
     const sel = document.getElementById("groupSelect");
     if(!sel) return;
-    sel.innerHTML = "<option value=''>Select Brand Group</option>";
+    sel.innerHTML = "<option value=''>-- Select Group --</option>";
     brandGroups.forEach(g => {
         sel.innerHTML += `<option value="${g.name}">${g.name}</option>`;
     });
@@ -219,31 +278,30 @@ function renderItems(){
 
         let tableHtml = `
             <div class="group-section">
-                <h3 style="background:#ff2f92; color:white; padding:8px; border-radius:8px 8px 0 0;">${g.name}</h3>
-                <table>
-                    <thead>
-                        <tr style="border-bottom: 2px solid #ff2f92;">
-                            <th>Name</th><th>Brand</th><th>MRP</th>
-                            <th>Sale</th><th>Purchase</th><th>GST%</th><th>Qty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="group-header">${g.name}</div>
+                <div class="table-wrapper">
+                  <table>
+                      <thead>
+                          <tr>
+                              <th>Name</th><th>MRP</th><th>Sale</th><th>Pur.</th><th>GST%</th><th>Qty</th>
+                          </tr>
+                      </thead>
+                      <tbody>
         `;
 
         filteredItems.forEach(i => {
             tableHtml += `
-                <tr style="border-bottom: 1px solid rgba(255,159,197,0.3);">
-                    <td>${i.name}</td>
-                    <td>${i.brand || '-'}</td>
-                    <td>${i.mrp}</td>
-                    <td>${i.sale}</td>
-                    <td>${i.purchase}</td>
-                    <td>${i.gst}</td>
-                    <td>${i.qty}</td>
+                <tr>
+                    <td style="text-align:left; font-weight:600;">${i.name}</td>
+                    <td>${i.mrp || '0'}</td>
+                    <td>${i.sale || '0'}</td>
+                    <td>${i.purchase || '0'}</td>
+                    <td>${i.gst || '0'}%</td>
+                    <td>${i.qty || '0'}</td>
                 </tr>`;
         });
 
-        tableHtml += `</tbody></table></div>`;
+        tableHtml += `</tbody></table></div></div>`;
         box.innerHTML += tableHtml;
     });
 }
@@ -252,22 +310,20 @@ window.newItem = function(){
     document.querySelectorAll("input").forEach(i => i.value = "");
     const select = document.getElementById("groupSelect");
     if(select) select.value = "";
-    document.getElementById("itemName").focus();
+    document.getElementById("groupSelect").focus();
 };
 
 window.saveItem = async function(){
     const name = document.getElementById("itemName").value.trim();
     const group = document.getElementById("groupSelect").value;
-    const brand = document.getElementById("brand") ? document.getElementById("brand").value.trim() : "";
 
     if(!name || !group){
-        alert("Please fill Item Name and Group.");
+        alert("Please select a Group and enter Item Name.");
         return;
     }
 
     const itemData = {
         name: name,
-        brand: brand,
         group: group,
         hsn: document.getElementById("hsn").value.trim(),
         mrp: document.getElementById("mrp").value.trim(),
@@ -280,11 +336,11 @@ window.saveItem = async function(){
 
     try {
         await addDoc(collection(db, "items"), itemData);
-        alert("Product saved to Cloud! ✅");
+        alert("Saved Successfully! ✅");
         await loadAllData(); 
         window.newItem();
     } catch (e) {
-        alert("Error saving: " + e.message);
+        alert("Error: " + e.message);
     }
 };
 
@@ -296,5 +352,7 @@ loadAllData();
 </script>
 </body>
 </html>
+
+
 
 
