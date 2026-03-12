@@ -2,120 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sale Entry | Shree Datarekha Enterprises</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Add New Sale | Shree Datarekha Enterprises</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --primary: #ff2f92;
-            --secondary: #2b000f;
+            --primary: #007ea7;
+            --secondary: #001f3f;
             --accent: #10b981;
             --bg: #0b0f19;
-            --card: rgba(255, 255, 255, 0.07);
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #1a020b, #2b000f, #0b0f19); 
-            color: white; 
-            padding: 10px; 
-            min-height: 100vh; 
-        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: white; padding: 10px; min-height: 100vh; }
 
-        /* HEADER */
-        .header-section { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 20px; 
-            background: var(--card); 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,47,146,0.3);
-            margin-bottom: 15px;
-            backdrop-filter: blur(10px);
-        }
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
         
-        .bill-badge { background: var(--primary); padding: 5px 15px; border-radius: 50px; font-weight: bold; }
-
-        /* INPUT FIELDS */
-        .party-info { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 15px; 
-            margin-bottom: 20px; 
-        }
+        .party-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .input-group { display: flex; flex-direction: column; position: relative; }
-        .input-group label { font-size: 11px; color: #ffb3d9; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .input-group label { font-size: 12px; color: #a0d8ef; margin-bottom: 5px; }
+        select, input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; transition: 0.3s; width: 100%; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 8px rgba(0,126,167,0.4); }
         
-        select, input { 
-            padding: 14px; 
-            border-radius: 12px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            background: rgba(0,0,0,0.3); 
-            color: white; 
-            outline: none; 
-            font-size: 15px;
-        }
-        input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(255,47,146,0.2); }
+        .table-container { overflow-x: auto; background: #1e293b; border-radius: 12px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        th { background: #334155; padding: 12px; font-size: 13px; color: #a0d8ef; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #334155; }
+        .row-input { width: 100%; background: transparent; border: none; color: white; }
+        .row-input:focus { background: rgba(255,255,255,0.05); }
 
-        /* TABLE STYLING */
-        .table-container { 
-            overflow-x: auto; 
-            background: var(--card); 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 15px; 
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: rgba(255,47,146,0.1); padding: 15px; font-size: 12px; color: #ffb3d9; text-transform: uppercase; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .row-input { width: 100%; background: transparent; border: none; color: white; text-align: center; font-size: 14px; }
-        .row-input:focus { background: rgba(255,255,255,0.05); border-radius: 5px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        .summary-box { border-bottom: 1px solid #334155; padding-bottom: 5px; }
+        .summary-box span { display: block; font-size: 11px; color: #94a3b8; }
+        .summary-box strong { font-size: 18px; color: #10b981; }
 
-        /* SUMMARY BOX */
-        .summary-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-            gap: 10px; 
-            background: rgba(0,0,0,0.4); 
-            padding: 20px; 
-            border-radius: 20px; 
-            border: 1px solid var(--primary);
-            margin-bottom: 80px; /* Space for fixed actions */
-        }
-        .summary-box span { display: block; font-size: 10px; color: #ffb3d9; text-transform: uppercase; }
-        .summary-box strong { font-size: 20px; color: white; }
-        .net-highlight { color: var(--accent) !important; }
-
-        /* FIXED ACTIONS BAR */
-        .actions-bar {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: rgba(11, 15, 25, 0.95);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255,47,146,0.3);
-            z-index: 1000;
-        }
-
-        button { 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-weight: 700; 
-            transition: 0.3s; 
-            font-size: 14px;
-        }
-        .btn-add-row { background: var(--primary); color: white; margin-bottom: 15px; width: 100%; }
-        .btn-save { background: var(--accent); color: white; flex: 1; min-width: 120px; }
+        .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; align-items: flex-end; }
+        button { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-save { background: #10b981; color: white; }
+        .btn-new { background: #007ea7; color: white; }
         .btn-print { background: #f59e0b; color: white; }
-        .btn-back { background: #444; color: white; text-decoration: none; padding: 12px 20px; border-radius: 12px; }
-
-        /* SEARCH SUGGESTION LISTS */
-        datalist { background: #1e293b; color: white; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: inline-block; }
+        
+        /* Search Enhancements */
+        .search-container { position: relative; }
+        .search-results { position: absolute; top: 100%; left: 0; right: 0; background: #2d3748; border: 1px solid #4a5568; z-index: 100; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; display: none; }
+        .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #4a5568; }
+        .search-item:hover { background: var(--primary); }
     </style>
 </head>
 <body>
@@ -125,28 +56,31 @@
 
 <div class="header-section">
     <div>
-        <h2 style="color: var(--primary);">New Sale</h2>
-        <select id="taxMode" onchange="calculateFinal()" style="margin-top:5px; padding: 5px; font-size: 12px;">
-            <option value="WITH_GST">GST Invoice</option>
-            <option value="WITHOUT_GST">Cash Memo (No GST)</option>
-        </select>
+        <h2 style="color: var(--primary);">Sale Entry</h2>
+        <div style="margin-top: 10px;">
+            <label style="font-size: 12px; color: #a0d8ef;">Tax Billing Mode:</label>
+            <select id="taxMode" onchange="calculateFinal()" style="width: auto; padding: 5px;">
+                <option value="WITH_GST">With GST (Tax Invoice)</option>
+                <option value="WITHOUT_GST">Without GST (Cash Memo)</option>
+            </select>
+        </div>
     </div>
     <div style="text-align: right;">
-        <label style="font-size: 10px; color:#ffb3d9;">BILL NO</label>
-        <div class="bill-badge" id="billNo">S-Loading...</div>
+        <span style="color: #a0d8ef;">Bill Number</span>
+        <h2 id="billNo">1</h2>
     </div>
 </div>
 
 <div class="party-info">
     <div class="input-group">
-        <label>Search Customer</label>
-        <input type="text" id="partySearch" list="customerList" placeholder="Type name..." oninput="updatePartyDetails()">
+        <label>Search Customer Name</label>
+        <input type="text" id="partySearch" list="customerList" placeholder="Type name to search..." oninput="window.updatePartyDetails()">
     </div>
     <div class="input-group">
-        <label>Customer Details</label>
-        <input type="text" id="partyMeta" readonly placeholder="GST / Mobile / Address">
+        <label>Customer Details (GST/Mob/Address)</label>
+        <input type="text" id="partyMeta" readonly placeholder="Details will auto-appear">
     </div>
-    <div class="input-group" style="max-width: 200px;">
+    <div class="input-group">
         <label>Date</label>
         <input type="date" id="saleDate">
     </div>
@@ -156,41 +90,43 @@
     <table id="saleTable">
         <thead>
             <tr>
-                <th width="40">#</th>
-                <th width="350" style="text-align:left;">Item Name & Group</th>
+                <th width="40">Sr.</th>
+                <th width="150">Group</th>
+                <th width="300">Item Name (Active Search)</th>
                 <th>MRP</th>
-                <th>Sale Rate</th>
+                <th>Rate</th>
                 <th>Disc%</th>
                 <th>Qty</th>
-                <th>Free</th>
                 <th>CGST%</th>
                 <th>SGST%</th>
-                <th>Amount</th>
+                <th>Net Amt</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
     </table>
 </div>
 
-<button class="btn-add-row" onclick="addRow()">+ Add Next Item Row</button>
+<button onclick="addRow()" style="background:#334155; color:white; margin-bottom:10px; padding: 10px 20px; border-radius: 6px; cursor: pointer; border: 1px solid #4a5568;">+ Add Next Item</button>
 
 <div class="summary-grid">
     <div class="summary-box"><span>Gross Total</span><strong id="sumTotalSale">0.00</strong></div>
-    <div class="summary-box"><span>Discount</span><strong id="sumTotalDisc">0.00</strong></div>
-    <div id="cgstBox" class="summary-box"><span>Total CGST</span><strong id="sumCGST">0.00</strong></div>
-    <div id="sgstBox" class="summary-box"><span>Total SGST</span><strong id="sumSGST">0.00</strong></div>
-    <div class="summary-box"><span>Net Payable</span><strong id="sumNet" class="net-highlight">0.00</strong></div>
-    <div class="summary-box">
-        <span>Paid Amt</span>
-        <input type="number" id="paidAmt" value="0" oninput="calculateFinal()" style="padding: 2px; width: 80px; height: 30px; margin-top:5px;">
-    </div>
-    <div class="summary-box"><span>Balance</span><strong id="sumBalance" style="color: #ff6b6b;">0.00</strong></div>
+    <div class="summary-box"><span>Total Disc</span><strong id="sumTotalDisc">0.00</strong></div>
+    <div id="cgstBox" class="summary-box"><span>CGST</span><strong id="sumCGST">0.00</strong></div>
+    <div id="sgstBox" class="summary-box"><span>SGST</span><strong id="sumSGST">0.00</strong></div>
+    <div class="summary-box"><span>Net Total</span><strong id="sumNet">0.00</strong></div>
+    <div class="summary-box"><span>Balance</span><strong id="sumBalance">0.00</strong></div>
 </div>
 
-<div class="actions-bar">
+<div class="actions">
     <a href="sale-entry.html" class="btn-back">Back</a>
+    <div class="input-group" style="width: 150px;">
+        <label>Paid Amount</label>
+        <input type="number" id="paidAmt" placeholder="0.00" oninput="calculateFinal()">
+    </div>
+    <button class="btn-new" onclick="location.reload()">New</button>
+    <button class="btn-save" onclick="saveSale()">Save Cloud</button>
     <button class="btn-print" onclick="window.preparePrint()">Print Bill</button>
-    <button class="btn-save" onclick="saveSale()">Save to Cloud</button>
+    <button class="btn-whatsapp" onclick="sendWhatsApp()">Send Message</button>
 </div>
 
 <script type="module">
@@ -204,8 +140,8 @@ async function init() {
     try {
         // Fetch Customers
         const cSnap = await getDocs(collection(db, "customers"));
-        const cList = document.getElementById('customerList');
         customers = cSnap.docs.map(d => ({id: d.id, ...d.data()}));
+        const cList = document.getElementById('customerList');
         customers.forEach(c => {
             let opt = document.createElement('option');
             opt.value = c.name;
@@ -214,23 +150,22 @@ async function init() {
 
         // Fetch Items
         const iSnap = await getDocs(collection(db, "items"));
-        const iList = document.getElementById('itemList');
         items = iSnap.docs.map(d => ({id: d.id, ...d.data()}));
+        const iList = document.getElementById('itemList');
         items.forEach(item => {
             let opt = document.createElement('option');
-            // Showing Brand Group + Item Name for better search
-            opt.value = `${item.group || 'Gen'} - ${item.name}`;
+            opt.value = item.name;
             iList.appendChild(opt);
         });
 
-        // Generate Bill No
+        // Natural Bill Numbering (1, 2, 3...)
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"), limit(1));
         const lastS = await getDocs(q);
         if (!lastS.empty) {
-            const lastNum = parseInt(lastS.docs[0].data().billNo.split('-')[1]);
-            document.getElementById('billNo').innerText = "S-" + (lastNum + 1);
+            const lastNum = parseInt(lastS.docs[0].data().billNo) || 0;
+            document.getElementById('billNo').innerText = lastNum + 1;
         } else {
-            document.getElementById('billNo').innerText = "S-1001";
+            document.getElementById('billNo').innerText = "1";
         }
         
         document.getElementById('saleDate').valueAsDate = new Date();
@@ -255,28 +190,28 @@ window.addRow = function() {
     const row = tbody.insertRow();
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)" placeholder="Search Name or Brand..." style="text-align:left;"></td>
+        <td><input type="text" class="row-input i-group" readonly placeholder="-"></td>
+        <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)" placeholder="Search Product..."></td>
         <td><input type="number" class="row-input mrp" value="0" readonly></td>
         <td><input type="number" class="row-input rate" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input disc" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input qty" value="1" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input free" value="0"></td>
         <td><input type="number" class="row-input cgst" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input sgst" value="0" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input net" value="0.00" readonly style="font-weight:bold; color:var(--accent);"></td>
+        <td><input type="number" class="row-input net" value="0.00" readonly style="font-weight:bold; color:var(--accent)"></td>
     `;
 };
 
 window.autoFillByName = function(input) {
     const row = input.closest('tr');
-    const val = input.value;
-    // Matching logic for "Group - Name" format
-    const item = items.find(i => `${i.group || 'Gen'} - ${i.name}` === val);
+    const item = items.find(i => i.name === input.value);
     if(item) {
+        row.querySelector('.i-group').value = item.group || 'General';
         row.querySelector('.mrp').value = item.mrp || 0;
         row.querySelector('.rate').value = item.sale || 0;
-        row.querySelector('.cgst').value = item.cgst || (parseFloat(item.gst)/2) || 0;
-        row.querySelector('.sgst').value = item.sgst || (parseFloat(item.gst)/2) || 0;
+        const hGst = (parseFloat(item.gst) / 2) || 0;
+        row.querySelector('.cgst').value = hGst;
+        row.querySelector('.sgst').value = hGst;
         window.calculateFinal();
     }
 };
@@ -286,6 +221,14 @@ window.calc = function(el) { window.calculateFinal(); };
 window.calculateFinal = function() {
     let tS = 0, tD = 0, tC = 0, tSg = 0, nG = 0;
     const taxMode = document.getElementById('taxMode').value;
+
+    if(taxMode === "WITHOUT_GST") {
+        document.getElementById('cgstBox').style.display = 'none';
+        document.getElementById('sgstBox').style.display = 'none';
+    } else {
+        document.getElementById('cgstBox').style.display = 'block';
+        document.getElementById('sgstBox').style.display = 'block';
+    }
 
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
@@ -317,15 +260,15 @@ window.calculateFinal = function() {
 };
 
 window.saveSale = async function() {
-    const pName = document.getElementById('partySearch').value;
-    if(!pName) return alert("Please search and select a Customer!");
+    const partyName = document.getElementById('partySearch').value;
+    if(!partyName) return alert("Please select a Customer!");
 
     const billItems = [];
     document.querySelectorAll('#tableBody tr').forEach(r => {
-        const name = r.querySelector('.i-name').value;
-        if(name) {
+        if(r.querySelector('.i-name').value) {
             billItems.push({
-                name: name,
+                name: r.querySelector('.i-name').value,
+                group: r.querySelector('.i-group').value,
                 qty: r.querySelector('.qty').value,
                 rate: r.querySelector('.rate').value,
                 net: r.querySelector('.net').value
@@ -333,22 +276,20 @@ window.saveSale = async function() {
         }
     });
 
-    if(billItems.length === 0) return alert("Add at least one item!");
-
     const saleData = {
         billNo: document.getElementById('billNo').innerText,
-        customerName: pName,
+        customerName: partyName,
         custMeta: document.getElementById('partyMeta').value,
         date: document.getElementById('saleDate').value,
-        netTotal: parseFloat(document.getElementById('sumNet').innerText),
-        paid: parseFloat(document.getElementById('paidAmt').value),
+        netTotal: parseFloat(document.getElementById('sumNet').innerText) || 0, 
+        paid: parseFloat(document.getElementById('paidAmt').value) || 0, 
         items: billItems,
         createdAt: serverTimestamp()
     };
 
     try {
         await addDoc(collection(db, "sales"), saleData);
-        alert("Success! Bill Saved Successfully.");
+        alert("Bill Saved Successfully!");
         location.reload();
     } catch (e) { alert("Error: " + e.message); }
 };
@@ -357,5 +298,7 @@ init();
 </script>
 </body>
 </html>
+
+
 
 
