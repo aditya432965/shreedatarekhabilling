@@ -14,15 +14,19 @@
         .p-table { width: 100%; border-collapse: collapse; }
         .p-table th, .p-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 10px; }
         .p-footer { display: flex; border-top: 1px solid black; }
-        .p-foot-left { width: 35%; padding: 8px; border-right: 1px solid black; position: relative; }
-        .p-foot-mid { width: 25%; padding: 8px; border-right: 1px solid black; text-align: center; }
+        
+        /* Removed border-right to eliminate the left line of the QR section */
+        .p-foot-left { width: 35%; padding: 8px; position: relative; } 
+        
+        /* Removed border-right to eliminate the right line of the QR section */
+        .p-foot-mid { width: 25%; padding: 8px; text-align: center; } 
+        
         .p-qr-img { width: 85px; height: 85px; object-fit: contain; }
         .p-foot-right { width: 40%; }
         .p-bank { border: 1px solid black; padding: 4px; font-size: 10px; margin-bottom: 5px; }
         
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
         .p-totals-tbl td { border: 1px solid black; padding: 5px; text-align: right; font-size: 11px; }
-        /* Removed the left border of the Totals table labels as requested */
         .p-totals-tbl td:first-child { border-left: none; } 
         
         .p-words { font-size: 10px; text-transform: uppercase; }
@@ -69,7 +73,8 @@
                 <tr>
                     <th width="25">Sr.</th>
                     <th>Item Name</th>
-                    <th width="35">HSN</th> <th>Qty</th>
+                    <th width="35">HSN</th>
+                    <th>Qty</th>
                     <th>Free</th>
                     <th>MRP</th>
                     <th>Rate</th>
@@ -99,7 +104,7 @@
                 </div>
             </div>
             <div class="p-foot-mid">
-                <div style="border: 1px solid black; width: 85px; height: 85px; margin: auto; display: flex; align-items: center; justify-content: center;">
+                <div style="border: none; width: 85px; height: 85px; margin: auto; display: flex; align-items: center; justify-content: center;">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
                 </div>
                 <p style="font-size: 9px; margin-top: 5px;">Scan to Pay</p>
@@ -170,7 +175,6 @@
             document.getElementById('p-invoice-type').innerText = isCashMemo ? "CASH MEMO" : "TAX INVOICE";
             document.getElementById('p-billno').innerText = data.billNo;
             
-            // Format Date as dd/mm/yy
             if(data.date) {
                 const dateObj = new Date(data.date);
                 const dd = String(dateObj.getDate()).padStart(2, '0');
@@ -181,52 +185,67 @@
 
             document.getElementById('p-custname').innerText = data.custName;
             
-            // Details one-by-one in line
             if(data.custMeta) {
                 document.getElementById('p-custmeta').innerHTML = data.custMeta.split('|').map(item => item.trim()).join('<br>');
             }
 
             let rows = "";
+            let recalculateNetTotal = 0;
+            let recalculateCGST = 0;
+            let recalculateSGST = 0;
+
             data.items.forEach((item, i) => {
                 const qty = parseFloat(item.qty) || 0;
                 const rate = parseFloat(item.rate) || 0;
                 const discP = parseFloat(item.disc) || 0;
                 const taxableValue = (qty * rate) - ((qty * rate) * (discP / 100));
                 
+                // Force calculate tax regardless of Cash Memo or Tax Invoice mode
                 const cgstRate = parseFloat(item.cgst) || 0;
                 const sgstRate = parseFloat(item.sgst) || 0;
-                const cgstAmt = (taxableValue * (cgstRate / 100)).toFixed(2);
-                const sgstAmt = (taxableValue * (sgstRate / 100)).toFixed(2);
+                const cgstAmt = taxableValue * (cgstRate / 100);
+                const sgstAmt = taxableValue * (sgstRate / 100);
+
+                recalculateCGST += cgstAmt;
+                recalculateSGST += sgstAmt;
+
+                // Force the row net to include tax
+                const rowNet = (taxableValue + cgstAmt + sgstAmt).toFixed(2);
+                recalculateNetTotal += (taxableValue + cgstAmt + sgstAmt);
 
                 rows += `<tr>
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
                     <td>9109100</td>
                     <td>${item.qty}</td>
-                    <td>${item.free}</td>
+                    <td>${item.free || 0}</td>
                     <td>${item.mrp}</td>
                     <td>${item.rate}</td>
                     <td>${item.disc}%</td>
                     <td class="tax-col">${cgstRate}%</td>
-                    <td class="tax-col">${cgstAmt}</td>
+                    <td class="tax-col">${cgstAmt.toFixed(2)}</td>
                     <td class="tax-col">${sgstRate}%</td>
-                    <td class="tax-col">${sgstAmt}</td>
-                    <td style="text-align: right; padding-right: 5px;">${item.net}</td>
+                    <td class="tax-col">${sgstAmt.toFixed(2)}</td>
+                    <td style="text-align: right; padding-right: 5px;">${rowNet}</td>
                 </tr>`;
             });
 
             document.getElementById('p-items-body').innerHTML = rows;
             document.getElementById('p-sum-total').innerText = data.summary.gross;
             document.getElementById('p-sum-disc').innerText = data.summary.disc;
-            document.getElementById('p-sum-cgst').innerText = data.summary.cgst;
-            document.getElementById('p-sum-sgst').innerText = data.summary.sgst;
-            document.getElementById('p-sum-net').innerText = data.summary.net;
-            document.getElementById('p-amount-words').innerText = amountToWords(data.summary.net);
+            
+            // Set calculated values
+            const finalRoundedNet = Math.round(recalculateNetTotal);
+            document.getElementById('p-sum-cgst').innerText = recalculateCGST.toFixed(2);
+            document.getElementById('p-sum-sgst').innerText = recalculateSGST.toFixed(2);
+            document.getElementById('p-sum-net').innerText = finalRoundedNet.toFixed(2);
+            document.getElementById('p-amount-words').innerText = amountToWords(finalRoundedNet);
 
             setTimeout(() => { window.print(); }, 500);
         };
     </script>
 </body>
 </html>
+
 
 
