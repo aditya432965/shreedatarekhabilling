@@ -15,26 +15,26 @@
         .p-table th, .p-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 10px; }
         .p-footer { display: flex; border-top: 1px solid black; }
         
-        /* Removed border-right to eliminate the left line of the QR section */
         .p-foot-left { width: 35%; padding: 8px; position: relative; } 
-        
-        /* Removed border-right to eliminate the right line of the QR section */
         .p-foot-mid { width: 25%; padding: 8px; text-align: center; } 
-        
         .p-qr-img { width: 85px; height: 85px; object-fit: contain; }
         .p-foot-right { width: 40%; }
+        
         .p-bank { border: 1px solid black; padding: 4px; font-size: 10px; margin-bottom: 5px; }
         
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
         .p-totals-tbl td { border: 1px solid black; padding: 5px; text-align: right; font-size: 11px; }
-        .p-totals-tbl td:first-child { border-left: none; } 
+        
+        /* Completes the box for the totals section */
+        .p-totals-tbl td:first-child { border-left: 1px solid black; } 
         
         .p-words { font-size: 10px; text-transform: uppercase; }
         
-        /* Hidden classes for Cash Memo mode */
-        .tax-col { display: table-cell; }
-        .tax-row { display: table-row; }
-        body.cash-memo .tax-col, body.cash-memo .tax-row { display: none; }
+        /* GST Visibility Logic */
+        .tax-col { display: none; }
+        .tax-row { display: none; }
+        body.show-gst .tax-col { display: table-cell; }
+        body.show-gst .tax-row { display: table-row; }
     </style>
 </head>
 <body>
@@ -135,7 +135,7 @@
             words[18] = 'Eighteen'; words[19] = 'Nineteen'; words[20] = 'Twenty'; words[30] = 'Thirty';
             words[40] = 'Forty'; words[50] = 'Fifty'; words[60] = 'Sixty'; words[70] = 'Seventy';
             words[80] = 'Eighty'; words[90] = 'Ninety';
-            amount = amount.toString().split(".")[0];
+            amount = Math.floor(amount).toString();
             var n_length = amount.length;
             var words_string = "";
             if (n_length <= 9) {
@@ -167,12 +167,17 @@
 
         window.onload = function() {
             const data = JSON.parse(localStorage.getItem("lastBill"));
-            if(!data) return alert("No Bill Data Found!");
+            if(!data) return;
 
-            const isCashMemo = data.taxMode !== "WITH_GST";
-            if(isCashMemo) document.body.classList.add('cash-memo');
+            // CORRECTED GST VISIBILITY LOGIC
+            if(data.taxMode === "WITH_GST") {
+                document.body.classList.add('show-gst');
+                document.getElementById('p-invoice-type').innerText = "TAX INVOICE";
+            } else {
+                document.body.classList.remove('show-gst');
+                document.getElementById('p-invoice-type').innerText = "CASH MEMO";
+            }
 
-            document.getElementById('p-invoice-type').innerText = isCashMemo ? "CASH MEMO" : "TAX INVOICE";
             document.getElementById('p-billno').innerText = data.billNo;
             
             if(data.date) {
@@ -184,7 +189,6 @@
             }
 
             document.getElementById('p-custname').innerText = data.custName;
-            
             if(data.custMeta) {
                 document.getElementById('p-custmeta').innerHTML = data.custMeta.split('|').map(item => item.trim()).join('<br>');
             }
@@ -200,7 +204,6 @@
                 const discP = parseFloat(item.disc) || 0;
                 const taxableValue = (qty * rate) - ((qty * rate) * (discP / 100));
                 
-                // Force calculate tax regardless of Cash Memo or Tax Invoice mode
                 const cgstRate = parseFloat(item.cgst) || 0;
                 const sgstRate = parseFloat(item.sgst) || 0;
                 const cgstAmt = taxableValue * (cgstRate / 100);
@@ -208,15 +211,13 @@
 
                 recalculateCGST += cgstAmt;
                 recalculateSGST += sgstAmt;
-
-                // Force the row net to include tax
                 const rowNet = (taxableValue + cgstAmt + sgstAmt).toFixed(2);
-                recalculateNetTotal += (taxableValue + cgstAmt + sgstAmt);
+                recalculateNetTotal += parseFloat(rowNet);
 
                 rows += `<tr>
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
-                    <td>9109100</td>
+                    <td>9109</td>
                     <td>${item.qty}</td>
                     <td>${item.free || 0}</td>
                     <td>${item.mrp}</td>
@@ -233,19 +234,19 @@
             document.getElementById('p-items-body').innerHTML = rows;
             document.getElementById('p-sum-total').innerText = data.summary.gross;
             document.getElementById('p-sum-disc').innerText = data.summary.disc;
-            
-            // Set calculated values
-            const finalRoundedNet = Math.round(recalculateNetTotal);
             document.getElementById('p-sum-cgst').innerText = recalculateCGST.toFixed(2);
             document.getElementById('p-sum-sgst').innerText = recalculateSGST.toFixed(2);
-            document.getElementById('p-sum-net').innerText = finalRoundedNet.toFixed(2);
-            document.getElementById('p-amount-words').innerText = amountToWords(finalRoundedNet);
+            
+            const finalNet = Math.round(recalculateNetTotal);
+            document.getElementById('p-sum-net').innerText = finalNet.toFixed(2);
+            document.getElementById('p-amount-words').innerText = amountToWords(finalNet);
 
             setTimeout(() => { window.print(); }, 500);
         };
     </script>
 </body>
 </html>
+
 
 
 
