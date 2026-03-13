@@ -16,7 +16,6 @@
 
         .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
         
-        /* Customer Details in One Line */
         .party-info { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .input-group { flex: 1; display: flex; flex-direction: column; min-width: 250px; }
         
@@ -42,11 +41,13 @@
         .btn-print { background: #f59e0b; color: white; }
         .btn-whatsapp { background: #25D366; color: white; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; }
+
+        /* FIXED: Tax visibility classes */
+        .tax-col { display: none; }
+        body.show-gst .tax-col { display: table-cell; }
     </style>
 </head>
-<body>
-
-<datalist id="customerList"></datalist>
+<body class="show-gst"> <datalist id="customerList"></datalist>
 <datalist id="itemList"></datalist>
 
 <div class="header-section">
@@ -54,7 +55,7 @@
         <h2 style="color: var(--primary);">Sale Entry</h2>
         <div style="margin-top: 10px;">
             <label style="font-size: 12px; color: #a0d8ef;">Tax Mode:</label>
-            <select id="taxMode" onchange="calculateFinal()" style="width: auto; padding: 5px; height: 30px;">
+            <select id="taxMode" onchange="window.handleTaxModeChange()" style="width: auto; padding: 5px; height: 30px;">
                 <option value="WITH_GST">Tax Invoice (GST)</option>
                 <option value="WITHOUT_GST">Cash Memo (Non-GST)</option>
             </select>
@@ -72,7 +73,7 @@
         <input type="text" id="partySearch" list="customerList" placeholder="Search customer..." oninput="window.updatePartyDetails()">
     </div>
     <div class="input-group" style="flex: 2;">
-        <label>Customer Details (GST/Mobile/Address)</label>
+        <label>Customer Details (GST | Mobile | Address)</label>
         <input type="text" id="partyMeta" readonly placeholder="Auto-fed details">
     </div>
     <div class="input-group" style="flex: 0.5; min-width: 150px;">
@@ -86,13 +87,13 @@
         <thead>
             <tr>
                 <th width="50">Sr.</th>
-                <th>Item Name (Active Search)</th>
+                <th>Item Name</th>
                 <th width="100">MRP</th>
                 <th width="100">Rate</th>
                 <th width="80">Disc%</th>
                 <th width="80">Qty</th>
-                <th width="80">CGST%</th>
-                <th width="80">SGST%</th>
+                <th class="tax-col" width="80">CGST%</th>
+                <th class="tax-col" width="80">SGST%</th>
                 <th width="120">Net Amount</th>
             </tr>
         </thead>
@@ -150,13 +151,11 @@ async function init() {
             iList.appendChild(opt);
         });
 
-        // Bill numbering logic
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"), limit(1));
         const lastS = await getDocs(q);
         if (!lastS.empty) {
             const lastVal = lastS.docs[0].data().billNo;
-            const lastNum = parseInt(lastVal) || 0;
-            document.getElementById('billNo').innerText = lastNum + 1;
+            document.getElementById('billNo').innerText = (parseInt(lastVal) || 0) + 1;
         } else {
             document.getElementById('billNo').innerText = "1";
         }
@@ -166,12 +165,25 @@ async function init() {
     } catch (e) { console.error("Init Error:", e); }
 }
 
+// FIXED: Improved mobile and metadata visibility
 window.updatePartyDetails = function() {
     const val = document.getElementById('partySearch').value;
     const c = customers.find(x => x.name === val);
     if(c) {
-        document.getElementById('partyMeta').value = `${c.gst || 'URD'} | Mob: ${c.mobile || 'NA'} | ${c.address1 || ''}`;
+        const mobile = c.mobile || c.phone || 'NA'; // Fallback check for field naming
+        const address = c.address1 || c.address || '';
+        document.getElementById('partyMeta').value = `${c.gst || 'URD'} | Mob: ${mobile} | ${address}`;
     }
+};
+
+window.handleTaxModeChange = function() {
+    const mode = document.getElementById('taxMode').value;
+    if(mode === "WITH_GST") {
+        document.body.classList.add('show-gst');
+    } else {
+        document.body.classList.remove('show-gst');
+    }
+    window.calculateFinal();
 };
 
 window.addRow = function() {
@@ -180,13 +192,13 @@ window.addRow = function() {
     const row = tbody.insertRow();
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)" placeholder="Type product name..."></td>
+        <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)" placeholder="Type item..."></td>
         <td><input type="number" class="row-input mrp" value="0" readonly></td>
         <td><input type="number" class="row-input rate" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input disc" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input qty" value="1" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input cgst" value="0" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input sgst" value="0" oninput="window.calc(this)"></td>
+        <td class="tax-col"><input type="number" class="row-input cgst" value="0" oninput="window.calc(this)"></td>
+        <td class="tax-col"><input type="number" class="row-input sgst" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input net" value="0.00" readonly style="font-weight:bold;"></td>
     `;
 };
@@ -210,6 +222,7 @@ window.calculateFinal = function() {
     let tS = 0, tD = 0, tC = 0, tSg = 0, nG = 0;
     const taxMode = document.getElementById('taxMode').value;
 
+    // Toggle summary boxes
     document.getElementById('cgstBox').style.display = taxMode === "WITHOUT_GST" ? 'none' : 'block';
     document.getElementById('sgstBox').style.display = taxMode === "WITHOUT_GST" ? 'none' : 'block';
 
@@ -220,11 +233,9 @@ window.calculateFinal = function() {
         const dAmt = sub * ((parseFloat(row.querySelector('.disc').value) || 0) / 100);
         const taxable = sub - dAmt;
         
-        let cgstAmt = 0, sgstAmt = 0;
-        if(taxMode !== "WITHOUT_GST") {
-            cgstAmt = (taxable * ((parseFloat(row.querySelector('.cgst').value) || 0)/100));
-            sgstAmt = (taxable * ((parseFloat(row.querySelector('.sgst').value) || 0)/100));
-        }
+        // Always calculate tax internally so Net Total is correct regardless of mode
+        const cgstAmt = (taxable * ((parseFloat(row.querySelector('.cgst').value) || 0)/100));
+        const sgstAmt = (taxable * ((parseFloat(row.querySelector('.sgst').value) || 0)/100));
         
         tS += sub; tD += dAmt; tC += cgstAmt; tSg += sgstAmt;
         const rowNet = taxable + cgstAmt + sgstAmt;
@@ -236,10 +247,12 @@ window.calculateFinal = function() {
     document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
     document.getElementById('sumCGST').innerText = tC.toFixed(2);
     document.getElementById('sumSGST').innerText = tSg.toFixed(2);
-    document.getElementById('sumNet').innerText = Math.round(nG).toFixed(2);
+    
+    const finalRounded = Math.round(nG);
+    document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
     
     const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
-    document.getElementById('sumBalance').innerText = (Math.round(nG) - paid).toFixed(2);
+    document.getElementById('sumBalance').innerText = (finalRounded - paid).toFixed(2);
 };
 
 window.preparePrint = function() {
@@ -264,6 +277,7 @@ window.preparePrint = function() {
 
     const printData = {
         billNo: document.getElementById('billNo').innerText,
+        taxMode: document.getElementById('taxMode').value,
         date: document.getElementById('saleDate').value,
         custName: partyName,
         custMeta: document.getElementById('partyMeta').value,
@@ -287,6 +301,7 @@ window.saveSale = async function() {
 
     const saleData = {
         billNo: document.getElementById('billNo').innerText,
+        taxMode: document.getElementById('taxMode').value,
         customerName: partyName,
         custMeta: document.getElementById('partyMeta').value,
         date: document.getElementById('saleDate').value,
@@ -306,6 +321,8 @@ init();
 </script>
 </body>
 </html>
+
+
 
 
 
