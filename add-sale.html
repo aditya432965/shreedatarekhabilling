@@ -42,7 +42,6 @@
         .btn-whatsapp { background: #25D366; color: white; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; }
 
-        /* CSS for hiding/showing GST columns */
         .tax-col { display: none; }
         body.show-gst .tax-col { display: table-cell; }
     </style>
@@ -94,8 +93,7 @@
                 <th width="100">Rate</th>
                 <th width="80">Disc%</th>
                 <th width="80">Qty</th>
-                <th class="tax-col" width="80">CGST%</th>
-                <th class="tax-col" width="80">SGST%</th>
+                <th class="tax-col" width="100">GST%</th>
                 <th width="120">Net Amount</th>
             </tr>
         </thead>
@@ -108,8 +106,7 @@
 <div class="summary-grid">
     <div class="summary-box"><span>Gross Total</span><strong id="sumTotalSale">0.00</strong></div>
     <div class="summary-box"><span>Total Disc</span><strong id="sumTotalDisc">0.00</strong></div>
-    <div id="cgstBox" class="summary-box"><span>CGST</span><strong id="sumCGST">0.00</strong></div>
-    <div id="sgstBox" class="summary-box"><span>SGST</span><strong id="sumSGST">0.00</strong></div>
+    <div id="gstBox" class="summary-box"><span>Total GST</span><strong id="sumGST">0.00</strong></div>
     <div class="summary-box"><span>Net Total</span><strong id="sumNet">0.00</strong></div>
     <div class="summary-box"><span>Balance</span><strong id="sumBalance">0.00</strong></div>
 </div>
@@ -121,9 +118,8 @@
         <input type="number" id="paidAmt" placeholder="0.00" oninput="calculateFinal()">
     </div>
     <button class="btn-new" onclick="location.reload()">New</button>
-    <button class="btn-save" onclick="saveSale()">Save to Cloud</button>
-    <button class="btn-print" onclick="window.preparePrint()">Print Bill</button>
-    <button class="btn-whatsapp" onclick="sendWhatsApp()">WhatsApp</button>
+    <button class="btn-save" onclick="saveSale(false)">Save Only</button>
+    <button class="btn-print" onclick="saveSale(true)">Save & Print</button>
 </div>
 
 <script type="module">
@@ -167,7 +163,6 @@ async function init() {
     } catch (e) { console.error("Init Error:", e); }
 }
 
-// FIXED: Path for mobile number changed to 'contact'
 window.updatePartyDetails = function() {
     const val = document.getElementById('partySearch').value;
     const c = customers.find(x => x.name === val);
@@ -197,8 +192,7 @@ window.addRow = function() {
         <td><input type="number" class="row-input rate" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input disc" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input qty" value="1" oninput="window.calc(this)"></td>
-        <td class="tax-col"><input type="number" class="row-input cgst" value="0" oninput="window.calc(this)"></td>
-        <td class="tax-col"><input type="number" class="row-input sgst" value="0" oninput="window.calc(this)"></td>
+        <td class="tax-col"><input type="number" class="row-input gst" value="0" oninput="window.calc(this)"></td>
         <td><input type="number" class="row-input net" value="0.00" readonly style="font-weight:bold;"></td>
     `;
 };
@@ -209,9 +203,7 @@ window.autoFillByName = function(input) {
     if(item) {
         row.querySelector('.mrp').value = item.mrp || 0;
         row.querySelector('.rate').value = item.sale || 0;
-        const hGst = (parseFloat(item.gst) / 2) || 0;
-        row.querySelector('.cgst').value = hGst;
-        row.querySelector('.sgst').value = hGst;
+        row.querySelector('.gst').value = item.gst || 0;
         window.calculateFinal();
     }
 };
@@ -219,11 +211,10 @@ window.autoFillByName = function(input) {
 window.calc = function() { window.calculateFinal(); };
 
 window.calculateFinal = function() {
-    let tS = 0, tD = 0, tC = 0, tSg = 0, nG = 0;
+    let tS = 0, tD = 0, totalGstAmt = 0, nG = 0;
     const taxMode = document.getElementById('taxMode').value;
 
-    document.getElementById('cgstBox').style.display = taxMode === "WITHOUT_GST" ? 'none' : 'block';
-    document.getElementById('sgstBox').style.display = taxMode === "WITHOUT_GST" ? 'none' : 'block';
+    document.getElementById('gstBox').style.display = taxMode === "WITHOUT_GST" ? 'none' : 'block';
 
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
@@ -232,20 +223,20 @@ window.calculateFinal = function() {
         const dAmt = sub * ((parseFloat(row.querySelector('.disc').value) || 0) / 100);
         const taxable = sub - dAmt;
         
-        // FIXED: Always calculate tax for the Net Amount, regardless of display mode
-        const cgstAmt = (taxable * ((parseFloat(row.querySelector('.cgst').value) || 0)/100));
-        const sgstAmt = (taxable * ((parseFloat(row.querySelector('.sgst').value) || 0)/100));
+        let gstAmt = 0;
+        if(taxMode === "WITH_GST") {
+            gstAmt = taxable * ((parseFloat(row.querySelector('.gst').value) || 0)/100);
+        }
         
-        tS += sub; tD += dAmt; tC += cgstAmt; tSg += sgstAmt;
-        const rowNet = taxable + cgstAmt + sgstAmt;
+        tS += sub; tD += dAmt; totalGstAmt += gstAmt;
+        const rowNet = taxable + gstAmt;
         row.querySelector('.net').value = rowNet.toFixed(2);
         nG += rowNet;
     });
     
     document.getElementById('sumTotalSale').innerText = tS.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
-    document.getElementById('sumCGST').innerText = tC.toFixed(2);
-    document.getElementById('sumSGST').innerText = tSg.toFixed(2);
+    document.getElementById('sumGST').innerText = totalGstAmt.toFixed(2);
     
     const finalRounded = Math.round(nG);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
@@ -254,7 +245,7 @@ window.calculateFinal = function() {
     document.getElementById('sumBalance').innerText = (finalRounded - paid).toFixed(2);
 };
 
-window.preparePrint = function() {
+window.saveSale = async function(shouldPrint = false) {
     const partyName = document.getElementById('partySearch').value;
     if(!partyName) return alert("Select a Customer!");
 
@@ -267,36 +258,11 @@ window.preparePrint = function() {
                 rate: row.querySelector('.rate').value,
                 mrp: row.querySelector('.mrp').value,
                 disc: row.querySelector('.disc').value,
-                cgst: row.querySelector('.cgst').value,
-                sgst: row.querySelector('.sgst').value,
+                gst: row.querySelector('.gst').value,
                 net: row.querySelector('.net').value
             });
         }
     });
-
-    const printData = {
-        billNo: document.getElementById('billNo').innerText,
-        taxMode: document.getElementById('taxMode').value, // Pass mode to print.html
-        date: document.getElementById('saleDate').value,
-        custName: partyName,
-        custMeta: document.getElementById('partyMeta').value,
-        items: billItems,
-        summary: {
-            gross: document.getElementById('sumTotalSale').innerText,
-            disc: document.getElementById('sumTotalDisc').innerText,
-            cgst: document.getElementById('sumCGST').innerText,
-            sgst: document.getElementById('sumSGST').innerText,
-            net: document.getElementById('sumNet').innerText
-        }
-    };
-
-    localStorage.setItem("lastBill", JSON.stringify(printData));
-    window.open('print.html', '_blank');
-};
-
-window.saveSale = async function() {
-    const partyName = document.getElementById('partySearch').value;
-    if(!partyName) return alert("Select a Customer!");
 
     const saleData = {
         billNo: document.getElementById('billNo').innerText,
@@ -304,22 +270,41 @@ window.saveSale = async function() {
         taxMode: document.getElementById('taxMode').value,
         custMeta: document.getElementById('partyMeta').value,
         date: document.getElementById('saleDate').value,
+        items: billItems,
+        summary: {
+            gross: document.getElementById('sumTotalSale').innerText,
+            disc: document.getElementById('sumTotalDisc').innerText,
+            gst: document.getElementById('sumGST').innerText,
+            net: document.getElementById('sumNet').innerText
+        },
         netTotal: parseFloat(document.getElementById('sumNet').innerText) || 0,
+        paidAmount: parseFloat(document.getElementById('paidAmt').value) || 0,
+        balance: parseFloat(document.getElementById('sumBalance').innerText) || 0,
         createdAt: serverTimestamp()
     };
 
     try {
         await addDoc(collection(db, "sales"), saleData);
-        alert("Saved to Cloud!");
-        window.preparePrint();
+        
+        if (shouldPrint) {
+            localStorage.setItem("lastBill", JSON.stringify(saleData));
+            window.open('print.html', '_blank');
+        } else {
+            alert("Saved to Cloud Successfully!");
+        }
+        
         location.reload();
-    } catch (e) { alert("Save Error: " + e.message); }
+    } catch (e) { 
+        alert("Save Error: " + e.message); 
+    }
 };
 
 init();
 </script>
 </body>
 </html>
+
+
 
 
 
