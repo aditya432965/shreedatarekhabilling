@@ -5,63 +5,57 @@
     <title>Print Invoice</title>
     <style>
         body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
-        .p-container { border: 1px solid black; background: white; width: 210mm; margin: auto; min-height: 290mm; display: flex; flex-direction: column; }
+        .p-container { border: 1px solid black; background: white; width: 210mm; margin: auto; }
         
         /* Top Bar - Centered Title */
-        .p-top-bar { font-size: 11px; border-bottom: 1px solid black; padding: 5px; text-align: center; position: relative; }
-        .p-top-bar .jurisdiction { position: absolute; left: 5px; top: 5px; font-size: 9px; }
-        .p-top-bar .original { position: absolute; right: 5px; top: 5px; font-size: 10px; }
+        .p-top-bar { font-size: 10px; border-bottom: 1px solid black; padding: 2px 5px; display: flex; justify-content: space-between; position: relative;}
+        .p-invoice-type-centered { position: absolute; left: 50%; transform: translateX(-50%); font-weight: bold; }
 
         .p-header { display: flex; border-bottom: 1px solid black; }
         
-        /* Company Info - Adjusted positioning */
-        .p-comp-info { width: 60%; padding: 10px; border-right: 1px solid black; display: flex; align-items: flex-start; }
-        .p-logo-print { width: 70px; height: 70px; border-radius: 50%; margin-top: -8px; } /* Moved up */
-        .p-shop-details { margin-left: 12px; } /* Moved right */
+        /* Shop info adjustments */
+        .p-comp-info { width: 60%; padding: 10px; border-right: 1px solid black; display: flex; gap: 12px; align-items: center; }
+        .p-logo-print { width: 70px; height: 70px; border-radius: 50%; margin-top: -5px; }
+        .p-shop-text { margin-left: 5px; }
 
         .p-cust-info { width: 40%; padding: 10px; }
         .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th, .p-table td { border: 1px solid black; padding: 5px 4px; text-align: center; font-size: 11px; font-weight: normal; }
+        .p-table th, .p-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 10px; }
         
-        /* Footer & Layout */
-        .p-footer { display: flex; border-top: 1px solid black; flex-grow: 1; }
-        .p-foot-left { width: 55%; padding: 10px; border-right: 1px solid black; display: flex; flex-direction: column; justify-content: space-between; } 
-        .p-foot-right { width: 45%; display: flex; flex-direction: column; }
+        /* Footer Layout */
+        .p-footer { display: flex; border-top: 1px solid black; }
+        .p-foot-left { width: 35%; padding: 8px; position: relative; } 
+        .p-foot-mid { width: 25%; padding: 8px; text-align: center; display: flex; justify-content: flex-end; align-items: center; } 
+        .p-qr-img { width: 85px; height: 85px; object-fit: contain; margin-right: -20px; }
+        .p-foot-right { width: 40%; }
         
-        .p-bank { border: 1px solid black; padding: 6px; font-size: 10px; margin-bottom: 15px; width: fit-content; }
+        .p-bank { border: 1px solid black; padding: 4px; font-size: 10px; margin-bottom: 5px; }
         
-        /* Totals Box */
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
-        .p-totals-tbl td { border-bottom: 1px solid black; padding: 5px 8px; text-align: right; font-size: 11px; font-weight: normal; }
+        .p-totals-tbl td { border: 1px solid black; padding: 5px; text-align: right; font-size: 11px; }
+        .p-totals-tbl td:first-child { border-left: 1px solid black; } 
         
-        /* Amount in Words tightly attached under Net Amount */
-        .p-words-box { padding: 6px 8px; font-size: 9px; text-transform: uppercase; text-align: right; border-bottom: 1px solid black; }
-
-        /* QR Code section extreme right */
-        .p-qr-section { padding: 10px; display: flex; flex-direction: column; align-items: flex-end; margin-top: auto; }
-        .p-qr-img { width: 75px; height: 75px; }
-
-        /* Signatures section */
-        .p-signatures { display: flex; justify-content: space-between; padding: 30px 15px 15px 15px; font-size: 11px; margin-top: auto; }
-
+        .p-words { font-size: 10px; text-transform: uppercase; padding: 5px 10px; border-bottom: 1px solid black; text-align: right; }
+        
         /* GST Visibility Logic */
         .tax-col, .tax-row { display: none; }
         body.show-gst .tax-col { display: table-cell; }
         body.show-gst .tax-row { display: table-row; }
+
+        .sig-row { display: flex; justify-content: space-between; padding: 20px 10px 10px 10px; font-size: 11px; }
     </style>
 </head>
 <body>
     <div class="p-container">
         <div class="p-top-bar">
-            <span class="jurisdiction">SUBJECT TO BARAMATI JURISDICTION</span>
-            <span id="p-invoice-type">TAX INVOICE</span>
-            <span class="original">ORIGINAL</span>
+            <span>SUBJECT TO BARAMATI JURISDICTION</span>
+            <span id="p-invoice-type" class="p-invoice-type-centered">TAX INVOICE</span>
+            <span>ORIGINAL</span>
         </div>
-        
         <div class="p-header">
             <div class="p-comp-info">
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
-                <div class="p-shop-details">
+                <div class="p-shop-text">
                     <h2 style="margin: 0; font-size: 16px;">SHREE DATTAREKHA ENTERPRISES</h2>
                     <p style="font-size: 11px; margin-top: 3px; line-height: 1.4;">
                         Gunwadi Rd, Baramati<br>
@@ -72,30 +66,28 @@
                 </div>
             </div>
             <div class="p-cust-info">
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid black; padding-bottom: 4px; margin-bottom: 5px;">
-                    <span style="font-size: 11px;">Date: <strong id="p-date" style="font-weight: normal;"></strong></span>
-                    <span style="font-size: 11px;">Bill No: <strong id="p-billno" style="font-weight: normal;"></strong></span>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 5px;">
+                    <span style="font-size: 11px;">Date: <strong id="p-date"></strong></span>
+                    <span style="font-size: 11px;">Bill No: <strong id="p-billno"></strong></span>
                 </div>
                 <p style="font-size: 11px; margin: 0;">To,<br>
-                   <span id="p-custname" style="font-size: 12px;"></span><br>
+                   <strong id="p-custname" style="font-size: 13px;"></strong><br>
                    <span id="p-custmeta" style="font-size: 10px; display: block; margin-top: 2px; line-height: 1.4;"></span>
                 </p>
             </div>
         </div>
-        
         <table class="p-table">
             <thead>
                 <tr>
-                    <th width="30">Sr.</th>
+                    <th width="25">Sr.</th>
                     <th>Item Name</th>
-                    <th width="45">HSN</th>
                     <th width="50">MRP</th>
                     <th width="50">Rate</th>
-                    <th width="50">Disc(₹)</th>
+                    <th width="50">Disc (₹)</th>
                     <th width="40">Qty</th>
-                    <th class="tax-col" width="45">GST%</th>
+                    <th class="tax-col" width="45">GST %</th>
                     <th class="tax-col" width="55">GST Amt</th>
-                    <th width="80">Amount</th>
+                    <th>Amount</th>
                 </tr>
             </thead>
             <tbody id="p-items-body"></tbody>
@@ -103,39 +95,34 @@
         
         <div class="p-footer">
             <div class="p-foot-left">
-                <div>
-                    <div class="p-bank">
-                        Bank: YES Bank, Baramati<br>
-                        A/C: 049061900000596<br>
-                        IFSC: YESB0000490
-                    </div>
-                    <div style="font-size: 10px;">
-                        Remark: Goods once sold will not be taken back.
-                    </div>
+                <div class="p-bank">
+                    <strong>Bank Details</strong><br>
+                    Bank: YES Bank, Baramati<br>
+                    A/C: 049061900000596<br>
+                    IFSC: YESB0000490
                 </div>
-                <div class="p-signatures" style="padding: 0; margin-top: 50px;">
-                    <div>Customer Signature</div>
+                <p style="font-size: 10px; line-height: 1.2;">Remark: Goods once sold will not be taken back.</p>
+                <div style="margin-top: 35px; font-size: 11px;">Customer Signature</div>
+            </div>
+            <div class="p-foot-mid">
+                <div style="text-align: right; width: 100%;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
+                    <p style="font-size: 9px; margin-top: 5px; margin-right: -15px;">Scan to Pay</p>
                 </div>
             </div>
-            
             <div class="p-foot-right">
                 <table class="p-totals-tbl">
-                    <tr><td>Gross Total</td><td width="80" id="p-sum-total">0.00</td></tr>
+                    <tr><td>Gross Total</td><td id="p-sum-total">0.00</td></tr>
                     <tr><td>Total Disc.</td><td id="p-sum-disc">0.00</td></tr>
-                    <tr class="tax-row"><td>Total GST</td><td id="p-sum-gst">0.00</td></tr>
-                    <tr><td>Net Amount</td><td id="p-sum-net">0.00</td></tr>
+                    <tr class="tax-row"><td>GST Total</td><td id="p-sum-gst">0.00</td></tr>
+                    <tr style="font-weight:bold; background:#eee;"><td>Net Amount</td><td id="p-sum-net">0.00</td></tr>
                 </table>
-                <div class="p-words-box">
-                    Amount in words: <span id="p-amount-words"></span>
+                <div class="p-words">
+                    Amt in words: <strong id="p-amount-words"></strong>
                 </div>
-                
-                <div class="p-qr-section">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
-                    <span style="font-size: 9px; margin-top: 4px;">Scan to Pay</span>
-                </div>
-                
-                <div class="p-signatures" style="padding: 0; margin-top: 10px; justify-content: flex-end; text-align: right;">
-                    <div>For SHREE DATTAREKHA ENTERPRISES<br><br><br>Authorized Signatory</div>
+                <div style="margin-top: 20px; font-size: 11px; text-align: right; padding-right: 10px;">
+                    For SHREE DATTAREKHA ENTERPRISES<br><br><br>
+                    <strong>Authorized Signatory</strong>
                 </div>
             </div>
         </div>
@@ -198,55 +185,39 @@
             
             if(data.date) {
                 const dateObj = new Date(data.date);
-                const dd = String(dateObj.getDate()).padStart(2, '0');
-                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const yy = String(dateObj.getFullYear()).slice(-2);
-                document.getElementById('p-date').innerText = `${dd}/${mm}/${yy}`;
+                document.getElementById('p-date').innerText = dateObj.toLocaleDateString('en-GB');
             }
 
-            // Fixed: Smartly handles undefined names from either add-sale structure
-            const finalCustName = data.customerName || data.custName || "Cash Sale";
-            document.getElementById('p-custname').innerText = finalCustName;
-            
+            document.getElementById('p-custname').innerText = data.customerName || data.custName || "Cash Sale";
             if(data.custMeta) {
                 document.getElementById('p-custmeta').innerHTML = data.custMeta.split('|').map(item => item.trim()).join('<br>');
             }
 
             let rows = "";
-            let recalcGross = 0;
-            let recalcTotalDisc = 0;
-            let recalcGST = 0;
-            let recalcNet = 0;
+            let tGross = 0;
+            let tDisc = 0;
+            let tGst = 0;
+            let tNet = 0;
 
             data.items.forEach((item, i) => {
                 const qty = parseFloat(item.qty) || 0;
                 const rate = parseFloat(item.rate) || 0;
+                const discAmt = parseFloat(item.disc) || 0; // Flat discount
                 
-                // Discount is now a flat amount, NOT a percentage
-                const discAmt = parseFloat(item.disc) || 0; 
-                
-                const grossVal = qty * rate;
-                const taxableValue = grossVal - discAmt;
-                
-                // Support both new `item.gst` and fallback to `cgst+sgst` just in case
-                const gstRate = parseFloat(item.gst) || ((parseFloat(item.cgst) || 0) + (parseFloat(item.sgst) || 0));
-                
-                let gstAmt = 0;
-                if(taxMode === "WITH_GST") {
-                    gstAmt = taxableValue * (gstRate / 100);
-                }
-                
-                const rowNet = taxableValue + gstAmt;
+                const subTotal = qty * rate;
+                const taxable = subTotal - discAmt;
+                const gstRate = parseFloat(item.gst) || 0;
+                const gstAmt = taxMode === "WITH_GST" ? (taxable * (gstRate / 100)) : 0;
+                const rowNet = taxable + gstAmt;
 
-                recalcGross += grossVal;
-                recalcTotalDisc += discAmt;
-                recalcGST += gstAmt;
-                recalcNet += rowNet;
+                tGross += subTotal;
+                tDisc += discAmt;
+                tGst += gstAmt;
+                tNet += rowNet;
 
                 rows += `<tr>
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
-                    <td>9109</td>
                     <td>${item.mrp || 0}</td>
                     <td>${rate.toFixed(2)}</td>
                     <td>${discAmt.toFixed(2)}</td>
@@ -258,19 +229,20 @@
             });
 
             document.getElementById('p-items-body').innerHTML = rows;
-            document.getElementById('p-sum-total').innerText = recalcGross.toFixed(2);
-            document.getElementById('p-sum-disc').innerText = recalcTotalDisc.toFixed(2);
-            document.getElementById('p-sum-gst').innerText = recalcGST.toFixed(2);
+            document.getElementById('p-sum-total').innerText = tGross.toFixed(2);
+            document.getElementById('p-sum-disc').innerText = tDisc.toFixed(2);
+            document.getElementById('p-sum-gst').innerText = tGst.toFixed(2);
             
-            const finalNetRounded = Math.round(recalcNet);
-            document.getElementById('p-sum-net').innerText = finalNetRounded.toFixed(2);
-            document.getElementById('p-amount-words').innerText = amountToWords(finalNetRounded);
+            const finalNet = Math.round(tNet);
+            document.getElementById('p-sum-net').innerText = finalNet.toFixed(2);
+            document.getElementById('p-amount-words').innerText = amountToWords(finalNet);
 
             setTimeout(() => { window.print(); }, 500);
         };
     </script>
 </body>
 </html>
+
 
 
 
