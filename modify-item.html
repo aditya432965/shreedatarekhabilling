@@ -38,7 +38,6 @@ h1{
   font-size: 1.8rem;
 }
 
-/* SEARCH & FILTER SECTION */
 .filters{
   display:flex;
   gap:12px;
@@ -80,14 +79,12 @@ h1{
   border: 1px solid rgba(255,255,255,0.2);
 }
 
-/* MAIN LAYOUT */
 .main{
   display:grid;
   grid-template-columns: 1fr 1.2fr;
   gap:25px;
 }
 
-/* SCROLLABLE LIST */
 .list-container {
   background: rgba(0,0,0,0.3);
   border-radius: 18px;
@@ -134,7 +131,6 @@ tr:hover td {
   cursor: pointer;
 }
 
-/* EDIT FORM */
 .form{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -169,7 +165,11 @@ input, select {
   font-size: 14px;
 }
 
-/* BUTTONS */
+input[readonly]{
+  background-color: #ffd1e6;
+  font-weight: bold;
+}
+
 .buttons{
   grid-column: 1 / -1;
   display: grid;
@@ -195,7 +195,6 @@ button:active { transform: scale(0.95); }
 .reset { background: #777; }
 .back  { background: #444; }
 
-/* MOBILE RESPONSIVENESS */
 @media(max-width: 850px){
   .main { grid-template-columns: 1fr; }
   .list-scroll { max-height: 300px; }
@@ -243,6 +242,11 @@ button:active { transform: scale(0.95); }
 
     <div class="form">
       <div class="form-group full-width">
+        <label>Group / Brand</label>
+        <select id="group"></select>
+      </div>
+
+      <div class="form-group full-width">
         <label>Item Name</label>
         <input id="name">
       </div>
@@ -253,18 +257,8 @@ button:active { transform: scale(0.95); }
       </div>
 
       <div class="form-group">
-        <label>Group</label>
-        <select id="group"></select>
-      </div>
-
-      <div class="form-group">
         <label>MRP</label>
         <input type="number" id="mrp">
-      </div>
-
-      <div class="form-group">
-        <label>Sale Rate</label>
-        <input type="number" id="sale">
       </div>
 
       <div class="form-group">
@@ -273,16 +267,21 @@ button:active { transform: scale(0.95); }
       </div>
 
       <div class="form-group">
-        <label>CGST %</label>
-        <input type="number" id="cgst">
+        <label>GST %</label>
+        <input type="number" id="gst" oninput="calculateSaleWithGst()">
       </div>
 
       <div class="form-group">
-        <label>SGST %</label>
-        <input type="number" id="sgst">
+        <label>Sale Rate (Excl. GST)</label>
+        <input type="number" id="sale" oninput="calculateSaleWithGst()">
       </div>
 
-      <div class="form-group">
+      <div class="form-group full-width">
+        <label>Sale Rate (Incl. GST) - Auto</label>
+        <input type="number" id="totalSale" readonly>
+      </div>
+
+      <div class="form-group full-width">
         <label>Opening Qty</label>
         <input type="number" id="qty">
       </div>
@@ -316,6 +315,14 @@ if(localStorage.getItem("loggedIn") !== "true"){
 let items = [];         
 let groups = [];        
 let selectedDocId = null; 
+
+// Calculation Logic
+window.calculateSaleWithGst = function() {
+    const saleRate = parseFloat(document.getElementById('sale').value) || 0;
+    const gstPerc = parseFloat(document.getElementById('gst').value) || 0;
+    const total = saleRate + (saleRate * (gstPerc / 100));
+    document.getElementById('totalSale').value = total.toFixed(2);
+}
 
 async function loadCloudData() {
     try {
@@ -386,10 +393,12 @@ window.selectItem = function(docId){
     document.getElementById("mrp").value = it.mrp || "";
     document.getElementById("sale").value = it.sale || "";
     document.getElementById("purchase").value = it.purchase || "";
-    document.getElementById("cgst").value = it.cgst || it.gst || "0"; // Handles legacy 'gst' field
-    document.getElementById("sgst").value = it.sgst || "0";
+    document.getElementById("gst").value = it.gst || (parseFloat(it.cgst||0) + parseFloat(it.sgst||0)) || "0";
     document.getElementById("qty").value = it.qty || "";
     
+    // Trigger calculation for the total sale rate
+    window.calculateSaleWithGst();
+
     if(window.innerWidth < 850) {
       document.querySelector('.form').scrollIntoView({ behavior: 'smooth' });
     }
@@ -405,8 +414,8 @@ window.updateItem = async function(){
         mrp: document.getElementById("mrp").value.trim(),
         sale: document.getElementById("sale").value.trim(),
         purchase: document.getElementById("purchase").value.trim(),
-        cgst: document.getElementById("cgst").value.trim(),
-        sgst: document.getElementById("sgst").value.trim(),
+        gst: document.getElementById("gst").value.trim(),
+        totalSale: document.getElementById("totalSale").value,
         qty: document.getElementById("qty").value.trim()
     };
 
@@ -447,5 +456,6 @@ loadCloudData();
 </script>
 </body>
 </html>
+
 
 
