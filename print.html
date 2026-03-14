@@ -11,18 +11,8 @@
         .p-comp-info { width: 60%; padding: 10px; border-right: 1px solid black; display: flex; gap: 10px; align-items: center; }
         .p-logo-print { width: 70px; height: 70px; border-radius: 50%; }
         .p-cust-info { width: 40%; padding: 10px; }
-      .p-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-}
-
-.p-table th, .p-table td { 
-    /* Using a specific thin width and a softer grey color */
-    border: 1px solid #d1d1d1; 
-    padding: 4px; 
-    text-align: center; 
-    font-size: 10px; 
-}
+        .p-table { width: 100%; border-collapse: collapse; }
+        .p-table th, .p-table td { border: 1px solid #d1d1d1; padding: 4px; text-align: center; font-size: 10px; }
         
         /* Footer Layout */
         .p-footer { display: flex; border-top: 1px solid black; }
@@ -33,10 +23,9 @@
         
         .p-bank { border: 1px solid black; padding: 4px; font-size: 10px; margin-bottom: 5px; }
         
-        /* Totals Table - Box Completion */
+        /* Totals Table */
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
         .p-totals-tbl td { border: 1px solid black; padding: 5px; text-align: right; font-size: 11px; }
-        /* Ensures the left line exists to complete the box for the totals */
         .p-totals-tbl td:first-child { border-left: 1px solid black; } 
         
         .p-words { font-size: 10px; text-transform: uppercase; }
@@ -51,7 +40,7 @@
     <div class="p-container">
         <div class="p-top-bar">
             <span>SUBJECT TO BARAMATI JURISDICTION</span>
-            <span style="font-weight: bold;" id="p-invoice-type" "text-align: center;">TAX INVOICE</span>
+            <span style="font-weight: bold;" id="p-invoice-type">TAX INVOICE</span>
             <span>ORIGINAL</span>
         </div>
         <div class="p-header">
@@ -84,16 +73,14 @@
                     <th width="15">Sr.</th>
                     <th>Item Name</th>
                     <th width='58'>HSN</th>
-                    <th width='58'>Qty</th>
-                    <th width='58'>Free</th>
-                    <th width='60'>MRP</th>
-                    <th>Rate</th>
-                    <th>Disc</th>
-                    <th class="tax-col" width="40">CGST%</th>
-                    <th class="tax-col" width="45">CGST Amt</th>
-                    <th class="tax-col" width="40">SGST%</th>
-                    <th class="tax-col" width="45">SGST Amt</th>
-                    <th>Amount</th>
+                    <th width='40'>Qty</th>
+                    <th width='40'>Free</th>
+                    <th width='50'>MRP</th>
+                    <th width='60'>Rate</th>
+                    <th width='50'>Disc(₹)</th>
+                    <th class="tax-col" width="45">GST%</th>
+                    <th class="tax-col" width="60">GST Amt</th>
+                    <th width='80'>Amount</th>
                 </tr>
             </thead>
             <tbody id="p-items-body"></tbody>
@@ -108,40 +95,30 @@
                     IFSC: YESB0000490
                 </div>
                 <p style="font-size: 9px; line-height: 1;">Remark: Certified that the particulars given above are true and correct.</p>
-                
-               
             </div>
             <div class="p-foot-mid" style="position: relative; top: -5px; left: 40px; width: 85px; height: 85px; margin: auto; display: flex; align-items: center; justify-content: center;">
-    <div style="border: none; display: flex; align-items: center; justify-content: center;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
-    </div>
-
-                
-</div>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
+            </div>
             <div class="p-foot-right">
                 <table class="p-totals-tbl">
                     <tr><td>Gross Total</td><td id="p-sum-total">0.00</td></tr>
-                    <tr><td>Total Disc.</td><td id="p-sum-disc">0.00</td></tr>
-                    <tr class="tax-row"><td>CGST Total</td><td id="p-sum-cgst">0.00</td></tr>
-                    <tr class="tax-row"><td>SGST Total</td><td id="p-sum-sgst">0.00</td></tr>
+                    <tr><td>Total Disc. (₹)</td><td id="p-sum-disc">0.00</td></tr>
+                    <tr class="tax-row"><td>GST Total</td><td id="p-sum-gst">0.00</td></tr>
                     <tr style="font-weight:bold; background:#eee;"><td>Net Amount</td><td id="p-sum-net">0.00</td></tr>
                 </table>
             </div>
         </div>
         
-<div class="p-words" style="text-align: right; padding: 0px 10px 5px 0; margin-top: -15px;">
-    Amount in words: <strong id="p-amount-words"></strong>
-<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding: 0 10px 15px 10px;">
-    <div style="font-size: 11px; text-align: left;">
-        <strong>Customer Signatory</strong>
-    </div>
+        <div class="p-words" style="text-align: right; padding: 0px 10px 5px 0; margin-top: -15px;">
+            Amount in words: <strong id="p-amount-words"></strong>
+        </div>
 
-    <div style="font-size: 11px; text-align: right;">
-        <strong>Authorized Signatory</strong>
-    </div>
-</div>    
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding: 0 10px 15px 10px;">
+            <div style="font-size: 11px; text-align: left;"><strong>Customer Signatory</strong></div>
+            <div style="font-size: 11px; text-align: right;"><strong>Authorized Signatory</strong></div>
+        </div>    
 
-<script>
+    <script>
         function amountToWords(amount) {
             var words = new Array();
             words[0] = ''; words[1] = 'One'; words[2] = 'Two'; words[3] = 'Three'; words[4] = 'Four';
@@ -185,7 +162,6 @@
             const data = JSON.parse(localStorage.getItem("lastBill"));
             if(!data) return;
 
-            // Robust check for taxMode
             const taxMode = (data.taxMode || "").trim().toUpperCase();
             if(taxMode === "WITH_GST") {
                 document.body.classList.add('show-gst');
@@ -207,45 +183,43 @@
 
             document.getElementById('p-custname').innerText = data.custName;
             if(data.custMeta) {
-                // Splits details and puts them on new lines
                 document.getElementById('p-custmeta').innerHTML = data.custMeta.split('|').map(item => item.trim()).join('<br>');
             }
 
             let rows = "";
+            let recalculateTotalGST = 0;
             let recalculateNetTotal = 0;
-            let recalculateCGST = 0;
-            let recalculateSGST = 0;
 
             data.items.forEach((item, i) => {
                 const qty = parseFloat(item.qty) || 0;
                 const rate = parseFloat(item.rate) || 0;
-                const discP = parseFloat(item.disc) || 0;
-                const taxableValue = (qty * rate) - ((qty * rate) * (discP / 100));
+                const discAmt = parseFloat(item.disc) || 0; // Treated as fixed amount ₹
                 
+                // Taxable Value = (Qty * Rate) - Discount Amount
+                const taxableValue = (qty * rate) - discAmt;
+                
+                // Combined GST calculation
                 const cgstRate = parseFloat(item.cgst) || 0;
                 const sgstRate = parseFloat(item.sgst) || 0;
-                const cgstAmt = taxableValue * (cgstRate / 100);
-                const sgstAmt = taxableValue * (sgstRate / 100);
+                const totalGstRate = cgstRate + sgstRate;
+                const gstAmt = taxableValue * (totalGstRate / 100);
 
-                recalculateCGST += cgstAmt;
-                recalculateSGST += sgstAmt;
+                recalculateTotalGST += gstAmt;
                 
-                const rowNet = (taxableValue + cgstAmt + sgstAmt).toFixed(2);
+                const rowNet = (taxableValue + gstAmt).toFixed(2);
                 recalculateNetTotal += parseFloat(rowNet);
 
                 rows += `<tr>
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
-                    <td>9109</td>
+                    <td>${item.hsn || '9109'}</td>
                     <td>${item.qty}</td>
                     <td>${item.free || 0}</td>
                     <td>${item.mrp}</td>
                     <td>${item.rate}</td>
-                    <td>${item.disc}%</td>
-                    <td class="tax-col">${cgstRate}%</td>
-                    <td class="tax-col">${cgstAmt.toFixed(2)}</td>
-                    <td class="tax-col">${sgstRate}%</td>
-                    <td class="tax-col">${sgstAmt.toFixed(2)}</td>
+                    <td>${discAmt.toFixed(2)}</td>
+                    <td class="tax-col">${totalGstRate}%</td>
+                    <td class="tax-col">${gstAmt.toFixed(2)}</td>
                     <td style="text-align: right; padding-right: 5px;">${rowNet}</td>
                 </tr>`;
             });
@@ -253,8 +227,7 @@
             document.getElementById('p-items-body').innerHTML = rows;
             document.getElementById('p-sum-total').innerText = data.summary.gross;
             document.getElementById('p-sum-disc').innerText = data.summary.disc;
-            document.getElementById('p-sum-cgst').innerText = recalculateCGST.toFixed(2);
-            document.getElementById('p-sum-sgst').innerText = recalculateSGST.toFixed(2);
+            document.getElementById('p-sum-gst').innerText = recalculateTotalGST.toFixed(2);
             
             const finalNet = Math.round(recalculateNetTotal);
             document.getElementById('p-sum-net').innerText = finalNet.toFixed(2);
