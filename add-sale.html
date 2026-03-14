@@ -42,6 +42,7 @@
         .btn-whatsapp { background: #25D366; color: white; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; }
 
+        /* GST Visibility Logic */
         .tax-col { display: none; }
         body.show-gst .tax-col { display: table-cell; }
     </style>
@@ -175,8 +176,10 @@ window.handleTaxModeChange = function() {
     const mode = document.getElementById('taxMode').value;
     if(mode === "WITH_GST") {
         document.body.classList.add('show-gst');
+        document.getElementById('gstBox').style.display = 'block';
     } else {
         document.body.classList.remove('show-gst');
+        document.getElementById('gstBox').style.display = 'none';
     }
     window.calculateFinal();
 };
@@ -214,8 +217,6 @@ window.calculateFinal = function() {
     let tS = 0, tD = 0, totalGstAmt = 0, nG = 0;
     const taxMode = document.getElementById('taxMode').value;
 
-    document.getElementById('gstBox').style.display = taxMode === "WITHOUT_GST" ? 'none' : 'block';
-
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
@@ -223,12 +224,14 @@ window.calculateFinal = function() {
         const dAmt = sub * ((parseFloat(row.querySelector('.disc').value) || 0) / 100);
         const taxable = sub - dAmt;
         
-        let gstAmt = 0;
-        if(taxMode === "WITH_GST") {
-            gstAmt = taxable * ((parseFloat(row.querySelector('.gst').value) || 0)/100);
-        }
+        // GST is always calculated internally so Net Amount remains same
+        const gstRate = parseFloat(row.querySelector('.gst').value) || 0;
+        const gstAmt = taxable * (gstRate / 100);
         
-        tS += sub; tD += dAmt; totalGstAmt += gstAmt;
+        tS += sub; 
+        tD += dAmt; 
+        totalGstAmt += gstAmt;
+        
         const rowNet = taxable + gstAmt;
         row.querySelector('.net').value = rowNet.toFixed(2);
         nG += rowNet;
@@ -287,6 +290,7 @@ window.saveSale = async function(shouldPrint = false) {
         await addDoc(collection(db, "sales"), saleData);
         
         if (shouldPrint) {
+            // This allows print.html to check taxMode and hide GST if it's a Cash Memo
             localStorage.setItem("lastBill", JSON.stringify(saleData));
             window.open('print.html', '_blank');
         } else {
@@ -303,6 +307,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
