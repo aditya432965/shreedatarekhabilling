@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,8 +11,18 @@
         .p-comp-info { width: 60%; padding: 10px; border-right: 1px solid black; display: flex; gap: 10px; align-items: center; }
         .p-logo-print { width: 70px; height: 70px; border-radius: 50%; }
         .p-cust-info { width: 40%; padding: 10px; }
-        .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th, .p-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 10px; }
+      .p-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+}
+
+.p-table th, .p-table td { 
+    /* Using a specific thin width and a softer grey color */
+    border: 1px solid #d1d1d1; 
+    padding: 4px; 
+    text-align: center; 
+    font-size: 10px; 
+}
         
         /* Footer Layout */
         .p-footer { display: flex; border-top: 1px solid black; }
@@ -41,7 +51,7 @@
     <div class="p-container">
         <div class="p-top-bar">
             <span>SUBJECT TO BARAMATI JURISDICTION</span>
-            <span style="font-weight: bold;" id="p-invoice-type">TAX INVOICE</span>
+            <span style="font-weight: bold;" id="p-invoice-type" "text-align: center;">TAX INVOICE</span>
             <span>ORIGINAL</span>
         </div>
         <div class="p-header">
@@ -49,7 +59,7 @@
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
                 <div>
                     <h2 style="margin: 0; font-size: 16px;">SHREE DATTAREKHA ENTERPRISES</h2>
-                    <p style="font-size: 11px; margin-top: 3px; line-height: 1.4;">
+                    <p style="font-size: 11px; margin-top: 6px; line-height: 1.4;">
                         Gunwadi Rd, Baramati<br>
                         Mob No: 9503984711 / 9075621737<br>
                         GST NO: 27AEOPL5652H1Z4<br>
@@ -71,12 +81,12 @@
         <table class="p-table">
             <thead>
                 <tr>
-                    <th width="25">Sr.</th>
+                    <th width="15">Sr.</th>
                     <th>Item Name</th>
-                    <th width="35">HSN</th>
-                    <th>Qty</th>
-                    <th>Free</th>
-                    <th>MRP</th>
+                    <th width='58'>HSN</th>
+                    <th width='58'>Qty</th>
+                    <th width='58'>Free</th>
+                    <th width='60'>MRP</th>
                     <th>Rate</th>
                     <th>Disc</th>
                     <th class="tax-col" width="40">CGST%</th>
@@ -97,18 +107,17 @@
                     A/C: 049061900000596<br>
                     IFSC: YESB0000490
                 </div>
-                <p style="font-size: 9px; line-height: 1.2;">Declaration: Certified that the particulars given above are true and correct.</p>
+                <p style="font-size: 9px; line-height: 1;">Remark: Certified that the particulars given above are true and correct.</p>
                 
-                <div style="margin-top: 25px; font-size: 11px;">
-                    <strong>Authorized Signatory</strong>
-                </div>
+               
             </div>
-            <div class="p-foot-mid">
-                <div style="border: none; width: 85px; height: 85px; margin: auto; display: flex; align-items: center; justify-content: center;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
-                </div>
-                <p style="font-size: 9px; margin-top: 5px;">Scan to Pay</p>
-            </div>
+            <div class="p-foot-mid" style="position: relative; top: -5px; left: 40px; width: 85px; height: 85px; margin: auto; display: flex; align-items: center; justify-content: center;">
+    <div style="border: none; display: flex; align-items: center; justify-content: center;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
+    </div>
+
+                
+</div>
             <div class="p-foot-right">
                 <table class="p-totals-tbl">
                     <tr><td>Gross Total</td><td id="p-sum-total">0.00</td></tr>
@@ -120,12 +129,19 @@
             </div>
         </div>
         
-        <div class="p-words" style="text-align: right; padding: 15px 10px 10px 0;">
-            Amount in words: <strong id="p-amount-words"></strong>
-        </div>
+<div class="p-words" style="text-align: right; padding: 0px 10px 5px 0; margin-top: -15px;">
+    Amount in words: <strong id="p-amount-words"></strong>
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding: 0 10px 15px 10px;">
+    <div style="font-size: 11px; text-align: left;">
+        <strong>Customer Signatory</strong>
     </div>
 
-    <script>
+    <div style="font-size: 11px; text-align: right;">
+        <strong>Authorized Signatory</strong>
+    </div>
+</div>    
+
+<script>
         function amountToWords(amount) {
             var words = new Array();
             words[0] = ''; words[1] = 'One'; words[2] = 'Two'; words[3] = 'Three'; words[4] = 'Four';
@@ -249,15 +265,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
