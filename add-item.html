@@ -39,7 +39,6 @@ h1{
   letter-spacing: 1px;
 }
 
-/* ===== FORM SEQUENCE ===== */
 .form{
   display:grid;
   grid-template-columns: repeat(12, 1fr);
@@ -69,12 +68,15 @@ input, select{
   color: #333;
 }
 
-/* Responsive Grid Logic */
+input[readonly]{
+  background-color: #ffd1e6;
+  font-weight: bold;
+}
+
 .col-12 { grid-column: span 12; }
 .col-6 { grid-column: span 6; }
 .col-4 { grid-column: span 4; }
 
-/* ===== BUTTONS ===== */
 .buttons{
   grid-column: span 12;
   display:grid;
@@ -101,7 +103,6 @@ button:active { transform: scale(0.96); }
 .cancel{ background:#777; }
 .exit{ background:#444; }
 
-/* ===== DATA VIEW ===== */
 .group-box{
   margin-top:30px;
 }
@@ -146,7 +147,6 @@ th{
   font-weight: 600;
 }
 
-/* ===== MOBILE ADAPTATION ===== */
 @media(max-width:768px){
   .col-4 { grid-column: span 6; }
   .container { padding: 15px; }
@@ -182,28 +182,28 @@ th{
   </div>
 
   <div class="col-6">
-    <label>CGST %</label>
-    <input type="number" id="cgst" value="0">
+    <label>MRP Rate</label>
+    <input type="number" id="mrp" placeholder="0.00">
   </div>
 
   <div class="col-6">
-    <label>SGST %</label>
-    <input type="number" id="sgst" value="0">
-  </div>
-
-  <div class="col-4">
     <label>Purchase Rate</label>
     <input type="number" id="purchase" placeholder="0.00">
   </div>
 
-  <div class="col-4">
-    <label>Sale Rate</label>
-    <input type="number" id="sale" placeholder="0.00">
+  <div class="col-6">
+    <label>GST %</label>
+    <input type="number" id="gst" value="0" oninput="calculateSaleWithGst()">
   </div>
 
-  <div class="col-4">
-    <label>MRP Rate</label>
-    <input type="number" id="mrp" placeholder="0.00">
+  <div class="col-6">
+    <label>Sale Rate (Excl. GST)</label>
+    <input type="number" id="sale" placeholder="0.00" oninput="calculateSaleWithGst()">
+  </div>
+
+  <div class="col-12">
+    <label>Sale Rate (Incl. GST) - Auto</label>
+    <input type="number" id="totalSale" placeholder="0.00" readonly>
   </div>
 
   <div class="col-12">
@@ -240,6 +240,14 @@ if(localStorage.getItem("loggedIn") !== "true"){
 
 let brandGroups = [];
 let items = [];
+
+// Automatic Calculation Logic
+window.calculateSaleWithGst = function() {
+    const saleRate = parseFloat(document.getElementById('sale').value) || 0;
+    const gstPerc = parseFloat(document.getElementById('gst').value) || 0;
+    const total = saleRate + (saleRate * (gstPerc / 100));
+    document.getElementById('totalSale').value = total.toFixed(2);
+}
 
 async function loadAllData() {
     try {
@@ -288,7 +296,7 @@ function renderItems(){
                   <table>
                       <thead>
                           <tr>
-                              <th>Name</th><th>MRP</th><th>Sale</th><th>Pur.</th><th>CGST%</th><th>SGST%</th><th>Qty</th>
+                              <th>Name</th><th>MRP</th><th>Sale (Ex)</th><th>GST%</th><th>Sale (Inc)</th><th>Pur.</th><th>Qty</th>
                           </tr>
                       </thead>
                       <tbody>
@@ -300,9 +308,9 @@ function renderItems(){
                     <td style="text-align:left; font-weight:600;">${i.name}</td>
                     <td>${i.mrp || '0'}</td>
                     <td>${i.sale || '0'}</td>
+                    <td>${i.gst || '0'}%</td>
+                    <td style="color:#ffb3d9; font-weight:bold;">${i.totalSale || '0'}</td>
                     <td>${i.purchase || '0'}</td>
-                    <td>${i.cgst || '0'}%</td>
-                    <td>${i.sgst || '0'}%</td>
                     <td>${i.qty || '0'}</td>
                 </tr>`;
         });
@@ -314,8 +322,7 @@ function renderItems(){
 
 window.newItem = function(){
     document.querySelectorAll("input").forEach(i => i.value = "");
-    document.getElementById("cgst").value = "0";
-    document.getElementById("sgst").value = "0";
+    document.getElementById("gst").value = "0";
     const select = document.getElementById("groupSelect");
     if(select) select.value = "";
     document.getElementById("groupSelect").focus();
@@ -336,9 +343,9 @@ window.saveItem = async function(){
         hsn: document.getElementById("hsn").value.trim(),
         mrp: document.getElementById("mrp").value.trim(),
         sale: document.getElementById("sale").value.trim(),
+        gst: document.getElementById("gst").value.trim(),
+        totalSale: document.getElementById("totalSale").value.trim(),
         purchase: document.getElementById("purchase").value.trim(),
-        cgst: document.getElementById("cgst").value.trim(),
-        sgst: document.getElementById("sgst").value.trim(),
         qty: document.getElementById("qty").value.trim(),
         createdAt: serverTimestamp()
     };
@@ -361,6 +368,7 @@ loadAllData();
 </script>
 </body>
 </html>
+
 
 
 
