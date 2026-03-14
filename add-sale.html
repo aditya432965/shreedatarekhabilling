@@ -40,13 +40,9 @@
         .btn-new { background: #007ea7; color: white; }
         .btn-print { background: #f59e0b; color: white; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; }
-
-        /* GST Visibility Logic */
-        .tax-col { display: none; }
-        body.show-gst .tax-col { display: table-cell; }
     </style>
 </head>
-<body class="show-gst">
+<body>
 
 <datalist id="customerList"></datalist>
 <datalist id="itemList"></datalist>
@@ -56,7 +52,7 @@
         <h2 style="color: var(--primary);">Sale Entry</h2>
         <div style="margin-top: 10px;">
             <label style="font-size: 12px; color: #a0d8ef;">Tax Mode:</label>
-            <select id="taxMode" onchange="window.handleTaxModeChange()" style="width: auto; padding: 5px; height: 30px;">
+            <select id="taxMode" onchange="window.calculateFinal()" style="width: auto; padding: 5px; height: 30px;">
                 <option value="WITH_GST">Tax Invoice (GST)</option>
                 <option value="WITHOUT_GST">Cash Memo (Non-GST)</option>
             </select>
@@ -92,9 +88,9 @@
                 <th width="90">MRP</th>
                 <th width="90">Rate</th>
                 <th width="70">Disc%</th>
-                <th width="70">Schm(₹)</th>
+                <th width="85">Schm(₹)</th>
                 <th width="70">Qty</th>
-                <th class="tax-col" width="80">GST%</th>
+                <th width="80">GST%</th>
                 <th width="110">Net Amount</th>
             </tr>
         </thead>
@@ -107,7 +103,7 @@
 <div class="summary-grid">
     <div class="summary-box"><span>Gross Total</span><strong id="sumTotalSale">0.00</strong></div>
     <div class="summary-box"><span>Total Disc</span><strong id="sumTotalDisc">0.00</strong></div>
-    <div id="gstBox" class="summary-box"><span>Total GST</span><strong id="sumGST">0.00</strong></div>
+    <div class="summary-box"><span>Total GST</span><strong id="sumGST">0.00</strong></div>
     <div class="summary-box"><span>Net Total</span><strong id="sumNet">0.00</strong></div>
     <div class="summary-box"><span>Balance</span><strong id="sumBalance">0.00</strong></div>
 </div>
@@ -155,8 +151,6 @@ async function init() {
         if (!lastS.empty) {
             const lastVal = lastS.docs[0].data().billNo;
             document.getElementById('billNo').innerText = (parseInt(lastVal) || 0) + 1;
-        } else {
-            document.getElementById('billNo').innerText = "1";
         }
         
         document.getElementById('saleDate').valueAsDate = new Date();
@@ -172,18 +166,6 @@ window.updatePartyDetails = function() {
     }
 };
 
-window.handleTaxModeChange = function() {
-    const mode = document.getElementById('taxMode').value;
-    if(mode === "WITH_GST") {
-        document.body.classList.add('show-gst');
-        document.getElementById('gstBox').style.display = 'block';
-    } else {
-        document.body.classList.remove('show-gst');
-        document.getElementById('gstBox').style.display = 'none';
-    }
-    window.calculateFinal();
-};
-
 window.addRow = function() {
     const tbody = document.getElementById('tableBody');
     const rowCount = tbody.rows.length + 1;
@@ -192,11 +174,11 @@ window.addRow = function() {
         <td>${rowCount}</td>
         <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)"></td>
         <td><input type="number" class="row-input mrp" value="0" readonly></td>
-        <td><input type="number" class="row-input rate" value="0" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input disc" value="0" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input schm" value="0" oninput="window.calc(this)"></td>
-        <td><input type="number" class="row-input qty" value="1" oninput="window.calc(this)"></td>
-        <td class="tax-col"><input type="number" class="row-input gst" value="0" oninput="window.calc(this)"></td>
+        <td><input type="number" class="row-input rate" value="0" oninput="window.calculateFinal()"></td>
+        <td><input type="number" class="row-input disc" value="0" oninput="window.calculateFinal()"></td>
+        <td><input type="number" class="row-input schm" value="0" oninput="window.calculateFinal()"></td>
+        <td><input type="number" class="row-input qty" value="1" oninput="window.calculateFinal()"></td>
+        <td><input type="number" class="row-input gst" value="0" oninput="window.calculateFinal()"></td>
         <td><input type="number" class="row-input net" value="0.00" readonly style="font-weight:bold;"></td>
     `;
 };
@@ -212,36 +194,37 @@ window.autoFillByName = function(input) {
     }
 };
 
-window.calc = function() { window.calculateFinal(); };
-
 window.calculateFinal = function() {
     let tS = 0, tD = 0, totalGstAmt = 0, nG = 0;
-    
+    const mode = document.getElementById('taxMode').value;
+
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
-        const discPerc = parseFloat(row.querySelector('.disc').value) || 0;
-        const schmAmt = parseFloat(row.querySelector('.schm').value) || 0;
-        const gstPerc = parseFloat(row.querySelector('.gst').value) || 0;
+        const dP = parseFloat(row.querySelector('.disc').value) || 0;
+        const sA = parseFloat(row.querySelector('.schm').value) || 0;
+        const gP = parseFloat(row.querySelector('.gst').value) || 0;
 
         const sub = rate * qty;
-        const dAmt = sub * (discPerc / 100);
-        const taxable = sub - dAmt - schmAmt;
-        
-        const gstAmt = taxable * (gstPerc / 100);
-        
-        tS += sub; 
-        tD += (dAmt + schmAmt); 
-        totalGstAmt += gstAmt;
-        
-        const rowNet = taxable + gstAmt;
+        const dAmt = sub * (dP / 100);
+        const taxable = sub - dAmt - sA;
+        const gstVal = taxable * (gP / 100);
+
+        tS += sub;
+        tD += (dAmt + sA);
+        totalGstAmt += gstVal;
+
+        // Row Net is ALWAYS inclusive of GST so total doesn't change
+        const rowNet = taxable + gstVal;
         row.querySelector('.net').value = rowNet.toFixed(2);
         nG += rowNet;
     });
-    
+
     document.getElementById('sumTotalSale').innerText = tS.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
-    document.getElementById('sumGST').innerText = totalGstAmt.toFixed(2);
+    
+    // UI Update: Show GST only if Tax Invoice is selected
+    document.getElementById('sumGST').innerText = (mode === "WITH_GST") ? totalGstAmt.toFixed(2) : "0.00";
     
     const finalRounded = Math.round(nG);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
@@ -256,9 +239,10 @@ window.saveSale = async function(shouldPrint = false) {
 
     const billItems = [];
     document.querySelectorAll('#tableBody tr').forEach(row => {
-        if(row.querySelector('.i-name').value) {
+        const name = row.querySelector('.i-name').value;
+        if(name) {
             billItems.push({
-                name: row.querySelector('.i-name').value,
+                name: name,
                 qty: row.querySelector('.qty').value,
                 rate: row.querySelector('.rate').value,
                 mrp: row.querySelector('.mrp').value,
@@ -280,12 +264,9 @@ window.saveSale = async function(shouldPrint = false) {
         summary: {
             gross: document.getElementById('sumTotalSale').innerText,
             disc: document.getElementById('sumTotalDisc').innerText,
-            gst: document.getElementById('sumGST').innerText,
+            gst: document.getElementById('sumGST').innerText, // This will be 0 if Cash Memo
             net: document.getElementById('sumNet').innerText
         },
-        netTotal: parseFloat(document.getElementById('sumNet').innerText) || 0,
-        paidAmount: parseFloat(document.getElementById('paidAmt').value) || 0,
-        balance: parseFloat(document.getElementById('sumBalance').innerText) || 0,
         createdAt: serverTimestamp()
     };
 
@@ -305,6 +286,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
