@@ -214,7 +214,7 @@ window.calculateFinal = function() {
         tD += (dAmt + sA);
         totalGstAmt += gstVal;
 
-        // Row Net is ALWAYS inclusive of GST so total doesn't change
+        // Row Net is ALWAYS inclusive of GST so total doesn't change visually
         const rowNet = taxable + gstVal;
         row.querySelector('.net').value = rowNet.toFixed(2);
         nG += rowNet;
@@ -223,7 +223,7 @@ window.calculateFinal = function() {
     document.getElementById('sumTotalSale').innerText = tS.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
     
-    // UI Update: Show GST only if Tax Invoice is selected
+    // Logic: If Cash Memo, summary GST shows 0, but Net Total includes the tax
     document.getElementById('sumGST').innerText = (mode === "WITH_GST") ? totalGstAmt.toFixed(2) : "0.00";
     
     const finalRounded = Math.round(nG);
@@ -264,7 +264,7 @@ window.saveSale = async function(shouldPrint = false) {
         summary: {
             gross: document.getElementById('sumTotalSale').innerText,
             disc: document.getElementById('sumTotalDisc').innerText,
-            gst: document.getElementById('sumGST').innerText, // This will be 0 if Cash Memo
+            gst: document.getElementById('sumGST').innerText,
             net: document.getElementById('sumNet').innerText
         },
         createdAt: serverTimestamp()
@@ -286,6 +286,8 @@ init();
 </script>
 </body>
 </html>
+
+
 
 
 
