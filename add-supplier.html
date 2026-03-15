@@ -51,6 +51,18 @@ input[disabled]{
   color:#333;
 }
 
+/* Section Divider for Bank Details */
+.section-head {
+  grid-column: 1/-1;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 47, 146, 0.3);
+  margin-top: 10px;
+  color: #ffb3d9;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
 /* BUTTONS */
 .buttons{
   grid-column:1/-1;
@@ -86,9 +98,13 @@ button{
   text-align:center;
   font-weight:700;
 }
+.table-wrapper {
+  overflow-x: auto;
+}
 table{
   width:100%;
   border-collapse:collapse;
+  min-width: 900px;
 }
 th,td{
   padding:10px;
@@ -111,7 +127,6 @@ tr:hover td{background:rgba(255,255,255,.08)}
 <div class="container">
 <h1>Supplier Master</h1>
 
-<!-- FORM -->
 <div class="form">
 
   <div>
@@ -134,6 +149,28 @@ tr:hover td{background:rgba(255,255,255,.08)}
     <input id="brand" placeholder="Enter brand or group">
   </div>
 
+  <div class="section-head">Bank Details (Optional)</div>
+
+  <div>
+    <label>Bank Name</label>
+    <input id="bankName" placeholder="e.g. State Bank of India">
+  </div>
+
+  <div>
+    <label>Account Number</label>
+    <input id="accNo" placeholder="Enter account number">
+  </div>
+
+  <div>
+    <label>IFSC Code</label>
+    <input id="ifsc" placeholder="Enter IFSC code">
+  </div>
+
+  <div>
+    <label>Branch Name</label>
+    <input id="branch" placeholder="Enter branch location">
+  </div>
+
   <div class="buttons">
     <button class="add" onclick="addNew()">Add New</button>
     <button class="save" onclick="saveSupplier()">Save</button>
@@ -143,27 +180,28 @@ tr:hover td{background:rgba(255,255,255,.08)}
 
 </div>
 
-<!-- LIST -->
 <div class="list">
   <div class="list-title">Supplier Master List</div>
-  <table>
-    <thead>
-      <tr>
-        <th>Sr</th>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Contact</th>
-        <th>Brand / Group</th>
-      </tr>
-    </thead>
-    <tbody id="supplierList"></tbody>
-  </table>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Sr</th>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Brand / Group</th>
+          <th>Bank Details</th>
+        </tr>
+      </thead>
+      <tbody id="supplierList"></tbody>
+    </table>
+  </div>
 </div>
 
 </div>
 
 <script type="module">
-/* 1. FIREBASE IMPORTS */
 import { db } from './firebase-config.js';
 import { 
     collection, 
@@ -174,21 +212,17 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* 🔐 LOGIN CHECK */
 if(localStorage.getItem("loggedIn") !== "true"){
     window.location.href = "index.html";
 }
 
-/* DATA STATE */
 let suppliers = [];
 
-/* ☁️ LOAD FROM CLOUD */
 async function loadSuppliers() {
     const tbody = document.getElementById("supplierList");
-    if(tbody) tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Syncing with Cloud...</td></tr>";
+    if(tbody) tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Syncing with Cloud...</td></tr>";
 
     try {
-        // Querying all suppliers ordered by code
         const q = query(collection(db, "suppliers"), orderBy("code", "asc"));
         const querySnapshot = await getDocs(q);
         
@@ -198,34 +232,40 @@ async function loadSuppliers() {
         }));
         
         renderSuppliers();
-        window.addNew(); // Calculate next available code
+        window.addNew(); 
     } catch (err) {
         console.error("Cloud Fetch Error:", err);
     }
 }
 
-/* 🔢 SMART AUTO-CODE (Cloud Based) */
 window.addNew = function() {
-    // Finds the highest existing code and adds 1
     const nextCode = suppliers.length === 0 
         ? 1 
         : Math.max(...suppliers.map(s => Number(s.code || 0))) + 1;
 
-    // Reset Form Fields
     document.getElementById("supplierCode").value = nextCode;
     document.getElementById("supplierName").value = "";
     document.getElementById("contact").value = "";
     document.getElementById("brand").value = "";
+    document.getElementById("bankName").value = "";
+    document.getElementById("accNo").value = "";
+    document.getElementById("ifsc").value = "";
+    document.getElementById("branch").value = "";
     document.getElementById("supplierName").focus();
 };
 
-/* 💾 SAVE TO CLOUD */
 window.saveSupplier = async function() {
     const nameInput = document.getElementById("supplierName");
     const name = nameInput.value.trim();
     const code = Number(document.getElementById("supplierCode").value);
     const contact = document.getElementById("contact").value.trim();
     const brand = document.getElementById("brand").value.trim();
+    
+    // Bank details
+    const bankName = document.getElementById("bankName").value.trim();
+    const accNo = document.getElementById("accNo").value.trim();
+    const ifsc = document.getElementById("ifsc").value.trim();
+    const branch = document.getElementById("branch").value.trim();
 
     if(!name){
         alert("Please enter a Supplier Name");
@@ -233,7 +273,6 @@ window.saveSupplier = async function() {
         return;
     }
 
-    // Check for duplicate names locally before uploading
     const isDuplicate = suppliers.some(s => s.name.toLowerCase() === name.toLowerCase());
     if(isDuplicate) {
         if(!confirm("A supplier with this name already exists. Save anyway?")) return;
@@ -244,32 +283,38 @@ window.saveSupplier = async function() {
         name: name,
         contact: contact,
         brand: brand,
+        bankName: bankName,
+        accNo: accNo,
+        ifsc: ifsc,
+        branch: branch,
         createdAt: serverTimestamp()
     };
 
     try {
         await addDoc(collection(db, "suppliers"), supplierData);
         alert("Supplier successfully synced to Cloud ✅");
-        
-        // Refresh local list to keep UI updated
         await loadSuppliers();
     } catch (e) {
         alert("Cloud Save Error: " + e.message);
     }
 };
 
-/* 📊 RENDER TABLE */
 function renderSuppliers() {
     const tbody = document.getElementById("supplierList");
     if(!tbody) return;
     tbody.innerHTML = "";
 
     if(suppliers.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>No suppliers found in database.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px;'>No suppliers found in database.</td></tr>";
         return;
     }
 
     suppliers.forEach((s, i) => {
+        // Formatting bank info for the table
+        const bankInfo = s.bankName 
+            ? `${s.bankName} (${s.accNo || 'N/A'})` 
+            : "-";
+
         tbody.innerHTML += `
             <tr>
                 <td>${i + 1}</td>
@@ -277,18 +322,18 @@ function renderSuppliers() {
                 <td>${s.name}</td>
                 <td>${s.contact || "-"}</td>
                 <td>${s.brand || "-"}</td>
+                <td style="font-size:11px; color:#ffb3d9;">${bankInfo}</td>
             </tr>`;
     });
 }
 
-/* ⬅️ EXIT */
 window.goBack = function() {
     window.location.href = "master-entry.html";
 };
 
-/* 🚀 INITIALIZE */
 loadSuppliers();
 
 </script>
 </body>
 </html>
+
