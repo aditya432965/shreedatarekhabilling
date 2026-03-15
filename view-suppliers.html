@@ -24,7 +24,7 @@ body{
 
 .container{
   width:100%;
-  max-width:1100px;
+  max-width:1200px; /* Slightly wider for more columns */
   background:rgba(0,0,0,.65);
   border-radius:22px;
   padding:25px;
@@ -66,13 +66,18 @@ h1{
   font-weight:700;
 }
 
+.table-wrapper {
+  overflow-x: auto; /* Scroll for mobile */
+}
+
 table{
   width:100%;
   border-collapse:collapse;
+  min-width: 1000px; /* Ensures columns don't squish */
 }
 
 th,td{
-  padding:10px;
+  padding:12px 10px;
   border-bottom:1px solid rgba(255,255,255,.12);
   text-align:center;
   font-size:13px;
@@ -80,6 +85,9 @@ th,td{
 
 th{
   background:rgba(0,0,0,.6);
+  color: #ffb3d9;
+  text-transform: uppercase;
+  font-size: 11px;
 }
 
 td{
@@ -88,6 +96,12 @@ td{
 
 tr:hover td{
   background:rgba(255,255,255,.08);
+}
+
+/* BANK INFO STYLING */
+.bank-cell {
+  font-size: 11px;
+  color: #ffb3d9;
 }
 
 /* BUTTON */
@@ -105,6 +119,11 @@ button{
   color:white;
   font-weight:600;
   cursor:pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #555;
 }
 
 @media(max-width:900px){
@@ -119,29 +138,32 @@ button{
 
 <h1>View Supplier List</h1>
 
-<!-- SEARCH -->
 <div class="search-box">
-  <input id="search" placeholder="Search by name / contact / brand" oninput="applySearch()">
+  <input id="search" placeholder="Search by name / contact / bank / brand" oninput="applySearch()">
 </div>
 
-<!-- TABLE -->
 <div class="list">
-  <div class="list-title">Supplier Master</div>
-  <table>
-    <thead>
-      <tr>
-        <th>Sr No</th>
-        <th>Supplier Code</th>
-        <th>Supplier Name</th>
-        <th>Contact</th>
-        <th>Brand / Group</th>
-      </tr>
-    </thead>
-    <tbody id="supplierTable"></tbody>
-  </table>
+  <div class="list-title">Supplier Master Database</div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Code</th>
+          <th>Supplier Name</th>
+          <th>Contact</th>
+          <th>Brand / Group</th>
+          <th>Bank Name</th>
+          <th>Acc Number</th>
+          <th>IFSC Code</th>
+          <th>Branch</th>
+        </tr>
+      </thead>
+      <tbody id="supplierTable"></tbody>
+    </table>
+  </div>
 </div>
 
-<!-- BACK -->
 <div class="back-btn">
   <button onclick="goBack()">Back</button>
 </div>
@@ -149,7 +171,6 @@ button{
 </div>
 
 <script type="module">
-/* 1. FIREBASE IMPORTS */
 import { db } from './firebase-config.js';
 import { 
     collection, 
@@ -158,21 +179,17 @@ import {
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* 🔐 LOGIN CHECK */
 if(localStorage.getItem("loggedIn") !== "true"){
     window.location.href = "index.html";
 }
 
-/* DATA STATE */
 let suppliers = [];
 
-/* ☁️ LOAD FROM CLOUD */
 async function loadSuppliers() {
     const tbody = document.getElementById("supplierTable");
-    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Loading suppliers...</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='9' style='text-align:center; padding: 20px;'>Loading suppliers...</td></tr>";
 
     try {
-        // Fetching from 'suppliers' collection, sorted by Code
         const q = query(collection(db, "suppliers"), orderBy("code", "asc"));
         const querySnapshot = await getDocs(q);
         
@@ -181,18 +198,17 @@ async function loadSuppliers() {
         renderTable(suppliers);
     } catch (err) {
         console.error("Cloud Error:", err);
-        tbody.innerHTML = "<tr><td colspan='5' style='color:red; text-align:center;'>Error loading data.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='9' style='color:red; text-align:center;'>Error loading data.</td></tr>";
     }
 }
 
-/* 📊 RENDER TABLE */
 function renderTable(list) {
     const tbody = document.getElementById("supplierTable");
     if(!tbody) return;
     tbody.innerHTML = "";
 
     if(list.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px;'>No suppliers found.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='9' style='text-align:center; padding:20px;'>No suppliers found.</td></tr>";
         return;
     }
 
@@ -200,15 +216,18 @@ function renderTable(list) {
         tbody.innerHTML += `
             <tr>
                 <td>${i + 1}</td>
-                <td>${s.code}</td>
-                <td>${s.name}</td>
+                <td><strong>${s.code}</strong></td>
+                <td style="text-align:left; font-weight:600;">${s.name}</td>
                 <td>${s.contact || "-"}</td>
                 <td>${s.brand || "-"}</td>
+                <td class="bank-cell">${s.bankName || "-"}</td>
+                <td class="bank-cell">${s.accNo || "-"}</td>
+                <td class="bank-cell">${s.ifsc || "-"}</td>
+                <td class="bank-cell">${s.branch || "-"}</td>
             </tr>`;
     });
 }
 
-/* 🔍 WINDOW BRIDGE: SEARCH */
 window.applySearch = function() {
     const q = document.getElementById("search").value.toLowerCase();
 
@@ -216,20 +235,21 @@ window.applySearch = function() {
         s.name.toLowerCase().includes(q) ||
         (s.contact || "").includes(q) ||
         (s.brand || "").toLowerCase().includes(q) ||
+        (s.bankName || "").toLowerCase().includes(q) ||
+        (s.accNo || "").includes(q) ||
         s.code.toString().includes(q)
     );
 
     renderTable(filtered);
 };
 
-/* ⬅️ EXIT */
 window.goBack = function() {
     window.location.href = "master-entry.html";
 };
 
-/* 🚀 INITIALIZE */
 loadSuppliers();
 
 </script>
 </body>
 </html>
+
