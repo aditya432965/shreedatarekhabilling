@@ -47,7 +47,7 @@ h1{text-align:center;margin-bottom:15px}
 /* MAIN */
 .main{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr 1.2fr;
   gap:20px;
 }
 
@@ -56,7 +56,7 @@ h1{text-align:center;margin-bottom:15px}
   border:1px solid #ff9fc555;
   border-radius:16px;
   overflow:auto;
-  max-height:450px;
+  max-height:550px;
 }
 table{
   width:100%;
@@ -68,7 +68,7 @@ th,td{
   font-size:13px;
   text-align:center;
 }
-th{background:#ff2f92}
+th{background:#ff2f92; position: sticky; top: 0; z-index: 1;}
 tr:hover{background:rgba(255,255,255,.08);cursor:pointer}
 
 /* FORM */
@@ -76,6 +76,17 @@ tr:hover{background:rgba(255,255,255,.08);cursor:pointer}
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
+  align-content: start;
+}
+.section-head {
+  grid-column: 1/-1;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 47, 146, 0.3);
+  margin-top: 5px;
+  color: #ffb3d9;
+  font-weight: bold;
+  font-size: 13px;
+  text-transform: uppercase;
 }
 label{
   font-size:13px;
@@ -85,6 +96,7 @@ input{
   padding:11px;
   border:none;
   border-radius:12px;
+  outline: none;
 }
 input[disabled]{background:#ccc}
 
@@ -103,9 +115,11 @@ button{
   font-weight:600;
   color:white;
   cursor:pointer;
+  transition: 0.2s;
 }
+button:active { transform: scale(0.96); }
 .update{background:#4CAF50}
-.delete{background:#d32f2f} /* New Delete Button Style */
+.delete{background:#d32f2f}
 .reset{background:#777}
 .back{background:#444}
 
@@ -161,9 +175,32 @@ button{
     <input id="brand">
   </div>
 
+  <div class="section-head">Bank Details (Optional)</div>
+
+  <div>
+    <label>Bank Name</label>
+    <input id="bankName" placeholder="Bank Name">
+  </div>
+
+  <div>
+    <label>Account Number</label>
+    <input id="accNo" placeholder="Account No">
+  </div>
+
+  <div>
+    <label>IFSC Code</label>
+    <input id="ifsc" placeholder="IFSC Code">
+  </div>
+
+  <div>
+    <label>Branch Name</label>
+    <input id="branch" placeholder="Branch">
+  </div>
+
   <div class="buttons">
     <button class="update" onclick="updateSupplier()">Update</button>
-    <button class="delete" onclick="deleteSupplier()">Delete</button> <button class="reset" onclick="resetForm()">Reset</button>
+    <button class="delete" onclick="deleteSupplier()">Delete</button> 
+    <button class="reset" onclick="resetForm()">Reset</button>
     <button class="back" onclick="location.href='master-entry.html'">Back</button>
   </div>
 
@@ -172,7 +209,6 @@ button{
 </div>
 
 <script type="module">
-/* 1. FIREBASE IMPORTS */
 import { db } from './firebase-config.js';
 import { 
     collection, 
@@ -184,17 +220,14 @@ import {
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* 🔐 LOGIN CHECK */
 if(localStorage.getItem("loggedIn") !== "true"){
     window.location.href = "index.html";
 }
 
-/* DATA STATE */
 const COLL_NAME = "suppliers";
-let suppliers = [];        // Master list from cloud
-let selectedDocId = null;  // Stores the unique Firebase ID
+let suppliers = [];        
+let selectedDocId = null;  
 
-/* ☁️ LOAD DATA FROM CLOUD */
 async function loadSuppliers() {
     try {
         const q = query(collection(db, COLL_NAME), orderBy("name", "asc"));
@@ -211,7 +244,6 @@ async function loadSuppliers() {
     }
 }
 
-/* 📊 RENDER TABLE */
 function render(list) {
     const tbody = document.getElementById("supplierList");
     if(!tbody) return;
@@ -221,13 +253,12 @@ function render(list) {
         tbody.innerHTML += `
             <tr onclick="selectSupplier('${s.id}')" style="cursor:pointer">
                 <td>${s.code}</td>
-                <td>${s.name}</td>
+                <td style="text-align:left;">${s.name}</td>
                 <td>${s.contact || "-"}</td>
             </tr>`;
     });
 }
 
-/* 🔍 WINDOW BRIDGE: FILTERING */
 window.filterSuppliers = function() {
     const q = document.getElementById("search").value.toLowerCase();
     const filtered = suppliers.filter(s =>
@@ -239,7 +270,6 @@ window.filterSuppliers = function() {
     render(filtered);
 };
 
-/* 🖱️ WINDOW BRIDGE: SELECT */
 window.selectSupplier = function(docId) {
     const s = suppliers.find(item => item.id === docId);
     if(!s) return;
@@ -251,10 +281,15 @@ window.selectSupplier = function(docId) {
     document.getElementById("contact").value = s.contact || "";
     document.getElementById("brand").value = s.brand || "";
     
+    // Load Bank Details
+    document.getElementById("bankName").value = s.bankName || "";
+    document.getElementById("accNo").value = s.accNo || "";
+    document.getElementById("ifsc").value = s.ifsc || "";
+    document.getElementById("branch").value = s.branch || "";
+    
     document.getElementById("code").disabled = true;
 };
 
-/* 🆙 WINDOW BRIDGE: UPDATE */
 window.updateSupplier = async function() {
     if(!selectedDocId) {
         alert("Please select a supplier from the list first");
@@ -264,7 +299,11 @@ window.updateSupplier = async function() {
     const updatedData = {
         name: document.getElementById("name").value.trim(),
         contact: document.getElementById("contact").value.trim(),
-        brand: document.getElementById("brand").value.trim()
+        brand: document.getElementById("brand").value.trim(),
+        bankName: document.getElementById("bankName").value.trim(),
+        accNo: document.getElementById("accNo").value.trim(),
+        ifsc: document.getElementById("ifsc").value.trim(),
+        branch: document.getElementById("branch").value.trim()
     };
 
     if(!updatedData.name) return alert("Supplier name is required");
@@ -272,14 +311,13 @@ window.updateSupplier = async function() {
     try {
         const docRef = doc(db, COLL_NAME, selectedDocId);
         await updateDoc(docRef, updatedData);
-        alert("Supplier updated successfully in Cloud ✅");
+        alert("Supplier & Bank details updated successfully! ✅");
         await loadSuppliers();
     } catch (e) {
         alert("Update Failed: " + e.message);
     }
 };
 
-/* 🗑️ WINDOW BRIDGE: DELETE */
 window.deleteSupplier = async function() {
     if(!selectedDocId) {
         alert("Please select a supplier to delete");
@@ -292,28 +330,27 @@ window.deleteSupplier = async function() {
         await deleteDoc(doc(db, COLL_NAME, selectedDocId));
         alert("Supplier deleted successfully 🗑️");
         
-        // Clear form and reload
         selectedDocId = null;
-        document.getElementById("code").value = "";
-        document.getElementById("name").value = "";
-        document.getElementById("contact").value = "";
-        document.getElementById("brand").value = "";
-        
+        clearForm();
         await loadSuppliers();
     } catch (e) {
         alert("Delete Failed: " + e.message);
     }
 };
 
-/* 🔄 WINDOW BRIDGE: RESET */
+function clearForm() {
+    const fields = ["code", "name", "contact", "brand", "bankName", "accNo", "ifsc", "branch"];
+    fields.forEach(f => document.getElementById(f).value = "");
+}
+
 window.resetForm = function() {
     if(selectedDocId) window.selectSupplier(selectedDocId);
+    else clearForm();
 };
 
-/* 🚀 INITIALIZE */
 loadSuppliers();
-
 </script>
 
 </body>
 </html>
+
