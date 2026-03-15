@@ -3,31 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <title>Modify Supplier Master</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:Segoe UI, Arial;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
+
 body{
   min-height:100vh;
   background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
   display:flex;
   justify-content:center;
-  padding:20px;
+  padding:10px;
   color:white;
 }
+
 .container{
   width:100%;
   max-width:1100px;
-  background:rgba(0,0,0,.65);
+  background:rgba(0,0,0,.7);
+  backdrop-filter: blur(10px);
   border-radius:22px;
-  padding:25px;
+  padding:20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-h1{text-align:center;margin-bottom:15px}
+
+h1{
+  text-align:center;
+  margin-bottom:15px;
+  font-size: 1.6rem;
+}
 
 /* SEARCH */
 .search-box{
@@ -37,94 +46,147 @@ h1{text-align:center;margin-bottom:15px}
 }
 .search-box input{
   width:100%;
-  max-width:400px;
-  padding:12px;
-  border-radius:14px;
-  border:none;
+  max-width:500px;
+  padding:14px;
+  border-radius:50px;
+  border:1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.3);
+  color: white;
   outline:none;
+  font-size: 16px;
 }
 
-/* MAIN */
+/* MAIN LAYOUT */
 .main{
   display:grid;
-  grid-template-columns:1fr 1.2fr;
+  grid-template-columns: 1fr 1.2fr;
   gap:20px;
 }
 
-/* LIST */
-.list{
-  border:1px solid #ff9fc555;
-  border-radius:16px;
-  overflow:auto;
-  max-height:550px;
+/* LIST SECTION */
+.list-wrapper {
+  background: rgba(0,0,0,0.2);
+  border-radius: 16px;
+  border: 1px solid rgba(255,159,197,0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+.list-header {
+  background: #ff2f92;
+  padding: 10px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
+}
+
+.list-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 table{
   width:100%;
   border-collapse:collapse;
 }
-th,td{
-  padding:10px;
-  border-bottom:1px solid rgba(255,255,255,.15);
-  font-size:13px;
-  text-align:center;
-}
-th{background:#ff2f92; position: sticky; top: 0; z-index: 1;}
-tr:hover{background:rgba(255,255,255,.08);cursor:pointer}
 
-/* FORM */
+th, td {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+th {
+  background: rgba(0,0,0,0.5);
+  position: sticky;
+  top: 0;
+  color: #ffb3d9;
+  z-index: 2;
+}
+
+tr:active { background: rgba(255, 47, 146, 0.2); }
+
+/* FORM SECTION */
 .form{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap:12px;
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 16px;
   align-content: start;
 }
+
 .section-head {
-  grid-column: 1/-1;
+  grid-column: 1 / -1;
   padding: 8px 0;
   border-bottom: 1px solid rgba(255, 47, 146, 0.3);
-  margin-top: 5px;
+  margin: 5px 0;
   color: #ffb3d9;
   font-weight: bold;
-  font-size: 13px;
+  font-size: 12px;
   text-transform: uppercase;
+  letter-spacing: 1px;
 }
+
 label{
-  font-size:13px;
-  color:#ffb3d9;
+  font-size: 11px;
+  color: #ffb3d9;
+  margin-bottom: 4px;
+  font-weight: 600;
 }
+
 input{
-  padding:11px;
-  border:none;
-  border-radius:12px;
-  outline: none;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+  width: 100%;
 }
-input[disabled]{background:#ccc}
+
+input[disabled]{ background: #ddd; color: #666; }
 
 /* BUTTONS */
 .buttons{
-  grid-column:1/-1;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-  gap:10px;
-  margin-top:10px;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
 }
-button{
-  padding:12px;
-  border:none;
-  border-radius:14px;
-  font-weight:600;
-  color:white;
-  cursor:pointer;
-  transition: 0.2s;
-}
-button:active { transform: scale(0.96); }
-.update{background:#4CAF50}
-.delete{background:#d32f2f}
-.reset{background:#777}
-.back{background:#444}
 
-@media(max-width:900px){
-  .main{grid-template-columns:1fr}
+button{
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.update{ background: #4CAF50; }
+.delete{ background: #e53935; }
+.reset { background: #777; }
+.back  { background: #444; }
+
+/* MOBILE RESPONSIVENESS */
+@media(max-width: 850px){
+  .main { grid-template-columns: 1fr; }
+  .list-scroll { max-height: 250px; }
+  .container { padding: 15px; }
+  h1 { font-size: 1.4rem; }
+}
+
+@media(max-width: 480px){
+  .form { grid-template-columns: 1fr; }
+  .buttons { grid-template-columns: 1fr; }
+  input { font-size: 16px; } /* Prevents iOS zoom on focus */
 }
 </style>
 </head>
@@ -132,80 +194,80 @@ button:active { transform: scale(0.96); }
 <body>
 
 <div class="container">
-<h1>Modify Supplier Master</h1>
+  <h1>Modify Supplier Master</h1>
 
-<div class="search-box">
-  <input id="search" placeholder="Search by name / contact / brand" oninput="filterSuppliers()">
-</div>
-
-<div class="main">
-
-<div class="list">
-<table>
-<thead>
-<tr>
-  <th>Code</th>
-  <th>Name</th>
-  <th>Contact</th>
-</tr>
-</thead>
-<tbody id="supplierList"></tbody>
-</table>
-</div>
-
-<div class="form">
-
-  <div>
-    <label>Supplier Code</label>
-    <input id="code" disabled>
+  <div class="search-box">
+    <input id="search" placeholder="Search name, contact or brand..." oninput="filterSuppliers()">
   </div>
 
-  <div>
-    <label>Supplier Name</label>
-    <input id="name">
+  <div class="main">
+    <div class="list-wrapper">
+      <div class="list-header">Select Supplier to Edit</div>
+      <div class="list-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Contact</th>
+            </tr>
+          </thead>
+          <tbody id="supplierList"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="form">
+      <div>
+        <label>Supplier Code</label>
+        <input id="code" disabled>
+      </div>
+
+      <div>
+        <label>Supplier Name</label>
+        <input id="name">
+      </div>
+
+      <div>
+        <label>Contact Number</label>
+        <input id="contact">
+      </div>
+
+      <div>
+        <label>Brand / Group</label>
+        <input id="brand">
+      </div>
+
+      <div class="section-head">Bank Details (Optional)</div>
+
+      <div>
+        <label>Bank Name</label>
+        <input id="bankName">
+      </div>
+
+      <div>
+        <label>Account Number</label>
+        <input id="accNo">
+      </div>
+
+      <div>
+        <label>IFSC Code</label>
+        <input id="ifsc">
+      </div>
+
+      <div>
+        <label>Branch Name</label>
+        <input id="branch">
+      </div>
+
+      <div class="buttons">
+        <button class="update" onclick="updateSupplier()">Update</button>
+        <button class="delete" onclick="deleteSupplier()">Delete</button> 
+        <button class="reset" onclick="resetForm()">Reset</button>
+        <button class="back" onclick="location.href='master-entry.html'">Back</button>
+      </div>
+    </div>
   </div>
-
-  <div>
-    <label>Contact Number</label>
-    <input id="contact">
-  </div>
-
-  <div>
-    <label>Brand / Group</label>
-    <input id="brand">
-  </div>
-
-  <div class="section-head">Bank Details (Optional)</div>
-
-  <div>
-    <label>Bank Name</label>
-    <input id="bankName" placeholder="Bank Name">
-  </div>
-
-  <div>
-    <label>Account Number</label>
-    <input id="accNo" placeholder="Account No">
-  </div>
-
-  <div>
-    <label>IFSC Code</label>
-    <input id="ifsc" placeholder="IFSC Code">
-  </div>
-
-  <div>
-    <label>Branch Name</label>
-    <input id="branch" placeholder="Branch">
-  </div>
-
-  <div class="buttons">
-    <button class="update" onclick="updateSupplier()">Update</button>
-    <button class="delete" onclick="deleteSupplier()">Delete</button> 
-    <button class="reset" onclick="resetForm()">Reset</button>
-    <button class="back" onclick="location.href='master-entry.html'">Back</button>
-  </div>
-
-</div>
-</div>
 </div>
 
 <script type="module">
@@ -251,9 +313,9 @@ function render(list) {
 
     list.forEach(s => {
         tbody.innerHTML += `
-            <tr onclick="selectSupplier('${s.id}')" style="cursor:pointer">
+            <tr onclick="selectSupplier('${s.id}')">
                 <td>${s.code}</td>
-                <td style="text-align:left;">${s.name}</td>
+                <td style="text-align:left; font-weight:600;">${s.name}</td>
                 <td>${s.contact || "-"}</td>
             </tr>`;
     });
@@ -280,21 +342,19 @@ window.selectSupplier = function(docId) {
     document.getElementById("name").value = s.name;
     document.getElementById("contact").value = s.contact || "";
     document.getElementById("brand").value = s.brand || "";
-    
-    // Load Bank Details
     document.getElementById("bankName").value = s.bankName || "";
     document.getElementById("accNo").value = s.accNo || "";
     document.getElementById("ifsc").value = s.ifsc || "";
     document.getElementById("branch").value = s.branch || "";
     
-    document.getElementById("code").disabled = true;
+    // Smooth scroll to form on mobile
+    if(window.innerWidth < 850) {
+      document.querySelector('.form').scrollIntoView({ behavior: 'smooth' });
+    }
 };
 
 window.updateSupplier = async function() {
-    if(!selectedDocId) {
-        alert("Please select a supplier from the list first");
-        return;
-    }
+    if(!selectedDocId) return alert("Select a supplier first");
 
     const updatedData = {
         name: document.getElementById("name").value.trim(),
@@ -306,12 +366,11 @@ window.updateSupplier = async function() {
         branch: document.getElementById("branch").value.trim()
     };
 
-    if(!updatedData.name) return alert("Supplier name is required");
+    if(!updatedData.name) return alert("Name is required");
 
     try {
-        const docRef = doc(db, COLL_NAME, selectedDocId);
-        await updateDoc(docRef, updatedData);
-        alert("Supplier & Bank details updated successfully! ✅");
+        await updateDoc(doc(db, COLL_NAME, selectedDocId), updatedData);
+        alert("Updated successfully! ✅");
         await loadSuppliers();
     } catch (e) {
         alert("Update Failed: " + e.message);
@@ -319,17 +378,12 @@ window.updateSupplier = async function() {
 };
 
 window.deleteSupplier = async function() {
-    if(!selectedDocId) {
-        alert("Please select a supplier to delete");
-        return;
-    }
-
-    if(!confirm("Are you sure you want to permanently delete this supplier?")) return;
+    if(!selectedDocId) return alert("Select a supplier first");
+    if(!confirm("Permanently delete this supplier?")) return;
 
     try {
         await deleteDoc(doc(db, COLL_NAME, selectedDocId));
-        alert("Supplier deleted successfully 🗑️");
-        
+        alert("Deleted! 🗑️");
         selectedDocId = null;
         clearForm();
         await loadSuppliers();
@@ -353,4 +407,5 @@ loadSuppliers();
 
 </body>
 </html>
+
 
