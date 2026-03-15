@@ -101,14 +101,14 @@ h1{
 
 /* MOBILE FRIENDLY TABLE */
 .table-wrapper {
-  overflow-x: auto; /* Enables swipe to view on small screens */
+  overflow-x: auto; 
   -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px; /* Keeps columns from squishing */
+  min-width: 800px; 
 }
 
 th, td {
@@ -202,12 +202,10 @@ async function loadAllData() {
     box.innerHTML = "<p style='text-align:center; padding:20px;'>Syncing cloud data...</p>";
 
     try {
-        // 1. Fetch Groups
         const groupSnap = await getDocs(query(collection(db, "brandGroups"), orderBy("name", "asc")));
         groups = groupSnap.docs.map(doc => doc.data());
         loadGroupFilterUI();
 
-        // 2. Fetch Items
         const itemSnap = await getDocs(query(collection(db, "items"), orderBy("name", "asc")));
         items = itemSnap.docs.map(doc => doc.data());
         
@@ -249,10 +247,10 @@ function renderItems(filteredItems){
                                 <th style="text-align:left;">Item Name</th>
                                 <th>HSN</th>
                                 <th>MRP</th>
-                                <th>Sale</th>
                                 <th>Purchase</th>
-                                <th>CGST%</th>
-                                <th>SGST%</th>
+                                <th>GST %</th>
+                                <th>Sale (Basic)</th>
+                                <th>Sale (Incl. GST)</th>
                                 <th>Stock</th>
                             </tr>
                         </thead>
@@ -260,15 +258,18 @@ function renderItems(filteredItems){
         `;
 
         list.forEach(i => {
+            // Handle legacy data where gst might have been cgst+sgst
+            const displayGst = i.gst || (parseFloat(i.cgst || 0) + parseFloat(i.sgst || 0)) || 0;
+            
             html += `
                 <tr>
                     <td style="text-align:left; font-weight:600; color:#fff;">${i.name}</td>
                     <td>${i.hsn || "-"}</td>
                     <td>${i.mrp || 0}</td>
-                    <td>${i.sale || 0}</td>
                     <td>${i.purchase || 0}</td>
-                    <td style="color:#ffb3d9;">${i.cgst || i.gst || 0}</td>
-                    <td style="color:#ffb3d9;">${i.sgst || 0}</td>
+                    <td style="color:#ffb3d9;">${displayGst}%</td>
+                    <td>${i.sale || 0}</td>
+                    <td style="color:#ff2f92; font-weight:bold;">${i.totalSale || 0}</td>
                     <td style="font-weight:bold; color:#4CAF50;">${i.qty || 0}</td>
                 </tr>
             `;
@@ -301,5 +302,6 @@ loadAllData();
 
 </body>
 </html>
+
 
 
