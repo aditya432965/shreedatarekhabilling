@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sale Return | Shree Datarekha Enterprises</title>
+    <title>Sale Return Entry | Shree Datarekha Enterprises</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --primary: #f43f5e; /* Rose color for returns */
+            --primary: #f43f5e;
             --secondary: #001f3f;
             --bg: #0b0f19;
             --card: #1e293b;
@@ -16,182 +16,226 @@
 
         .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
         
-        /* Search Box */
-        .search-container { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
-        .input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-        label { font-size: 12px; color: #a0d8ef; }
-        input, select { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; width: 100%; }
-
-        /* Item Cards for Mobile */
-        .return-item-card { background: var(--card); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #334155; }
-        .item-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; color: #10b981; }
-        .return-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-        .summary-bar { position: sticky; bottom: 10px; background: var(--primary); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        /* Search Area */
+        .search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 11px; color: #a0d8ef; text-transform: uppercase; }
+        input, select { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 100%; outline: none; }
         
-        .btn-submit { background: white; color: var(--primary); border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .badge { background: #334155; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        /* Lists */
+        .dropdown-list { background: #1e293b; border-radius: 8px; margin-top: 5px; max-height: 150px; overflow-y: auto; border: 1px solid #334155; position: absolute; z-index: 100; width: 45%; }
+        .list-item { padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 13px; }
+        .list-item:hover { background: #334155; }
+
+        /* Table Area */
+        .table-container { overflow-x: auto; background: #1e293b; border-radius: 12px; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #334155; padding: 12px; font-size: 12px; color: #a0d8ef; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #334155; font-size: 13px; }
+        
+        .row-input { width: 100%; background: #0f172a; border: 1px solid #475569; color: white; padding: 5px; border-radius: 4px; }
+
+        /* Summary */
+        .summary-box { background: rgba(244, 63, 94, 0.1); border: 1px solid var(--primary); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .total-val { font-size: 24px; color: var(--primary); font-weight: bold; }
+
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save:hover { filter: brightness(1.2); transform: scale(1.02); }
+
         .hidden { display: none; }
+        @media (max-width: 600px) { .search-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="header-section">
     <div>
-        <h2 style="color: var(--primary);">Sale Return</h2>
-        <p style="font-size: 12px; color: #94a3b8;">Credit Note Entry</p>
+        <h2 style="color: var(--primary);">Sale Return Entry</h2>
+        <p style="font-size: 12px; color: #94a3b8;">Select Customer or Bill to process Credit Note</p>
     </div>
     <a href="sale-entry.html" style="color: white; text-decoration: none; font-size: 14px;">← Back</a>
 </div>
 
-<div class="search-container">
+<div class="search-grid">
     <div class="input-group">
-        <label>Find Original Bill (Bill No or Customer)</label>
-        <input type="text" id="billSearch" placeholder="Enter Bill No..." oninput="searchInvoices(this.value)">
-        <div id="searchResults" style="margin-top:5px;"></div>
+        <label>Search Customer</label>
+        <input type="text" id="custSearch" placeholder="Type name..." oninput="filterCustomers(this.value)">
+        <div id="custResults" class="dropdown-list hidden"></div>
+    </div>
+    <div class="input-group">
+        <label>Search Bill No.</label>
+        <input type="text" id="billSearch" placeholder="Type bill no..." oninput="filterBills(this.value)">
+        <div id="billResults" class="dropdown-list hidden"></div>
     </div>
 </div>
 
-<div id="billInfo" class="hidden" style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #334155;">
-    <p id="displayCust" style="font-weight: bold;"></p>
-    <p id="displayDate" style="font-size: 12px; color: #94a3b8;"></p>
+<div id="billSelectionArea" class="hidden" style="margin-bottom: 15px;">
+    <label>Select Previous Bill for this Customer:</label>
+    <select id="billPicker" onchange="loadSpecificBill(this.value)" style="margin-top:5px; border-color: var(--primary);"></select>
 </div>
 
-<div id="returnList">
-    <p style="text-align: center; color: #475569; margin-top: 20px;">Search and select a bill to load items</p>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th width="100">Sold Qty</th>
+                <th width="100">Rate</th>
+                <th width="120">Return Qty</th>
+                <th width="150">Reason</th>
+                <th width="120">Return Amt</th>
+            </tr>
+        </thead>
+        <tbody id="returnTableBody">
+            <tr><td colspan="6" style="text-align:center; padding:40px; color:#64748b;">Load a bill to see items</td></tr>
+        </tbody>
+    </table>
 </div>
 
-<div class="summary-bar hidden" id="bottomBar">
+<div class="summary-box">
     <div>
-        <span style="font-size: 12px; display: block; opacity: 0.8;">Return Total</span>
-        <strong id="returnTotalDisplay" style="font-size: 20px;">₹ 0.00</strong>
+        <p style="font-size: 12px; color: #94a3b8;">TOTAL RETURN AMOUNT</p>
+        <div id="totalReturnLabel" class="total-val">₹ 0.00</div>
     </div>
-    <button class="btn-submit" onclick="processReturn()">Confirm Return</button>
+    <button class="btn-save" onclick="saveReturnData()">Confirm & Save Return</button>
 </div>
 
 <script type="module">
     import { db } from './firebase-config.js';
-    import { collection, getDocs, query, where, addDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, addDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    let activeInvoice = null;
+    let allSales = [];
+    let selectedBill = null;
 
-    window.searchInvoices = async (val) => {
-        if(val.length < 1) {
-            document.getElementById('searchResults').innerHTML = '';
-            return;
-        }
+    // Load Sales on init
+    async function init() {
+        const snap = await getDocs(collection(db, "sales"));
+        allSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    init();
+
+    window.filterCustomers = (val) => {
+        const results = document.getElementById('custResults');
+        if(val.length < 2) { results.classList.add('hidden'); return; }
         
-        const q = query(collection(db, "sales"), where("billNo", "==", val));
-        const snap = await getDocs(q);
+        const filtered = [...new Set(allSales.filter(s => s.customerName.toLowerCase().includes(val.toLowerCase())).map(s => s.customerName))];
         
-        let html = '';
-        snap.forEach(d => {
-            const data = d.data();
-            html += `<div onclick="loadInvoice('${d.id}')" style="padding:10px; background:#0f172a; margin-top:5px; border-radius:5px; cursor:pointer; border:1px solid var(--primary)">
-                Bill #${data.billNo} - ${data.customerName} (₹${data.summary.net})
-            </div>`;
-        });
-        document.getElementById('searchResults').innerHTML = html;
+        results.innerHTML = filtered.map(name => `<div class="list-item" onclick="selectCustomer('${name}')">${name}</div>`).join('');
+        results.classList.remove('hidden');
     };
 
-    window.loadInvoice = async (id) => {
-        const snap = await getDocs(query(collection(db, "sales"))); // For demo, filtering locally
-        const docRef = snap.docs.find(d => d.id === id);
-        activeInvoice = { id: docRef.id, ...docRef.data() };
-
-        document.getElementById('searchResults').innerHTML = '';
-        document.getElementById('billSearch').value = activeInvoice.billNo;
-        document.getElementById('billInfo').classList.remove('hidden');
-        document.getElementById('displayCust').innerText = activeInvoice.customerName;
-        document.getElementById('displayDate').innerText = "Original Date: " + activeInvoice.date;
-
-        renderItems(activeInvoice.items);
-        document.getElementById('bottomBar').classList.remove('hidden');
+    window.selectCustomer = (name) => {
+        document.getElementById('custSearch').value = name;
+        document.getElementById('custResults').classList.add('hidden');
+        
+        const customerBills = allSales.filter(s => s.customerName === name);
+        const picker = document.getElementById('billPicker');
+        picker.innerHTML = `<option value="">-- Choose a Bill --</option>` + 
+            customerBills.map(b => `<option value="${b.billNo}">Bill #${b.billNo} (${b.date}) - ₹${b.summary.net}</option>`).join('');
+        
+        document.getElementById('billSelectionArea').classList.remove('hidden');
     };
 
-    function renderItems(items) {
-        let html = '';
-        items.forEach((item, index) => {
-            html += `
-                <div class="return-item-card">
-                    <div class="item-header">
-                        <span>${item.name}</span>
-                        <span class="badge">Sold Qty: ${item.qty}</span>
-                    </div>
-                    <div class="return-controls">
-                        <div class="input-group">
-                            <label>Return Qty</label>
-                            <input type="number" class="ret-qty" data-index="${index}" data-rate="${item.rate}" value="0" min="0" max="${item.qty}" oninput="calculateReturnTotal()">
-                        </div>
-                        <div class="input-group">
-                            <label>Reason</label>
-                            <select class="ret-reason">
-                                <option>Expired</option>
-                                <option>Damaged</option>
-                                <option>Extra/Remaining</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            `;
+    window.filterBills = (val) => {
+        const results = document.getElementById('billResults');
+        if(val.length < 1) { results.classList.add('hidden'); return; }
+        
+        const filtered = allSales.filter(s => s.billNo.toString().includes(val));
+        results.innerHTML = filtered.map(s => `<div class="list-item" onclick="loadSpecificBill('${s.billNo}')">Bill #${s.billNo} (${s.customerName})</div>`).join('');
+        results.classList.remove('hidden');
+    };
+
+    window.loadSpecificBill = (billNo) => {
+        selectedBill = allSales.find(s => s.billNo.toString() === billNo.toString());
+        if(!selectedBill) return;
+
+        document.getElementById('billResults').classList.add('hidden');
+        document.getElementById('billSearch').value = billNo;
+        document.getElementById('custSearch').value = selectedBill.customerName;
+
+        const tbody = document.getElementById('returnTableBody');
+        tbody.innerHTML = selectedBill.items.map((item, index) => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.qty}</td>
+                <td>${item.rate}</td>
+                <td>
+                    <input type="number" class="row-input ret-qty" 
+                        data-index="${index}" data-rate="${item.rate}" 
+                        value="0" min="0" max="${item.qty}" 
+                        oninput="calculateRow(this)">
+                </td>
+                <td>
+                    <select class="row-input ret-reason">
+                        <option value="Extra/Remaining">Extra/Remaining</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Damaged">Damaged</option>
+                        <option value="Wrong Item">Wrong Item</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </td>
+                <td><input type="text" class="row-input ret-amt" value="0.00" readonly></td>
+            </tr>
+        `).join('');
+    };
+
+    window.calculateRow = (el) => {
+        const row = el.closest('tr');
+        const qty = parseFloat(el.value) || 0;
+        const rate = parseFloat(el.dataset.rate) || 0;
+        const amt = qty * rate;
+        row.querySelector('.ret-amt').value = amt.toFixed(2);
+        
+        calculateGrandTotal();
+    };
+
+    function calculateGrandTotal() {
+        let total = 0;
+        document.querySelectorAll('.ret-amt').forEach(input => {
+            total += parseFloat(input.value) || 0;
         });
-        document.getElementById('returnList').innerHTML = html;
+        document.getElementById('totalReturnLabel').innerText = `₹ ${total.toFixed(2)}`;
     }
 
-    window.calculateReturnTotal = () => {
-        let total = 0;
-        document.querySelectorAll('.ret-qty').forEach(input => {
-            const qty = parseFloat(input.value) || 0;
-            const rate = parseFloat(input.dataset.rate) || 0;
-            total += (qty * rate);
-        });
-        document.getElementById('returnTotalDisplay').innerText = `₹ ${total.toFixed(2)}`;
-    };
-
-    window.processReturn = async () => {
-        if(!confirm("Are you sure you want to process this return?")) return;
-
-        const returns = [];
-        let totalReturnAmt = 0;
-
-        document.querySelectorAll('.ret-qty').forEach((input, i) => {
-            const qty = parseFloat(input.value) || 0;
-            if(qty > 0) {
-                const item = activeInvoice.items[input.dataset.index];
-                returns.push({
-                    name: item.name,
-                    qty: qty,
-                    rate: item.rate,
-                    reason: document.querySelectorAll('.ret-reason')[i].value
+    window.saveReturnData = async () => {
+        if(!selectedBill) return alert("Please select a bill first!");
+        
+        const returnItems = [];
+        document.querySelectorAll('#returnTableBody tr').forEach(row => {
+            const rQty = parseFloat(row.querySelector('.ret-qty').value) || 0;
+            if(rQty > 0) {
+                returnItems.push({
+                    name: row.cells[0].innerText,
+                    originalQty: row.cells[1].innerText,
+                    returnQty: rQty,
+                    rate: row.cells[2].innerText,
+                    reason: row.querySelector('.ret-reason').value,
+                    returnAmount: row.querySelector('.ret-amt').value
                 });
-                totalReturnAmt += (qty * parseFloat(item.rate));
             }
         });
 
-        if(returns.length === 0) return alert("Please enter return quantity for at least one item.");
+        if(returnItems.length === 0) return alert("Return quantity must be greater than 0!");
 
-        const returnData = {
-            originalBillNo: activeInvoice.billNo,
-            customerName: activeInvoice.customerName,
-            items: returns,
-            totalReturnAmount: totalReturnAmt.toFixed(2),
-            date: new Date().toISOString().split('T')[0],
-            createdAt: serverTimestamp()
+        const returnEntry = {
+            originalBillNo: selectedBill.billNo,
+            customerName: selectedBill.customerName,
+            items: returnItems,
+            totalReturnAmount: document.getElementById('totalReturnLabel').innerText.replace('₹ ', ''),
+            returnDate: new Date().toISOString().split('T')[0],
+            timestamp: serverTimestamp()
         };
 
         try {
-            // 1. Save Return Record
-            await addDoc(collection(db, "returns"), returnData);
-            
-            // 2. Here you would typically also update the original sale 
-            // or the customer balance in your database.
-            
-            alert("Return Successful! Inventory will be updated.");
+            await addDoc(collection(db, "returns"), returnEntry);
+            alert("Return Saved Successfully! Stock data is queued for update.");
             location.reload();
         } catch (e) {
-            alert("Error: " + e.message);
+            alert("Error saving: " + e.message);
         }
     };
 </script>
+
 </body>
 </html>
+
