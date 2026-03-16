@@ -214,23 +214,23 @@ window.calculateFinal = function() {
         // Row Net inclusive of GST
         const rowNet = taxable + gstVal;
         
-        // CUSTOM STRATEGY: If Cash Memo is chosen, set Rate equal to Net Amount
+        // STRATEGY: If Cash Memo, update Rate to match Net Amount for internal alignment
         if(mode === "WITHOUT_GST") {
             rateInput.value = rowNet.toFixed(2);
-            rate = rowNet; // Update local rate for calculation consistency
+            rate = rowNet; 
         }
 
         row.querySelector('.net').value = rowNet.toFixed(2);
 
-        tS += sub;
+        tS += (mode === "WITHOUT_GST") ? rowNet : sub; // STRATEGY: Gross follows Net if Cash Memo
         tD += (dAmt + sA);
         totalGstAmt += gstVal;
         nG += rowNet;
     });
 
-    document.getElementById('sumTotalSale').innerText = tS.toFixed(2);
-    document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
-    
+    // Summary Display
+    document.getElementById('sumTotalSale').innerText = (mode === "WITHOUT_GST") ? nG.toFixed(2) : tS.toFixed(2);
+    document.getElementById('sumTotalDisc').innerText = (mode === "WITHOUT_GST") ? "0.00" : tD.toFixed(2);
     document.getElementById('sumGST').innerText = (mode === "WITH_GST") ? totalGstAmt.toFixed(2) : "0.00";
     
     const finalRounded = Math.round(nG);
@@ -293,6 +293,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
