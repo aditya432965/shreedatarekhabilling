@@ -199,7 +199,8 @@ window.calculateFinal = function() {
     const mode = document.getElementById('taxMode').value;
 
     document.querySelectorAll('#tableBody tr').forEach(row => {
-        const rate = parseFloat(row.querySelector('.rate').value) || 0;
+        let rateInput = row.querySelector('.rate');
+        let rate = parseFloat(rateInput.value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const dP = parseFloat(row.querySelector('.disc').value) || 0;
         const sA = parseFloat(row.querySelector('.schm').value) || 0;
@@ -210,20 +211,26 @@ window.calculateFinal = function() {
         const taxable = sub - dAmt - sA;
         const gstVal = taxable * (gP / 100);
 
+        // Row Net inclusive of GST
+        const rowNet = taxable + gstVal;
+        
+        // CUSTOM STRATEGY: If Cash Memo is chosen, set Rate equal to Net Amount
+        if(mode === "WITHOUT_GST") {
+            rateInput.value = rowNet.toFixed(2);
+            rate = rowNet; // Update local rate for calculation consistency
+        }
+
+        row.querySelector('.net').value = rowNet.toFixed(2);
+
         tS += sub;
         tD += (dAmt + sA);
         totalGstAmt += gstVal;
-
-        // Row Net is ALWAYS inclusive of GST so total doesn't change visually
-        const rowNet = taxable + gstVal;
-        row.querySelector('.net').value = rowNet.toFixed(2);
         nG += rowNet;
     });
 
     document.getElementById('sumTotalSale').innerText = tS.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
     
-    // Logic: If Cash Memo, summary GST shows 0, but Net Total includes the tax
     document.getElementById('sumGST').innerText = (mode === "WITH_GST") ? totalGstAmt.toFixed(2) : "0.00";
     
     const finalRounded = Math.round(nG);
@@ -286,6 +293,7 @@ init();
 </script>
 </body>
 </html>
+
 
 
 
