@@ -5,30 +5,31 @@
     <title>Print Invoice</title>
     <style>
         body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
-        .p-container { border: 1px solid black; background: white; width: 210mm; margin: auto; }
+        /* Changed width to 148mm for A4 Half (A5) size */
+        .p-container { border: 1px solid black; background: white; width: 148mm; margin: auto; padding: 2mm; }
         .p-top-bar { font-size: 10px; border-bottom: 1px solid black; padding: 2px 5px; display: flex; justify-content: space-between;}
         .p-header { display: flex; border-bottom: 1px solid black; }
-        .p-comp-info { width: 60%; padding: 10px; border-right: 1px solid black; display: flex; gap: 10px; align-items: center; }
-        .p-logo-print { width: 70px; height: 70px; border-radius: 50%; }
-        .p-cust-info { width: 40%; padding: 10px; }
+        .p-comp-info { width: 60%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
+        .p-logo-print { width: 60px; height: 60px; border-radius: 50%; }
+        .p-cust-info { width: 40%; padding: 5px; }
         .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th, .p-table td { border: 1px solid #d1d1d1; padding: 4px; text-align: center; font-size: 10px; }
+        .p-table th, .p-table td { border: 1px solid #d1d1d1; padding: 3px; text-align: center; font-size: 9px; }
         
         /* Footer Layout */
         .p-footer { display: flex; border-top: 1px solid black; }
-        .p-foot-left { width: 35%; padding: 8px; position: relative; } 
-        .p-foot-mid { width: 25%; padding: 8px; text-align: center; } 
-        .p-qr-img { width: 85px; height: 85px; object-fit: contain; }
+        .p-foot-left { width: 35%; padding: 5px; position: relative; } 
+        .p-foot-mid { width: 25%; padding: 5px; text-align: center; } 
+        .p-qr-img { width: 70px; height: 70px; object-fit: contain; }
         .p-foot-right { width: 40%; }
         
-        .p-bank { border: 1px solid black; padding: 4px; font-size: 10px; margin-bottom: 5px; }
+        .p-bank { border: 1px solid black; padding: 3px; font-size: 9px; margin-bottom: 3px; }
         
         /* Totals Table */
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
-        .p-totals-tbl td { border: 1px solid black; padding: 5px; text-align: right; font-size: 11px; }
+        .p-totals-tbl td { border: 1px solid black; padding: 4px; text-align: right; font-size: 10px; }
         .p-totals-tbl td:first-child { border-left: 1px solid black; } 
         
-        .p-words { font-size: 10px; text-transform: uppercase; }
+        .p-words { font-size: 9px; text-transform: uppercase; }
         
         /* GST Visibility Logic */
         .tax-col, .tax-row { display: none; }
@@ -47,8 +48,8 @@
             <div class="p-comp-info">
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
                 <div>
-                    <h2 style="margin: 0; font-size: 16px;">SHREE DATTAREKHA ENTERPRISES</h2>
-                    <p style="font-size: 11px; margin-top: 6px; line-height: 1.4;">
+                    <h2 style="margin: 0; font-size: 14px;">SHREE DATTAREKHA ENTERPRISES</h2>
+                    <p style="font-size: 10px; margin-top: 4px; line-height: 1.2;">
                         Gunwadi Rd, Baramati<br>
                         Mob No: 9503984711 / 9075621737<br>
                         GST NO: 27AEOPL5652H1Z4<br>
@@ -58,12 +59,12 @@
             </div>
             <div class="p-cust-info">
                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 5px;">
-                    <span style="font-size: 11px;">Date: <strong id="p-date"></strong></span>
-                    <span style="font-size: 11px;">Bill No: <strong id="p-billno"></strong></span>
+                    <span style="font-size: 10px;">Date: <strong id="p-date"></strong></span>
+                    <span style="font-size: 10px;">Bill No: <strong id="p-billno"></strong></span>
                 </div>
-                <p style="font-size: 11px; margin: 0;">To,<br>
-                   <strong id="p-custname" style="font-size: 13px;"></strong><br>
-                   <span id="p-custmeta" style="font-size: 10px; display: block; margin-top: 2px; line-height: 1.4;"></span>
+                <p style="font-size: 10px; margin: 0;">To,<br>
+                   <strong id="p-custname" style="font-size: 12px;"></strong><br>
+                   <span id="p-custmeta" style="font-size: 9px; display: block; margin-top: 2px; line-height: 1.2;"></span>
                 </p>
             </div>
         </div>
@@ -72,15 +73,14 @@
                 <tr>
                     <th width="15">Sr.</th>
                     <th>Item Name</th>
-                    <th width='58'>HSN</th>
-                    <th width='40'>Qty</th>
-                    <th width='40'>Free</th>
-                    <th width='50'>MRP</th>
-                    <th width='60'>Rate</th>
-                    <th width='50'>Disc%</th>
-                    <th class="tax-col" width="45">GST%</th>
-                    <th class="tax-col" width="60">GST Amt</th>
-                    <th width='80'>Amount</th>
+                    <th width='40'>HSN</th>
+                    <th width='30'>Qty</th>
+                    <th width='30'>Free</th>
+                    <th width='40'>MRP</th>
+                    <th width='50'>Rate</th>
+                    <th width='50'>Disc(Amt)</th> <th class="tax-col" width="40">GST%</th>
+                    <th class="tax-col" width="50">GST Amt</th>
+                    <th width='70'>Amount</th>
                 </tr>
             </thead>
             <tbody id="p-items-body"></tbody>
@@ -94,9 +94,9 @@
                     A/C: 049061900000596<br>
                     IFSC: YESB0000490
                 </div>
-                <p style="font-size: 9px; line-height: 1;">Remark: Certified that the particulars given above are true and correct.</p>
+                <p style="font-size: 8px; line-height: 1;">Remark: Certified that the particulars given above are true and correct.</p>
             </div>
-            <div class="p-foot-mid" style="position: relative; top: -5px; left: 40px; width: 85px; height: 85px; margin: auto; display: flex; align-items: center; justify-content: center;">
+            <div class="p-foot-mid" style="position: relative; margin: auto; display: flex; align-items: center; justify-content: center;">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=9503984711@ybl&pn=SHREE%20DATTAREKHA%20ENTERPRISES" class="p-qr-img">
             </div>
             <div class="p-foot-right">
@@ -109,14 +109,15 @@
             </div>
         </div>
         
-        <div class="p-words" style="text-align: right; padding: 0px 10px 5px 0; margin-top: 1px;">
+        <div class="p-words" style="text-align: right; padding: 2px 10px 5px 0; margin-top: 1px;">
             Amount in words: <strong id="p-amount-words"></strong>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; padding: 0 10px 15px 10px;">
-            <div style="font-size: 11px; text-align: left;"><strong>Customer Signatory</strong></div>
-            <div style="font-size: 11px; text-align: right;"><strong>Authorized Signatory</strong></div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding: 0 10px 10px 10px;">
+            <div style="font-size: 10px; text-align: left;"><strong>Customer Signatory</strong></div>
+            <div style="font-size: 10px; text-align: right;"><strong>Authorized Signatory</strong></div>
         </div>    
+    </div>
 
     <script>
         function amountToWords(amount) {
@@ -172,9 +173,18 @@
             }
 
             document.getElementById('p-billno').innerText = data.billNo;
-            document.getElementById('p-date').innerText = data.date;
+            
+            // Format Date to DD/MM/YY
+            const rawDate = new Date(data.date);
+            if(!isNaN(rawDate)) {
+                const dd = String(rawDate.getDate()).padStart(2, '0');
+                const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+                const yy = String(rawDate.getFullYear()).slice(-2);
+                document.getElementById('p-date').innerText = `${dd}/${mm}/${yy}`;
+            } else {
+                document.getElementById('p-date').innerText = data.date;
+            }
 
-            // FIX: Path for customer details from add-sale.html
             document.getElementById('p-custname').innerText = data.customerName; 
             if(data.custMeta) {
                 document.getElementById('p-custmeta').innerHTML = data.custMeta.split('|').map(item => item.trim()).join('<br>');
@@ -207,16 +217,13 @@
                     <td>${item.free || 0}</td>
                     <td>${item.mrp}</td>
                     <td>${item.rate}</td>
-                    <td>${item.disc}%</td>
-                    <td class="tax-col">${item.gst}%</td>
+                    <td>${discAmt.toFixed(2)}</td> <td class="tax-col">${item.gst}%</td>
                     <td class="tax-col">${gstAmt.toFixed(2)}</td>
                     <td style="text-align: right; padding-right: 5px;">${parseFloat(item.net).toFixed(2)}</td>
                 </tr>`;
             });
 
             document.getElementById('p-items-body').innerHTML = rows;
-            
-            // FIX: Summary Paths
             document.getElementById('p-sum-total').innerText = data.summary.gross;
             document.getElementById('p-sum-disc').innerText = data.summary.disc;
             document.getElementById('p-sum-gst').innerText = totalGstCalculated.toFixed(2);
@@ -230,3 +237,4 @@
     </script>
 </body>
 </html>
+
