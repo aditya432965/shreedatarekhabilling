@@ -120,7 +120,7 @@ body {
     <button onclick="navigate('delete-sale.html')">🗑️ Delete Sale Entry</button>
     <button onclick="navigate('check-sero-group.html')">🔍 Check Sero Group Code Entry</button>
     <button onclick="navigate('view-sale.html')">📊 View All Sale Data</button>
-    <button onclick="navigate('sale-return.html')">↙️ Sale Return</button>
+    <button onclick="navigate('sale-return.html')">↙️ Sale Return Entry</button>
   </div>
 
   <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
@@ -128,14 +128,12 @@ body {
 
 <script>
 /* ===== SESSION PROTECTION ===== */
-// Simple check to ensure user is logged in
 if(localStorage.getItem("loggedIn") !== "true"){
   window.location.href = "index.html";
 }
 
 /* ===== NAVIGATION LOGIC ===== */
 function navigate(url) {
-  // Use a slight delay for better UX feel during transition
   setTimeout(() => {
     window.location.href = url;
   }, 150);
@@ -148,3 +146,4 @@ function goBack() {
 
 </body>
 </html>
+
