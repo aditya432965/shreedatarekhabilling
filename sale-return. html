@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sale Return | Shree Datarekha Enterprises</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #f43f5e; /* Rose color for returns */
+            --secondary: #001f3f;
+            --bg: #0b0f19;
+            --card: #1e293b;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: white; padding: 10px; min-height: 100vh; }
+
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
+        
+        /* Search Box */
+        .search-container { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        label { font-size: 12px; color: #a0d8ef; }
+        input, select { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; width: 100%; }
+
+        /* Item Cards for Mobile */
+        .return-item-card { background: var(--card); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #334155; }
+        .item-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px; color: #10b981; }
+        .return-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .summary-bar { position: sticky; bottom: 10px; background: var(--primary); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        
+        .btn-submit { background: white; color: var(--primary); border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .badge { background: #334155; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <div>
+        <h2 style="color: var(--primary);">Sale Return</h2>
+        <p style="font-size: 12px; color: #94a3b8;">Credit Note Entry</p>
+    </div>
+    <a href="sale-entry.html" style="color: white; text-decoration: none; font-size: 14px;">← Back</a>
+</div>
+
+<div class="search-container">
+    <div class="input-group">
+        <label>Find Original Bill (Bill No or Customer)</label>
+        <input type="text" id="billSearch" placeholder="Enter Bill No..." oninput="searchInvoices(this.value)">
+        <div id="searchResults" style="margin-top:5px;"></div>
+    </div>
+</div>
+
+<div id="billInfo" class="hidden" style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #334155;">
+    <p id="displayCust" style="font-weight: bold;"></p>
+    <p id="displayDate" style="font-size: 12px; color: #94a3b8;"></p>
+</div>
+
+<div id="returnList">
+    <p style="text-align: center; color: #475569; margin-top: 20px;">Search and select a bill to load items</p>
+</div>
+
+<div class="summary-bar hidden" id="bottomBar">
+    <div>
+        <span style="font-size: 12px; display: block; opacity: 0.8;">Return Total</span>
+        <strong id="returnTotalDisplay" style="font-size: 20px;">₹ 0.00</strong>
+    </div>
+    <button class="btn-submit" onclick="processReturn()">Confirm Return</button>
+</div>
+
+<script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, where, addDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let activeInvoice = null;
+
+    window.searchInvoices = async (val) => {
+        if(val.length < 1) {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+        
+        const q = query(collection(db, "sales"), where("billNo", "==", val));
+        const snap = await getDocs(q);
+        
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            html += `<div onclick="loadInvoice('${d.id}')" style="padding:10px; background:#0f172a; margin-top:5px; border-radius:5px; cursor:pointer; border:1px solid var(--primary)">
+                Bill #${data.billNo} - ${data.customerName} (₹${data.summary.net})
+            </div>`;
+        });
+        document.getElementById('searchResults').innerHTML = html;
+    };
+
+    window.loadInvoice = async (id) => {
+        const snap = await getDocs(query(collection(db, "sales"))); // For demo, filtering locally
+        const docRef = snap.docs.find(d => d.id === id);
+        activeInvoice = { id: docRef.id, ...docRef.data() };
+
+        document.getElementById('searchResults').innerHTML = '';
+        document.getElementById('billSearch').value = activeInvoice.billNo;
+        document.getElementById('billInfo').classList.remove('hidden');
+        document.getElementById('displayCust').innerText = activeInvoice.customerName;
+        document.getElementById('displayDate').innerText = "Original Date: " + activeInvoice.date;
+
+        renderItems(activeInvoice.items);
+        document.getElementById('bottomBar').classList.remove('hidden');
+    };
+
+    function renderItems(items) {
+        let html = '';
+        items.forEach((item, index) => {
+            html += `
+                <div class="return-item-card">
+                    <div class="item-header">
+                        <span>${item.name}</span>
+                        <span class="badge">Sold Qty: ${item.qty}</span>
+                    </div>
+                    <div class="return-controls">
+                        <div class="input-group">
+                            <label>Return Qty</label>
+                            <input type="number" class="ret-qty" data-index="${index}" data-rate="${item.rate}" value="0" min="0" max="${item.qty}" oninput="calculateReturnTotal()">
+                        </div>
+                        <div class="input-group">
+                            <label>Reason</label>
+                            <select class="ret-reason">
+                                <option>Expired</option>
+                                <option>Damaged</option>
+                                <option>Extra/Remaining</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('returnList').innerHTML = html;
+    }
+
+    window.calculateReturnTotal = () => {
+        let total = 0;
+        document.querySelectorAll('.ret-qty').forEach(input => {
+            const qty = parseFloat(input.value) || 0;
+            const rate = parseFloat(input.dataset.rate) || 0;
+            total += (qty * rate);
+        });
+        document.getElementById('returnTotalDisplay').innerText = `₹ ${total.toFixed(2)}`;
+    };
+
+    window.processReturn = async () => {
+        if(!confirm("Are you sure you want to process this return?")) return;
+
+        const returns = [];
+        let totalReturnAmt = 0;
+
+        document.querySelectorAll('.ret-qty').forEach((input, i) => {
+            const qty = parseFloat(input.value) || 0;
+            if(qty > 0) {
+                const item = activeInvoice.items[input.dataset.index];
+                returns.push({
+                    name: item.name,
+                    qty: qty,
+                    rate: item.rate,
+                    reason: document.querySelectorAll('.ret-reason')[i].value
+                });
+                totalReturnAmt += (qty * parseFloat(item.rate));
+            }
+        });
+
+        if(returns.length === 0) return alert("Please enter return quantity for at least one item.");
+
+        const returnData = {
+            originalBillNo: activeInvoice.billNo,
+            customerName: activeInvoice.customerName,
+            items: returns,
+            totalReturnAmount: totalReturnAmt.toFixed(2),
+            date: new Date().toISOString().split('T')[0],
+            createdAt: serverTimestamp()
+        };
+
+        try {
+            // 1. Save Return Record
+            await addDoc(collection(db, "returns"), returnData);
+            
+            // 2. Here you would typically also update the original sale 
+            // or the customer balance in your database.
+            
+            alert("Return Successful! Inventory will be updated.");
+            location.reload();
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    };
+</script>
+</body>
+</html>
