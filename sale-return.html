@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sale Return Entry | Shree Datarekha Enterprises</title>
     <style>
-        /* CSS variables for consistency */
         :root {
             --primary: #ff2f92;
             --primary-light: #ffb3d9;
@@ -80,15 +79,34 @@
         td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
         
         .row-qty { width: 80px; text-align: center; font-weight: bold; background: rgba(255,47,146,0.1); }
-        .row-reason { width: 150px; }
+        .row-reason { width: 150px; background: #000; border: 1px solid #444; }
 
-        /* STOCK INSIGHT BOX (SYSTEMATIC DATA) */
+        /* STOCK INSIGHT BOX */
         .insight-box {
             background: #1a0510;
             border: 1px solid var(--primary);
             border-radius: 15px;
             padding: 20px;
             margin-top: 20px;
+        }
+
+        /* HISTORY BOX (New Section) */
+        .history-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .history-card {
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .insight-title {
@@ -117,7 +135,6 @@
         .qty-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 13px; }
         .final-qty { color: var(--accent-green); font-weight: bold; font-size: 16px; }
 
-        /* BUTTONS */
         .btn {
             padding: 12px 25px;
             border: none;
@@ -176,21 +193,30 @@
 
     <div class="insight-box" id="stockInsightBox" style="display: none;">
         <div class="insight-title">📊 Live Stock Update Preview</div>
-        <div class="stock-grid" id="stockGrid">
-            </div>
+        <div class="stock-grid" id="stockGrid"></div>
     </div>
 
     <button class="btn btn-save" onclick="saveReturnEntry()">💾 Save Sale Return & Update Stock</button>
+
+    <div class="history-box">
+        <div class="insight-title">📜 Recent Returns History</div>
+        <div id="historyList">
+            <p style="color:#888; text-align:center;">Loading history...</p>
+        </div>
+    </div>
 </div>
 
 <script type="module">
     import { db } from './firebase-config.js';
     import { 
-        collection, getDocs, query, where, addDoc, serverTimestamp, doc, getDoc 
+        collection, getDocs, query, where, addDoc, serverTimestamp, orderBy, limit 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     let activeBillItems = [];
-    let currentStockData = {}; // To store latest stock for items
+    let currentStockData = {};
+
+    /* LOAD HISTORY ON START */
+    window.addEventListener('load', fetchReturnsHistory);
 
     /* 1. FETCH BILL DETAILS */
     window.fetchBillDetails = async function() {
@@ -211,19 +237,19 @@
             }
 
             const data = snap.docs[0].data();
-            document.getElementById("customerName").value = data.customerName || data.header.customerName;
-            document.getElementById("billDate").value = data.date || data.header.billDate;
+            document.getElementById("customerName").value = data.customerName || "N/A";
+            document.getElementById("billDate").value = data.date || "N/A";
             
             activeBillItems = data.items;
             renderReturnTable();
-            loadCurrentStock(); // Get current stock for systematic box
+            loadCurrentStock(); 
         } catch (e) {
             console.error(e);
             alert("Error fetching bill data");
         }
     };
 
-    /* 2. RENDER RETURN TABLE */
+    /* 2. RENDER TABLE */
     function renderReturnTable() {
         const tbody = document.getElementById("returnTableBody");
         tbody.innerHTML = "";
@@ -243,7 +269,7 @@
                         <select class="row-reason">
                             <option value="Expired">Expired</option>
                             <option value="Damaged">Damaged</option>
-                            <option value="Remaining/Extra">Extra</option>
+                            <option value="Extra">Extra</option>
                         </select>
                     </td>
                     <td style="color:var(--accent-green); font-weight:bold;">₹ <span id="refund-${index}">0.00</span></td>
@@ -252,31 +278,24 @@
         });
     }
 
-    /* 3. LOAD CURRENT STOCK FOR SYSTEMATIC BOX */
+    /* 3. STOCK LOGIC */
     async function loadCurrentStock() {
         const grid = document.getElementById("stockGrid");
         grid.innerHTML = "Loading Stock Data...";
         document.getElementById("stockInsightBox").style.display = "block";
 
         try {
-            // Mapping items to their current stock in Firebase
             for (let item of activeBillItems) {
                 const q = query(collection(db, "items"), where("name", "==", item.name));
                 const snap = await getDocs(q);
-                if(!snap.empty) {
-                    currentStockData[item.name] = parseFloat(snap.docs[0].data().stock || 0);
-                } else {
-                    currentStockData[item.name] = 0;
-                }
+                currentStockData[item.name] = !snap.empty ? parseFloat(snap.docs[0].data().stock || 0) : 0;
             }
-            updateInsight(); // Initial render of the insight box
+            updateInsight();
         } catch (e) { console.error(e); }
     }
 
-    /* 4. UPDATE INSIGHT (THE SYSTEMATIC BOX LOGIC) */
     window.updateInsight = function(index, value) {
         if(index !== undefined) {
-            // Update Refund Calculation in Table
             const rate = activeBillItems[index].rate;
             document.getElementById(`refund-${index}`).innerText = (parseFloat(value) * rate).toFixed(2);
         }
@@ -302,7 +321,7 @@
         });
     };
 
-    /* 5. SAVE RETURN & TRIGGER STOCK UPDATES */
+    /* 4. SAVE DATA */
     window.saveReturnEntry = async function() {
         const billNo = document.getElementById("billNoInput").value;
         if(!billNo) return alert("Select a Bill!");
@@ -328,19 +347,59 @@
             }
         });
 
-        if(returnDetails.returnedItems.length === 0) return alert("Enter at least one return quantity!");
+        if(returnDetails.returnedItems.length === 0) return alert("Enter return quantity!");
 
         try {
             await addDoc(collection(db, "saleReturns"), returnDetails);
-            alert("Return Recorded and Stock Previewed Successfully! ✅");
+            alert("Return Saved Successfully! ✅");
             location.reload();
         } catch (e) {
-            alert("Error saving return: " + e.message);
+            alert("Error: " + e.message);
+        }
+    }
+
+    /* 5. FETCH HISTORY (BOX BELOW) */
+    async function fetchReturnsHistory() {
+        const container = document.getElementById("historyList");
+        try {
+            const q = query(collection(db, "saleReturns"), orderBy("returnDate", "desc"), limit(10));
+            const snap = await getDocs(q);
+
+            if(snap.empty) {
+                container.innerHTML = "<p style='text-align:center; color:#888;'>No returns found.</p>";
+                return;
+            }
+
+            container.innerHTML = "";
+            snap.forEach(doc => {
+                const data = doc.data();
+                const date = data.returnDate ? data.returnDate.toDate().toLocaleDateString() : 'Just now';
+                
+                let itemSummary = data.returnedItems.map(i => `${i.name} (${i.qty})`).join(', ');
+
+                container.innerHTML += `
+                    <div class="history-card">
+                        <div>
+                            <span style="color:var(--primary-light); font-weight:bold;">Bill #${data.billNo}</span> - 
+                            <span>${data.customerName}</span><br>
+                            <small style="color:#aaa;">Items: ${itemSummary}</small>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="color:var(--accent-green); font-weight:bold;">₹${data.totalRefundAmount.toFixed(2)}</span><br>
+                            <small style="color:#888;">${date}</small>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = "<p style='color:red;'>Failed to load history.</p>";
         }
     }
 
 </script>
 </body>
 </html>
+
 
 
