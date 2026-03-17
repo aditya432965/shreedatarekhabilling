@@ -2,240 +2,345 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sale Return Entry | Shree Datarekha Enterprises</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sale Return Entry | Shree Datarekha Enterprises</title>
     <style>
+        /* CSS variables for consistency */
         :root {
-            --primary: #f43f5e;
-            --secondary: #001f3f;
-            --bg: #0b0f19;
-            --card: #1e293b;
+            --primary: #ff2f92;
+            --primary-light: #ffb3d9;
+            --bg-dark: #1a0510;
+            --accent-green: #00ff88;
+            --accent-orange: #ff9800;
         }
-        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: white; padding: 10px; min-height: 100vh; }
 
-        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
-        
-        /* Search Area */
-        .search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+        }
+
+        .title { font-size: 24px; font-weight: 700; color: var(--primary-light); }
+
+        /* SEARCH SECTION */
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
         .input-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 11px; color: #a0d8ef; text-transform: uppercase; }
-        input, select { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; width: 100%; outline: none; }
+        .input-group label { font-size: 12px; color: var(--primary-light); font-weight: bold; }
+
+        input, select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+        input:focus { border-color: var(--primary); }
+
+        /* TABLE SECTION */
+        .table-container {
+            overflow-x: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
         
-        /* Lists */
-        .dropdown-list { background: #1e293b; border-radius: 8px; margin-top: 5px; max-height: 150px; overflow-y: auto; border: 1px solid #334155; position: absolute; z-index: 100; width: 45%; }
-        .list-item { padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 13px; }
-        .list-item:hover { background: #334155; }
+        .row-qty { width: 80px; text-align: center; font-weight: bold; background: rgba(255,47,146,0.1); }
+        .row-reason { width: 150px; }
 
-        /* Table Area */
-        .table-container { overflow-x: auto; background: #1e293b; border-radius: 12px; margin: 15px 0; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #334155; padding: 12px; font-size: 12px; color: #a0d8ef; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #334155; font-size: 13px; }
-        
-        .row-input { width: 100%; background: #0f172a; border: 1px solid #475569; color: white; padding: 5px; border-radius: 4px; }
+        /* STOCK INSIGHT BOX (SYSTEMATIC DATA) */
+        .insight-box {
+            background: #1a0510;
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
 
-        /* Summary */
-        .summary-box { background: rgba(244, 63, 94, 0.1); border: 1px solid var(--primary); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .total-val { font-size: 24px; color: var(--primary); font-weight: bold; }
+        .insight-title {
+            color: var(--primary-light);
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-save:hover { filter: brightness(1.2); transform: scale(1.02); }
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
 
-        .hidden { display: none; }
-        @media (max-width: 600px) { .search-grid { grid-template-columns: 1fr; } }
+        .stock-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stock-card h4 { color: var(--accent-orange); margin-bottom: 8px; font-size: 14px; }
+        .qty-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 13px; }
+        .final-qty { color: var(--accent-green); font-weight: bold; font-size: 16px; }
+
+        /* BUTTONS */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-save { background: var(--accent-green); color: #000; width: 100%; margin-top: 20px; font-size: 16px; }
+        .btn-back { background: #555; color: white; text-decoration: none; font-size: 14px; }
+        .btn:hover { opacity: 0.9; transform: scale(1.01); }
+
     </style>
 </head>
 <body>
 
-<div class="header-section">
-    <div>
-        <h2 style="color: var(--primary);">Sale Return Entry</h2>
-        <p style="font-size: 12px; color: #94a3b8;">Select Customer or Bill to process Credit Note</p>
+<div class="container">
+    <div class="header">
+        <div class="title">🔄 Sale Return Entry</div>
+        <a href="sale-entry.html" class="btn btn-back">⬅ Back</a>
     </div>
-    <a href="sale-entry.html" style="color: white; text-decoration: none; font-size: 14px;">← Back</a>
-</div>
 
-<div class="search-grid">
-    <div class="input-group">
-        <label>Search Customer</label>
-        <input type="text" id="custSearch" placeholder="Type name..." oninput="filterCustomers(this.value)">
-        <div id="custResults" class="dropdown-list hidden"></div>
+    <div class="search-grid">
+        <div class="input-group">
+            <label>Bill Number</label>
+            <input type="text" id="billNoInput" placeholder="Enter Bill No..." onchange="fetchBillDetails()">
+        </div>
+        <div class="input-group">
+            <label>Customer Name</label>
+            <input type="text" id="customerName" readonly placeholder="Auto-fetched">
+        </div>
+        <div class="input-group">
+            <label>Original Date</label>
+            <input type="text" id="billDate" readonly>
+        </div>
     </div>
-    <div class="input-group">
-        <label>Search Bill No.</label>
-        <input type="text" id="billSearch" placeholder="Type bill no..." oninput="filterBills(this.value)">
-        <div id="billResults" class="dropdown-list hidden"></div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Sold Qty</th>
+                    <th>Unit</th>
+                    <th>Rate</th>
+                    <th>Return Qty</th>
+                    <th>Reason</th>
+                    <th>Total Refund</th>
+                </tr>
+            </thead>
+            <tbody id="returnTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:30px; color:#888;">Enter Bill Number to load items...</td></tr>
+            </tbody>
+        </table>
     </div>
-</div>
 
-<div id="billSelectionArea" class="hidden" style="margin-bottom: 15px;">
-    <label>Select Previous Bill for this Customer:</label>
-    <select id="billPicker" onchange="loadSpecificBill(this.value)" style="margin-top:5px; border-color: var(--primary);"></select>
-</div>
-
-<div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Item Name</th>
-                <th width="100">Sold Qty</th>
-                <th width="100">Rate</th>
-                <th width="120">Return Qty</th>
-                <th width="150">Reason</th>
-                <th width="120">Return Amt</th>
-            </tr>
-        </thead>
-        <tbody id="returnTableBody">
-            <tr><td colspan="6" style="text-align:center; padding:40px; color:#64748b;">Load a bill to see items</td></tr>
-        </tbody>
-    </table>
-</div>
-
-<div class="summary-box">
-    <div>
-        <p style="font-size: 12px; color: #94a3b8;">TOTAL RETURN AMOUNT</p>
-        <div id="totalReturnLabel" class="total-val">₹ 0.00</div>
+    <div class="insight-box" id="stockInsightBox" style="display: none;">
+        <div class="insight-title">📊 Live Stock Update Preview</div>
+        <div class="stock-grid" id="stockGrid">
+            </div>
     </div>
-    <button class="btn-save" onclick="saveReturnData()">Confirm & Save Return</button>
+
+    <button class="btn btn-save" onclick="saveReturnEntry()">💾 Save Sale Return & Update Stock</button>
 </div>
 
 <script type="module">
     import { db } from './firebase-config.js';
-    import { collection, getDocs, addDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { 
+        collection, getDocs, query, where, addDoc, serverTimestamp, doc, getDoc 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    let allSales = [];
-    let selectedBill = null;
+    let activeBillItems = [];
+    let currentStockData = {}; // To store latest stock for items
 
-    // Load Sales on init
-    async function init() {
-        const snap = await getDocs(collection(db, "sales"));
-        allSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    }
-    init();
+    /* 1. FETCH BILL DETAILS */
+    window.fetchBillDetails = async function() {
+        const billNo = document.getElementById("billNoInput").value;
+        const tbody = document.getElementById("returnTableBody");
+        if(!billNo) return;
 
-    window.filterCustomers = (val) => {
-        const results = document.getElementById('custResults');
-        if(val.length < 2) { results.classList.add('hidden'); return; }
-        
-        const filtered = [...new Set(allSales.filter(s => s.customerName.toLowerCase().includes(val.toLowerCase())).map(s => s.customerName))];
-        
-        results.innerHTML = filtered.map(name => `<div class="list-item" onclick="selectCustomer('${name}')">${name}</div>`).join('');
-        results.classList.remove('hidden');
+        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Searching Bill...</td></tr>";
+
+        try {
+            const q = query(collection(db, "sales"), where("billNo", "==", billNo));
+            const snap = await getDocs(q);
+
+            if(snap.empty) {
+                alert("Bill not found!");
+                tbody.innerHTML = "";
+                return;
+            }
+
+            const data = snap.docs[0].data();
+            document.getElementById("customerName").value = data.customerName || data.header.customerName;
+            document.getElementById("billDate").value = data.date || data.header.billDate;
+            
+            activeBillItems = data.items;
+            renderReturnTable();
+            loadCurrentStock(); // Get current stock for systematic box
+        } catch (e) {
+            console.error(e);
+            alert("Error fetching bill data");
+        }
     };
 
-    window.selectCustomer = (name) => {
-        document.getElementById('custSearch').value = name;
-        document.getElementById('custResults').classList.add('hidden');
-        
-        const customerBills = allSales.filter(s => s.customerName === name);
-        const picker = document.getElementById('billPicker');
-        picker.innerHTML = `<option value="">-- Choose a Bill --</option>` + 
-            customerBills.map(b => `<option value="${b.billNo}">Bill #${b.billNo} (${b.date}) - ₹${b.summary.net}</option>`).join('');
-        
-        document.getElementById('billSelectionArea').classList.remove('hidden');
-    };
+    /* 2. RENDER RETURN TABLE */
+    function renderReturnTable() {
+        const tbody = document.getElementById("returnTableBody");
+        tbody.innerHTML = "";
 
-    window.filterBills = (val) => {
-        const results = document.getElementById('billResults');
-        if(val.length < 1) { results.classList.add('hidden'); return; }
-        
-        const filtered = allSales.filter(s => s.billNo.toString().includes(val));
-        results.innerHTML = filtered.map(s => `<div class="list-item" onclick="loadSpecificBill('${s.billNo}')">Bill #${s.billNo} (${s.customerName})</div>`).join('');
-        results.classList.remove('hidden');
-    };
-
-    window.loadSpecificBill = (billNo) => {
-        selectedBill = allSales.find(s => s.billNo.toString() === billNo.toString());
-        if(!selectedBill) return;
-
-        document.getElementById('billResults').classList.add('hidden');
-        document.getElementById('billSearch').value = billNo;
-        document.getElementById('custSearch').value = selectedBill.customerName;
-
-        const tbody = document.getElementById('returnTableBody');
-        tbody.innerHTML = selectedBill.items.map((item, index) => `
-            <tr>
-                <td><strong>${item.name}</strong></td>
-                <td>${item.qty}</td>
-                <td>${item.rate}</td>
-                <td>
-                    <input type="number" class="row-input ret-qty" 
-                        data-index="${index}" data-rate="${item.rate}" 
-                        value="0" min="0" max="${item.qty}" 
-                        oninput="calculateRow(this)">
-                </td>
-                <td>
-                    <select class="row-input ret-reason">
-                        <option value="Extra/Remaining">Extra/Remaining</option>
-                        <option value="Expired">Expired</option>
-                        <option value="Damaged">Damaged</option>
-                        <option value="Wrong Item">Wrong Item</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </td>
-                <td><input type="text" class="row-input ret-amt" value="0.00" readonly></td>
-            </tr>
-        `).join('');
-    };
-
-    window.calculateRow = (el) => {
-        const row = el.closest('tr');
-        const qty = parseFloat(el.value) || 0;
-        const rate = parseFloat(el.dataset.rate) || 0;
-        const amt = qty * rate;
-        row.querySelector('.ret-amt').value = amt.toFixed(2);
-        
-        calculateGrandTotal();
-    };
-
-    function calculateGrandTotal() {
-        let total = 0;
-        document.querySelectorAll('.ret-amt').forEach(input => {
-            total += parseFloat(input.value) || 0;
+        activeBillItems.forEach((item, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td>${item.unit || 'PCS'}</td>
+                    <td>₹ ${item.rate}</td>
+                    <td>
+                        <input type="number" class="row-qty" value="0" min="0" max="${item.qty}" 
+                        oninput="updateInsight(${index}, this.value)" id="ret-qty-${index}">
+                    </td>
+                    <td>
+                        <select class="row-reason">
+                            <option value="Expired">Expired</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Remaining/Extra">Extra</option>
+                        </select>
+                    </td>
+                    <td style="color:var(--accent-green); font-weight:bold;">₹ <span id="refund-${index}">0.00</span></td>
+                </tr>
+            `;
         });
-        document.getElementById('totalReturnLabel').innerText = `₹ ${total.toFixed(2)}`;
     }
 
-    window.saveReturnData = async () => {
-        if(!selectedBill) return alert("Please select a bill first!");
-        
-        const returnItems = [];
-        document.querySelectorAll('#returnTableBody tr').forEach(row => {
-            const rQty = parseFloat(row.querySelector('.ret-qty').value) || 0;
-            if(rQty > 0) {
-                returnItems.push({
-                    name: row.cells[0].innerText,
-                    originalQty: row.cells[1].innerText,
-                    returnQty: rQty,
-                    rate: row.cells[2].innerText,
-                    reason: row.querySelector('.ret-reason').value,
-                    returnAmount: row.querySelector('.ret-amt').value
+    /* 3. LOAD CURRENT STOCK FOR SYSTEMATIC BOX */
+    async function loadCurrentStock() {
+        const grid = document.getElementById("stockGrid");
+        grid.innerHTML = "Loading Stock Data...";
+        document.getElementById("stockInsightBox").style.display = "block";
+
+        try {
+            // Mapping items to their current stock in Firebase
+            for (let item of activeBillItems) {
+                const q = query(collection(db, "items"), where("name", "==", item.name));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    currentStockData[item.name] = parseFloat(snap.docs[0].data().stock || 0);
+                } else {
+                    currentStockData[item.name] = 0;
+                }
+            }
+            updateInsight(); // Initial render of the insight box
+        } catch (e) { console.error(e); }
+    }
+
+    /* 4. UPDATE INSIGHT (THE SYSTEMATIC BOX LOGIC) */
+    window.updateInsight = function(index, value) {
+        if(index !== undefined) {
+            // Update Refund Calculation in Table
+            const rate = activeBillItems[index].rate;
+            document.getElementById(`refund-${index}`).innerText = (parseFloat(value) * rate).toFixed(2);
+        }
+
+        const grid = document.getElementById("stockGrid");
+        grid.innerHTML = "";
+
+        activeBillItems.forEach((item, i) => {
+            const retQty = parseFloat(document.getElementById(`ret-qty-${i}`).value) || 0;
+            const currentStock = currentStockData[item.name] || 0;
+            const finalQty = currentStock + retQty;
+
+            grid.innerHTML += `
+                <div class="stock-card">
+                    <h4>📦 ${item.name}</h4>
+                    <div class="qty-row"><span>Current Stock:</span> <span>${currentStock}</span></div>
+                    <div class="qty-row"><span>Return Add:</span> <span style="color:var(--primary);">+ ${retQty}</span></div>
+                    <div class="qty-row" style="border-top:1px solid #444; margin-top:10px; padding-top:5px;">
+                        <span>Final Predicted:</span> <span class="final-qty">${finalQty}</span>
+                    </div>
+                </div>
+            `;
+        });
+    };
+
+    /* 5. SAVE RETURN & TRIGGER STOCK UPDATES */
+    window.saveReturnEntry = async function() {
+        const billNo = document.getElementById("billNoInput").value;
+        if(!billNo) return alert("Select a Bill!");
+
+        const returnDetails = {
+            billNo: billNo,
+            customerName: document.getElementById("customerName").value,
+            returnDate: serverTimestamp(),
+            returnedItems: [],
+            totalRefundAmount: 0
+        };
+
+        activeBillItems.forEach((item, i) => {
+            const qty = parseFloat(document.getElementById(`ret-qty-${i}`).value) || 0;
+            if(qty > 0) {
+                returnDetails.returnedItems.push({
+                    name: item.name,
+                    qty: qty,
+                    rate: item.rate,
+                    reason: document.querySelectorAll(".row-reason")[i].value
                 });
+                returnDetails.totalRefundAmount += (qty * item.rate);
             }
         });
 
-        if(returnItems.length === 0) return alert("Return quantity must be greater than 0!");
-
-        const returnEntry = {
-            originalBillNo: selectedBill.billNo,
-            customerName: selectedBill.customerName,
-            items: returnItems,
-            totalReturnAmount: document.getElementById('totalReturnLabel').innerText.replace('₹ ', ''),
-            returnDate: new Date().toISOString().split('T')[0],
-            timestamp: serverTimestamp()
-        };
+        if(returnDetails.returnedItems.length === 0) return alert("Enter at least one return quantity!");
 
         try {
-            await addDoc(collection(db, "returns"), returnEntry);
-            alert("Return Saved Successfully! Stock data is queued for update.");
+            await addDoc(collection(db, "saleReturns"), returnDetails);
+            alert("Return Recorded and Stock Previewed Successfully! ✅");
             location.reload();
         } catch (e) {
-            alert("Error saving: " + e.message);
+            alert("Error saving return: " + e.message);
         }
-    };
-</script>
+    }
 
+</script>
 </body>
 </html>
+
 
