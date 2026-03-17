@@ -3,192 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sale Register Summary & Details | Shree Datarekha Enterprises</title>
+    <title>Sale Register | Shree Datarekha Enterprises</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        :root { --primary: #007ea7; --bg: #0b0f19; --card: #1e293b; --text: #a0d8ef; }
+        :root { --primary: #007ea7; --bg: #0b0f19; --card: #1e293b; --accent: #10b981; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; padding: 20px; min-height: 100vh; }
+        body { background: var(--bg); color: #fff; padding: 20px; }
         
-        .container { max-width: 900px; margin: auto; background: var(--card); border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #334155; }
-        .title { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 26px; font-weight: bold; text-transform: uppercase; }
+        .container { max-width: 1200px; margin: auto; background: var(--card); border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .title { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 24px; font-weight: bold; }
         
-        .controls { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #334155; }
-        .date-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
-        .date-row div { flex: 1; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        input[type="date"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0b0f19; color: white; }
         
-        label { display: block; font-size: 12px; color: var(--text); margin-bottom: 5px; font-weight: bold; }
-        input[type="date"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; outline: none; transition: 0.3s; }
-        input[type="date"]:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,126,167,0.3); }
+        .btn-group { grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background: #334155; transition: 0.2s; }
+        .btn-view { background: var(--primary); }
+        .btn-download { background: var(--accent); display: none; margin-top: 15px; width: 100%; font-size: 16px; }
+        button:hover { filter: brightness(1.2); }
 
-        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        button { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; background: #334155; transition: 0.3s; font-size: 13px; }
-        .active-btn { background: var(--primary); grid-column: span 2; font-size: 15px; margin-bottom: 5px; }
-        .active-btn-secondary { background: #10b981; grid-column: span 2; font-size: 15px; margin-bottom: 10px; }
-        button:hover { filter: brightness(1.2); transform: translateY(-1px); }
-
-        #loading { text-align: center; color: #10b981; margin-top: 15px; display: none; font-weight: bold; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        /* Preview Table Styles */
+        .preview-section { margin-top: 30px; display: none; }
+        .table-wrapper { overflow-x: auto; background: #0f172a; border-radius: 8px; border: 1px solid #334155; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #1e293b; color: var(--text); padding: 12px; text-align: left; border-bottom: 2px solid var(--primary); }
+        td { padding: 10px; border-bottom: 1px solid #334155; }
+        .subtotal-row { background: rgba(16, 185, 129, 0.1); font-weight: bold; color: var(--accent); }
+        .party-header { background: #2d3748; font-weight: bold; color: #ffb3d9; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="title">Shree Datarekha Enterprises</div>
+    <div class="title">SHREE DATAREKHA ENTERPRISES</div>
     
     <div class="controls">
-        <div class="date-row">
-            <div>
-                <label>From Date</label>
-                <input type="date" id="fromDate">
-            </div>
-            <div>
-                <label>To Date</label>
-                <input type="date" id="toDate">
-            </div>
+        <div>
+            <label style="font-size:12px; color:#a0d8ef;">From Date</label>
+            <input type="date" id="fromDate">
         </div>
-
-        <div class="grid-buttons">
-            <button class="active-btn" onclick="generateReport('DETAILS')">SHOW GST SALE REGISTER DETAILS</button>
-            <button class="active-btn-secondary" onclick="generateReport('SUMMARY')">SHOW GST SALE REGISTER SUMMARY</button>
-            <button onclick="alert('Module loading...')">COMPANY BRAND SALE REGISTER</button>
-            <button onclick="alert('Module loading...')">SHOW CA GST SALE REGISTER</button>
-            <button onclick="alert('Module loading...')">SHOW BILL SHORT SUMMARY</button>
-            <button onclick="window.location.href='index.html'" style="background: #e11d48; grid-column: span 2; margin-top: 10px;">EXIT</button>
+        <div>
+            <label style="font-size:12px; color:#a0d8ef;">To Date</label>
+            <input type="date" id="toDate">
+        </div>
+        <div class="btn-group">
+            <button class="btn-view" onclick="fetchData('DETAILS')">PREVIEW GST DETAILS</button>
+            <button class="btn-view" style="background:#5c0a2e" onclick="fetchData('SUMMARY')">PREVIEW GST SUMMARY</button>
         </div>
     </div>
-    
-    <div id="loading">Syncing Cloud Records & Building PDF...</div>
+
+    <div id="previewSection" class="preview-section">
+        <h3 id="previewTitle" style="margin-bottom:10px; color:var(--primary);">Data Preview</h3>
+        <div class="table-wrapper">
+            <table id="previewTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <button id="downloadBtn" class="btn-download" onclick="downloadPDF()">⬇ DOWNLOAD AS PDF (A4)</button>
+    </div>
 </div>
 
 <script type="module">
     import { db } from './firebase-config.js';
     import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    window.generateReport = async function(mode) {
+    let currentData = [];
+    let currentMode = ""; // 'DETAILS' or 'SUMMARY'
+
+    window.fetchData = async function(mode) {
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+        if (!from || !to) return alert("Please select date range");
+
+        currentMode = mode;
+        const snap = await getDocs(query(collection(db, "sales"), orderBy("date", "asc")));
+        currentData = [];
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            if (data.date >= from && data.date <= to) currentData.push(data);
+        });
+
+        if (currentData.length === 0) return alert("No records found");
+
+        renderPreview(mode);
+    };
+
+    function renderPreview(mode) {
+        const head = document.getElementById('tableHead');
+        const body = document.getElementById('tableBody');
+        const section = document.getElementById('previewSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        body.innerHTML = "";
+        section.style.display = "block";
+        downloadBtn.style.display = "block";
+
+        if (mode === 'DETAILS') {
+            head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Disc</th><th>GST</th><th>Net</th></tr>`;
+            currentData.forEach(sale => {
+                body.innerHTML += `<tr class="party-header"><td colspan="9">${sale.billNo} - ${sale.customerName}</td></tr>`;
+                sale.items.forEach(item => {
+                    body.innerHTML += `<tr>
+                        <td></td><td>${sale.date}</td><td>${item.name}</td><td>${item.mrp}</td>
+                        <td>${item.rate}</td><td>${item.qty}</td><td>${item.schm}</td><td>${item.gst}%</td><td>${item.net}</td>
+                    </tr>`;
+                });
+                body.innerHTML += `<tr class="subtotal-row"><td colspan="7" align="right">Bill Total:</td><td colspan="2">₹ ${sale.summary.net}</td></tr>`;
+            });
+        } else {
+            head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Customer</th><th>Gross</th><th>Disc</th><th>GST</th><th>Net Amount</th></tr>`;
+            currentData.forEach(sale => {
+                body.innerHTML += `<tr>
+                    <td>${sale.billNo}</td><td>${sale.date}</td><td>${sale.customerName}</td>
+                    <td>${sale.summary.gross}</td><td>${sale.summary.disc}</td><td>${sale.summary.gst}</td><td>${sale.summary.net}</td>
+                </tr>`;
+            });
+        }
+    }
+
+    window.downloadPDF = function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF(currentMode === 'DETAILS' ? 'l' : 'p', 'mm', 'a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
         const from = document.getElementById('fromDate').value;
         const to = document.getElementById('toDate').value;
 
-        if (!from || !to) return alert("Select start and end dates first.");
-
-        document.getElementById('loading').style.display = "block";
-
-        try {
-            const q = query(collection(db, "sales"), orderBy("date", "asc"));
-            const snap = await getDocs(q);
-            
-            const records = [];
-            snap.forEach(doc => {
-                const data = doc.data();
-                if (data.date >= from && data.date <= to) {
-                    records.push(data);
-                }
+        let tableContent = [];
+        if(currentMode === 'DETAILS') {
+            currentData.forEach(sale => {
+                tableContent.push([{ content: `${sale.billNo} - ${sale.customerName}`, colSpan: 10, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }]);
+                sale.items.forEach(item => {
+                    tableContent.push(["", sale.date, item.name, "Main Pkt", item.mrp, item.rate, item.qty, item.schm, item.gst, item.net]);
+                });
             });
-
-            if (records.length === 0) {
-                alert("No data available for the selected dates.");
-            } else {
-                if(mode === 'DETAILS') createDetailedPDF(records, from, to);
-                else createSummaryPDF(records, from, to);
-            }
-        } catch (e) {
-            alert("Connection Error: " + e.message);
+        } else {
+            currentData.forEach(sale => {
+                tableContent.push([sale.billNo, sale.date, sale.customerName, sale.summary.gross, sale.summary.disc, sale.summary.gst, sale.summary.net]);
+            });
         }
-        document.getElementById('loading').style.display = "none";
-    };
-
-    // --- REPORT 1: DETAILED (Like the first Image) ---
-    function createDetailedPDF(sales, from, to) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4');
-        const pageWidth = doc.internal.pageSize.getWidth();
-        let tableData = [];
-
-        sales.forEach(sale => {
-            tableData.push([{ content: `${sale.billNo}   ${sale.customerName}`, colSpan: 13, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }]);
-            let bQty = 0, bGst = 0, bNet = 0, bDisc = 0;
-
-            sale.items.forEach(item => {
-                const qty = parseFloat(item.qty) || 0;
-                const net = parseFloat(item.net) || 0;
-                const gstP = parseFloat(item.gst) || 0;
-                const gstAmt = (net - (net / (1 + (gstP / 100)))).toFixed(2);
-                
-                bQty += qty; bGst += parseFloat(gstAmt); bNet += net; bDisc += (parseFloat(item.schm) || 0);
-
-                tableData.push(["", sale.date.split('-').reverse().join('-'), "", item.name, "Main Pkt", item.mrp || 0, item.rate, qty, "0", item.schm || 0, gstP, gstAmt, net.toFixed(2)]);
-            });
-
-            tableData.push([{ content: "Bill Sub Total  ===>", colSpan: 7, styles: { halign: 'right', fontStyle: 'bold' } }, { content: bQty, styles: { fontStyle: 'bold' } }, "0", bDisc.toFixed(2), "", bGst.toFixed(2), Math.round(bNet)]);
-        });
-
-        generateTable(doc, tableData, "GST Sale Register (Details)", from, to);
-    }
-
-    // --- REPORT 2: SUMMARY (Like the Video) ---
-    function createSummaryPDF(sales, from, to) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4'); // Portrait as per video
-        const pageWidth = doc.internal.pageSize.getWidth();
-        let tableData = [];
-
-        sales.forEach(sale => {
-            const totalQty = sale.items.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
-            const totalGst = parseFloat(sale.summary.gst) || 0;
-            const cgst_sgst = (totalGst / 2).toFixed(2);
-
-            tableData.push([
-                sale.billNo,
-                sale.date.split('-').reverse().join('-'),
-                totalQty,
-                sale.summary.gross,
-                sale.summary.disc || "0.00",
-                cgst_sgst,
-                cgst_sgst,
-                sale.summary.net
-            ]);
-        });
 
         doc.autoTable({
-            head: [['Bill No', 'Date', 'Qty', 'Amount', 'Disc Amt', 'CGST', 'SGST', 'Net Amount']],
-            body: tableData,
-            startY: 40,
+            head: currentMode === 'DETAILS' ? 
+                [['Bill', 'Date', 'Item', 'Grp', 'MRP', 'Rate', 'Qty', 'Disc', 'GST', 'Net']] : 
+                [['Bill No', 'Date', 'Customer', 'Gross', 'Disc', 'GST', 'Net Amount']],
+            body: tableContent,
+            startY: 35,
             theme: 'grid',
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [200, 200, 200], textColor: 0 },
-            margin: { top: 40 },
-            didDrawPage: (data) => drawHeader(doc, "GST Sale Register (Summary)", from, to, pageWidth)
+            didDrawPage: (data) => {
+                doc.setFontSize(14).text("SHREE DATAREKHA ENTERPRISES", pageWidth/2, 15, {align:'center'});
+                doc.setFontSize(10).text(`GST Sale Register ${currentMode} (${from} to ${to})`, pageWidth/2, 22, {align:'center'});
+            }
         });
 
-        doc.save(`Summary_Report_${from}.pdf`);
-    }
-
-    // Shared Helper Functions
-    function generateTable(doc, data, title, from, to, orientation = 'l') {
-        const pageWidth = doc.internal.pageSize.getWidth();
-        doc.autoTable({
-            head: [['Bill No', 'Date', 'Party Name', 'Item Name', 'Grp Name', 'MRP', 'Rate', 'Qty', 'Free', 'Disc', 'GST%', 'GST Amt', 'Net']],
-            body: data,
-            startY: 40,
-            theme: 'plain',
-            styles: { fontSize: 7, lineWidth: 0.1 },
-            headStyles: { fillColor: [255, 255, 255], textColor: 0, fontStyle: 'bold' },
-            didDrawPage: (data) => drawHeader(doc, title, from, to, pageWidth)
-        });
-        doc.save(`${title}_${from}.pdf`);
-    }
-
-    function drawHeader(doc, title, from, to, pageWidth) {
-        doc.setFontSize(14).setFont(undefined, 'bold').text("SHREE DATAREKHA ENTERPRISES", pageWidth/2, 10, {align: 'center'});
-        doc.setFontSize(10).text(title, pageWidth/2, 16, {align: 'center'});
-        doc.setFontSize(9).setFont(undefined, 'normal').text(`Period: ${from.split('-').reverse().join('-')} to ${to.split('-').reverse().join('-')}`, 15, 28);
-        doc.text("Page " + doc.internal.getNumberOfPages(), pageWidth - 30, 28);
-    }
+        doc.save(`Sale_Register_${currentMode}_${from}.pdf`);
+    };
 </script>
-
 </body>
 </html>
+
 
 
