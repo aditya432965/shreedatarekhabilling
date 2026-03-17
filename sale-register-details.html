@@ -12,34 +12,33 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
         body { background: var(--bg); padding: 20px; }
         
+        /* Legacy Software Control Panel */
         .control-panel { 
             background: #cbd5e1; 
             padding: 15px; 
             border: 2px solid #64748b;
             border-radius: 4px;
-            max-width: 1100px;
+            max-width: 1150px;
             margin: 0 auto 20px auto;
         }
 
         .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .date-input { padding: 5px; border: 1px solid var(--border); font-size: 14px; }
         
-        .date-input { padding: 4px; border: 1px solid var(--border); }
-        
-        /* Button Styling to match the legacy software look */
         .btn { 
-            padding: 6px 12px; 
+            padding: 6px 14px; 
             background: #e2e8f0; 
             border: 2px outset #fff; 
             cursor: pointer; 
             font-weight: bold; 
-            font-size: 13px;
+            font-size: 12px;
             color: #000;
             box-shadow: 2px 2px 0px #475569;
         }
         .btn:active { border-style: inset; box-shadow: none; transform: translate(1px, 1px); }
-        .btn-exit { background: #fca5a5; margin-left: auto; }
+        .btn-pdf { background: #059669; color: white; display: none; margin-left: 10px; }
 
-        /* Report Preview Area */
+        /* A4 Report Styling */
         #reportPreview {
             background: white;
             padding: 15mm;
@@ -47,26 +46,21 @@
             min-height: 297mm;
             margin: auto;
             border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             display: none;
+            color: #000;
         }
 
-        .report-header { text-align: center; margin-bottom: 10px; }
-        .report-header h2 { text-decoration: underline; font-size: 18px; margin-bottom: 5px; }
-        
-        .info-line { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px; }
+        .report-header { text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
+        .info-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
 
-        .report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .report-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 2px; text-align: left; }
-        .report-table td { padding: 3px 2px; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        .report-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: left; }
+        .report-table td { padding: 3px 5px; vertical-align: top; }
         
         .subtotal-row { border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; }
-        .party-name-row { font-weight: bold; background: #f8fafc; }
+        .party-header { font-weight: bold; padding-top: 10px !important; }
 
-        @media print {
-            .control-panel { display: none; }
-            #reportPreview { border: none; box-shadow: none; margin: 0; padding: 0; width: 100%; }
-        }
+        @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; } }
     </style>
 </head>
 <body>
@@ -78,29 +72,28 @@
         <label>To Date</label>
         <input type="date" id="toDate" class="date-input">
         
-        <button class="btn" onclick="generateReport('DETAILS')">Show GST Sale Register Details</button>
-        <button class="btn" onclick="generateReport('SUMMARY')">Show GST Sale Reg. Summary</button>
-        <button class="btn btn-exit">Exit</button>
+        <button class="btn" onclick="fetchAndRender('DETAILS')">Show GST Sale Register Details</button>
+        <button class="btn" onclick="fetchAndRender('SUMMARY')">Show GST Sale Reg. Summary</button>
+        <button id="pdfBtn" class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
     </div>
     
     <div class="row">
-        <button class="btn" onclick="generateReport('COMPANY')">Company Brand Sale Register Details</button>
-        <button class="btn" onclick="generateReport('CA')">Show CA GST Sale Register Details</button>
-        <button class="btn" onclick="generateReport('SHORT')">Show Bill Short Summary</button>
+        <button class="btn">Company Brand Sale Register Details</button>
+        <button class="btn">Show CA GST Sale Register Details</button>
+        <button class="btn">Show Bill Short Summary</button>
     </div>
 </div>
 
 <div id="reportPreview">
     <div class="report-header">
         <div class="info-line">
-            <span id="currentDate">17-03-2026</span>
-            <span style="font-weight: bold;">SHREE DATAREKHA ENTERPRISES</span>
-            <span id="pageCount">Page 1 of 1</span>
+            <span id="pPrintDate"></span>
+            <strong style="font-size: 16px;">SHREE DATAREKHA ENTERPRISES</strong>
+            <span id="pPageCount">Page 1 of 1</span>
         </div>
-        <p style="font-size: 12px;">GST Sale Register</p>
-        <h3 id="partyFocus" style="margin: 5px 0;">Gurukrupa Corner</h3>
-        <div class="info-line" style="border-bottom: 1px solid #000; padding-bottom: 5px;">
-            <span id="dateRangeText">From Date: 01/03/2026 To: 17/03/2026</span>
+        <p style="font-size: 13px; font-weight: bold;">GST Sale Register</p>
+        <div class="info-line">
+            <span id="pDateRange"></span>
         </div>
     </div>
 
@@ -110,91 +103,129 @@
     </table>
 </div>
 
-<script>
-    // Mock Data based on your images
-    const mockData = [
-        { 
-            billNo: "2247", date: "2026-03-01", party: "Gurukrupa Corner", type: "Cash Memo",
-            items: [
-                { name: "Chicken Biryani Masala", mrp: 30, rate: 22.86, qty: 5, net: 120.02 },
-                { name: "Mutton Sukka Masala", mrp: 30, rate: 22.86, qty: 3, net: 72.01 },
-                { name: "Mutton Rassa Kolhapuri", mrp: 30, rate: 22.86, qty: 5, net: 120.02 }
-            ]
-        },
-        {
-            billNo: "2248", date: "2026-03-01", party: "Pritesh Traders", type: "GST Bill",
-            items: [{ name: "Mutton Rassa Kolhapuri", mrp: 30, rate: 22.86, qty: 10, net: 226.07 }]
-        }
-    ];
+<script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    function generateReport(mode) {
+    let activeReportType = "";
+    let fetchedSales = [];
+
+    // Utility: Convert YYYY-MM-DD to DD-MM-YYYY
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "";
+        const [y, m, d] = dateStr.split('-');
+        return `${d}-${m}-${y}`;
+    };
+
+    window.fetchAndRender = async function(mode) {
         const from = document.getElementById('fromDate').value;
         const to = document.getElementById('toDate').value;
-        const preview = document.getElementById('reportPreview');
-        const head = document.getElementById('tableHead');
-        const body = document.getElementById('tableBody');
-
-        preview.style.display = "block";
-        body.innerHTML = "";
         
-        if (mode === 'DETAILS') {
+        if (!from || !to) return alert("Please select date range.");
+
+        activeReportType = mode;
+        const q = query(collection(db, "sales"), orderBy("date", "asc"));
+        const snapshot = await getDocs(q);
+        
+        fetchedSales = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // Filter by date manually to ensure accuracy
+            if (data.date >= from && data.date <= to) {
+                fetchedSales.push(data);
+            }
+        });
+
+        if (fetchedSales.length === 0) return alert("No records found.");
+        
+        renderUI(from, to);
+    };
+
+    function renderUI(from, to) {
+        const body = document.getElementById('tableBody');
+        const head = document.getElementById('tableHead');
+        const preview = document.getElementById('reportPreview');
+        
+        document.getElementById('pPrintDate').innerText = formatDate(new Date().toISOString().split('T')[0]);
+        document.getElementById('pDateRange').innerText = `From: ${formatDate(from)} To: ${formatDate(to)}`;
+        
+        preview.style.display = "block";
+        document.getElementById('pdfBtn').style.display = "inline-block";
+        body.innerHTML = "";
+
+        if (activeReportType === 'DETAILS') {
             head.innerHTML = `<tr>
                 <th>Bill No</th><th>Date</th><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Disc</th><th>GST%</th><th>GST Amt</th><th>Net Amt</th>
             </tr>`;
 
-            mockData.forEach(bill => {
-                // Bill Header
-                body.innerHTML += `<tr class="party-name-row"><td colspan="10">${bill.billNo} &nbsp;&nbsp; ${bill.party} (${bill.type})</td></tr>`;
+            fetchedSales.forEach(sale => {
+                body.innerHTML += `<tr class="party-header"><td colspan="10">${sale.billNo} &nbsp;&nbsp; ${sale.customerName}</td></tr>`;
                 
-                let totalQty = 0;
-                let totalGst = 0;
-                let totalNet = 0;
-
-                bill.items.forEach(item => {
-                    let gstAmt = (item.net * 0.05).toFixed(2); // Assuming 5%
-                    totalQty += item.qty;
-                    totalGst += parseFloat(gstAmt);
-                    totalNet += item.net;
-
+                sale.items.forEach(item => {
+                    const gstVal = ((parseFloat(item.net) * parseFloat(item.gst)) / (100 + parseFloat(item.gst))).toFixed(2);
                     body.innerHTML += `<tr>
-                        <td></td><td>${bill.date}</td><td>${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>0.00</td><td>5%</td><td>${gstAmt}</td><td>${item.net.toFixed(2)}</td>
+                        <td></td><td>${formatDate(sale.date)}</td>
+                        <td>${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td>
+                        <td>${item.qty}</td><td>${item.disc || '0'}</td><td>${item.gst}%</td>
+                        <td>${gstVal}</td><td>${item.net}</td>
                     </tr>`;
                 });
 
                 body.innerHTML += `<tr class="subtotal-row">
                     <td colspan="5" align="right">Bill Sub Total ===></td>
-                    <td>${totalQty}</td><td>0.00</td><td></td><td>${totalGst.toFixed(2)}</td><td>${totalNet.toFixed(2)}</td>
+                    <td>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</td>
+                    <td>${sale.summary.disc}</td><td></td>
+                    <td>${sale.summary.gst}</td><td>${sale.summary.net}</td>
                 </tr>`;
             });
-
-        } else if (mode === 'SUMMARY') {
+        } else {
             head.innerHTML = `<tr>
-                <th>Bill No</th><th>Date</th><th>Qty</th><th>Amount</th><th>Disc Amt</th><th>CGST</th><th>SGST</th><th>Net Amount</th>
+                <th>Bill No</th><th>Date</th><th>Qty</th><th>Gross Amt</th><th>Disc Amt</th><th>CGST</th><th>SGST</th><th>Net Amount</th>
             </tr>`;
 
-            mockData.forEach(bill => {
-                let billQty = bill.items.reduce((s, i) => s + i.qty, 0);
-                let billNet = bill.items.reduce((s, i) => s + i.net, 0);
-                let totalGst = billNet * 0.05;
-                let splitGst = (totalGst / 2).toFixed(2); // Splitting into CGST and SGST
-
+            fetchedSales.forEach(sale => {
+                const cgst_sgst = (parseFloat(sale.summary.gst) / 2).toFixed(2);
+                const totalQty = sale.items.reduce((acc, i) => acc + Number(i.qty), 0);
+                
                 body.innerHTML += `<tr>
-                    <td>${bill.billNo}</td>
-                    <td>${bill.date}</td>
-                    <td>${billQty}.00</td>
-                    <td>${(billNet - totalGst).toFixed(2)}</td>
-                    <td>0.00</td>
-                    <td>${splitGst}</td>
-                    <td>${splitGst}</td>
-                    <td><b>${billNet.toFixed(2)}</b></td>
+                    <td>${sale.billNo}</td><td>${formatDate(sale.date)}</td>
+                    <td>${totalQty}</td><td>${sale.summary.gross}</td><td>${sale.summary.disc}</td>
+                    <td>${cgst_sgst}</td><td>${cgst_sgst}</td><td><b>${sale.summary.net}</b></td>
                 </tr>`;
             });
         }
     }
+
+    window.downloadPDF = function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFont("courier", "bold");
+        doc.text("SHREE DATAREKHA ENTERPRISES", 105, 15, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("GST Sale Register", 105, 20, { align: "center" });
+        doc.text(document.getElementById('pDateRange').innerText, 105, 25, { align: "center" });
+
+        doc.autoTable({
+            html: '#dataTable',
+            startY: 30,
+            theme: 'plain',
+            styles: { font: 'courier', fontSize: 8, cellPadding: 1, textColor: 0 },
+            headStyles: { borderBottom: 1, borderTop: 1, fillColor: [255, 255, 255] },
+            didParseCell: function(data) {
+                if (data.row.section === 'body' && data.row.raw.classList.contains('party-header')) {
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
+        });
+
+        doc.save(`GST_Register_${activeReportType}_${new Date().getTime()}.pdf`);
+    };
 </script>
 
 </body>
 </html>
+
 
 
 
