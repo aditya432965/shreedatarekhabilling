@@ -9,180 +9,193 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446); color: #fff; padding: 20px; min-height: 100vh; }
+        body { background: #0b0f19; color: #fff; padding: 20px; min-height: 100vh; }
         
-        .container { max-width: 1000px; margin: auto; background: rgba(0, 0, 0, 0.85); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header-title { text-align: center; color: #ffb3d9; margin-bottom: 25px; font-size: 28px; font-weight: bold; border-bottom: 2px solid #ff2f92; padding-bottom: 10px; }
+        .container { max-width: 900px; margin: auto; background: #1e293b; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .title { text-align: center; color: #007ea7; margin-bottom: 20px; font-size: 24px; font-weight: bold; border-bottom: 2px solid #334155; padding-bottom: 10px; }
         
-        .control-panel { display: flex; flex-direction: column; gap: 20px; }
-        .date-section { display: flex; gap: 15px; justify-content: center; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; }
-        .date-section div { display: flex; flex-direction: column; gap: 5px; }
-        input[type="date"] { padding: 10px; border-radius: 6px; border: none; background: #eee; color: #333; font-weight: bold; }
+        .controls { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .date-row { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        .date-row div { flex: 1; }
+        
+        label { display: block; font-size: 12px; color: #a0d8ef; margin-bottom: 5px; }
+        input[type="date"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0b0f19; color: white; }
 
-        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        button { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; text-transform: uppercase; font-size: 13px; }
-        
-        .btn-main { background: #ff2f92; grid-column: span 2; font-size: 16px; }
-        .btn-sub { background: #5c0a2e; border: 1px solid #ff2f92; }
-        button:hover { opacity: 0.8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,47,146,0.4); }
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background: #334155; transition: 0.2s; }
+        .primary-btn { background: #007ea7; grid-column: span 2; font-size: 15px; margin-bottom: 5px; }
+        button:hover { filter: brightness(1.2); }
 
-        #statusMsg { text-align: center; margin-top: 20px; color: #00ff88; font-weight: bold; display: none; }
+        #loading { text-align: center; color: #10b981; margin-top: 15px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-title">Shree Datarekha Enterprises</div>
+    <div class="title">Shree Datarekha Enterprises</div>
     
-    <div class="control-panel">
-        <div class="date-section">
+    <div class="controls">
+        <div class="date-row">
             <div>
-                <label>From Date:</label>
+                <label>From Date</label>
                 <input type="date" id="fromDate">
             </div>
             <div>
-                <label>To Date:</label>
+                <label>To Date</label>
                 <input type="date" id="toDate">
             </div>
         </div>
 
-        <div class="button-grid">
-            <button class="btn-main" onclick="generateGSTRegister()">Show GST Sale Register Details (PDF)</button>
-            <button class="btn-sub">Show GST Sale Register Summary</button>
-            <button class="btn-sub">Company Brand Sale Register Details</button>
-            <button class="btn-sub">Show CA GST Sale Register Details</button>
-            <button class="btn-sub">Show Bill Short Summary</button>
+        <div class="grid-buttons">
+            <button class="primary-btn" onclick="generateReport('DETAILS')">SHOW GST SALE REGISTER DETAILS</button>
+            <button onclick="generateReport('SUMMARY')">SHOW GST SALE REGISTER SUMMARY</button>
+            <button onclick="alert('Feature coming soon')">COMPANY BRAND SALE REGISTER</button>
+            <button onclick="alert('Feature coming soon')">SHOW CA GST SALE REGISTER</button>
+            <button onclick="alert('Feature coming soon')">SHOW BILL SHORT SUMMARY</button>
         </div>
     </div>
-    <div id="statusMsg">Processing Data... Please wait.</div>
+    
+    <div id="loading">Generating Report... Please wait.</div>
 </div>
 
 <script type="module">
     import { db } from './firebase-config.js';
-    import { collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    window.generateGSTRegister = async function() {
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
+    window.generateReport = async function(type) {
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
 
-        if (!fromDate || !toDate) {
-            alert("Please select both From and To dates.");
-            return;
-        }
+        if (!from || !to) return alert("Please select date range!");
 
-        const status = document.getElementById('statusMsg');
-        status.style.display = "block";
+        document.getElementById('loading').style.display = "block";
 
         try {
-            // 1. Fetch Sales Data
-            const q = query(collection(db, "sales"), orderBy("header.date", "asc"));
-            const querySnapshot = await getDocs(q);
+            // Fetch sales from Firestore
+            const q = query(collection(db, "sales"), orderBy("date", "asc"));
+            const snap = await getDocs(q);
             
-            let allSales = [];
-            querySnapshot.forEach((doc) => {
+            const filteredSales = [];
+            snap.forEach(doc => {
                 const data = doc.data();
-                const saleDate = data.header.date; // Format YYYY-MM-DD
-                if (saleDate >= fromDate && saleDate <= toDate) {
-                    allSales.push(data);
+                if (data.date >= from && data.date <= to) {
+                    filteredSales.push(data);
                 }
             });
 
-            if (allSales.length === 0) {
-                alert("No sales found for the selected period.");
-                status.style.display = "none";
+            if (filteredSales.length === 0) {
+                alert("No records found for these dates.");
+                document.getElementById('loading').style.display = "none";
                 return;
             }
 
-            // 2. Initialize PDF (A4 Landscape for better columns fit)
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const today = new Date().toLocaleDateString('en-GB');
+            createPDF(filteredSales, from, to);
+        } catch (e) {
+            console.error(e);
+            alert("Error: " + e.message);
+        }
+        document.getElementById('loading').style.display = "none";
+    };
 
-            // 3. Process Data for Table
-            // Grouping logic: We iterate and build the rows with sub-headers for Party
-            let tableRows = [];
-            let currentParty = "";
+    function createPDF(sales, from, to) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for many columns
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const reportDate = new Date().toLocaleDateString('en-GB');
 
-            allSales.forEach(sale => {
-                // Add Party Header Row if party changes
-                if (currentParty !== sale.header.partyName) {
-                    currentParty = sale.header.partyName;
-                    tableRows.push([
-                        { content: `Party: ${currentParty}`, colSpan: 12, styles: { fillColor: [230, 230, 230], fontStyle: 'bold' } }
-                    ]);
-                }
+        // Formatted Dates for Header
+        const fFrom = from.split('-').reverse().join('-');
+        const fTo = to.split('-').reverse().join('-');
 
-                sale.items.forEach(item => {
-                    const gstAmt = (parseFloat(item.net) * parseFloat(item.taxP || 0) / 100).toFixed(2);
-                    tableRows.push([
-                        sale.header.billNo,
-                        sale.header.date,
-                        sale.header.partyName,
-                        item.name,
-                        item.group || '-',
-                        item.mrp || 0,
-                        item.rate,
-                        item.qty,
-                        item.freeQty || 0,
-                        item.discAmt || 0,
-                        `${item.taxP}% (${gstAmt})`,
-                        item.net
-                    ]);
-                });
+        let tableData = [];
 
-                // Bill Subtotal Row
-                tableRows.push([
-                    { content: `Bill Sub Total for ${sale.header.billNo}:`, colSpan: 11, styles: { halign: 'right', fontStyle: 'bold' } },
-                    { content: sale.summary.grandTotal, styles: { fontStyle: 'bold' } }
+        sales.forEach(sale => {
+            // Party/Bill Header Row (Mimics the photo)
+            tableData.push([
+                { content: `${sale.billNo}`, styles: { fontStyle: 'bold' } },
+                { content: `${sale.customerName}`, colSpan: 11, styles: { fontStyle: 'bold' } }
+            ]);
+
+            let bQty = 0, bGst = 0, bNet = 0;
+
+            sale.items.forEach(item => {
+                const qty = parseFloat(item.qty) || 0;
+                const rate = parseFloat(item.rate) || 0;
+                const gstP = parseFloat(item.gst) || 0;
+                const net = parseFloat(item.net) || 0;
+                
+                // Calculate individual GST Amt for the report
+                const taxable = (rate * qty);
+                const gstAmt = (taxable * (gstP/100)).toFixed(2);
+
+                bQty += qty;
+                bGst += parseFloat(gstAmt);
+                bNet += net;
+
+                tableData.push([
+                    "", // Empty Bill No column for items
+                    sale.date.split('-').reverse().join('-'), // DD-MM-YYYY
+                    "", // Empty Party Name for items
+                    item.name,
+                    "Main Pkt", // Group placeholder
+                    item.mrp || 0,
+                    rate.toFixed(2),
+                    qty,
+                    "0", // Free Qty placeholder
+                    item.schm || 0,
+                    gstP,
+                    gstAmt,
+                    net.toFixed(2)
                 ]);
             });
 
-            // 4. Create Table with AutoTable
-            doc.autoTable({
-                head: [['Bill No', 'Date', 'Party', 'Item Name', 'Group', 'MRP', 'Rate', 'Qty', 'Free', 'Disc', 'GST', 'Net Amt']],
-                body: tableRows,
-                startY: 45,
-                theme: 'grid',
-                styles: { fontSize: 7, cellPadding: 2 },
-                headStyles: { fillColor: [255, 47, 146] },
-                margin: { top: 45 },
-                didDrawPage: function (data) {
-                    // Header on every page
-                    doc.setFontSize(16);
-                    doc.setTextColor(0, 0, 0);
-                    doc.text("Shree Datarekha Enterprises", pageWidth / 2, 15, { align: 'center' });
-                    
-                    doc.setFontSize(10);
-                    doc.text(`Date: ${today}`, 14, 22);
-                    
-                    doc.setFontSize(12);
-                    doc.text("[ GST SALE REGISTER ]", pageWidth / 2, 28, { align: 'center' });
-                    
-                    doc.setFontSize(10);
-                    const dateRange = `From: ${fromDate} To: ${toDate}`;
-                    doc.text(dateRange, pageWidth / 2, 34, { align: 'center' });
-                    
-                    // Shop Name (Taking first shop from first sale)
-                    const shopName = allSales[0].header.shopName || "Main Shop";
-                    doc.text(`Shop: ${shopName}`, pageWidth / 2, 40, { align: 'center' });
+            // Bill Sub Total Row (Exactly like the photo)
+            tableData.push([
+                { content: "Bill Sub Total  ===>", colSpan: 7, styles: { halign: 'right', fontStyle: 'bold' } },
+                { content: bQty, styles: { fontStyle: 'bold' } },
+                { content: "0", styles: { fontStyle: 'bold' } },
+                { content: sale.summary.disc || 0, styles: { fontStyle: 'bold' } },
+                { content: "", styles: { fontStyle: 'bold' } },
+                { content: bGst.toFixed(2), styles: { fontStyle: 'bold' } },
+                { content: bNet.toFixed(0), styles: { fontStyle: 'bold' } }
+            ]);
+        });
 
-                    // Page Numbers
-                    const str = "Page " + doc.internal.getNumberOfPages();
-                    doc.text(str, pageWidth - 25, 40);
-                }
-            });
+        doc.autoTable({
+            head: [['Bill No', 'Date', 'Party Name', 'Item Name', 'Grp Name', 'MRP', 'Rate', 'Qty', 'Free Qty', 'Disc Amount', 'GST %', 'GST Amt', 'Net Amount']],
+            body: tableData,
+            startY: 40,
+            theme: 'plain',
+            styles: { fontSize: 7, cellPadding: 1, textColor: [0, 0, 0], lineWidth: 0.1, lineColor: [200, 200, 200] },
+            headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', borderBottom: 1 },
+            margin: { top: 40 },
+            didDrawPage: function (data) {
+                // Main Header
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.text("SHREE DATAREKHA ENTERPRISES", pageWidth / 2, 10, { align: "center" });
+                
+                doc.setFontSize(9);
+                doc.text("GST Sale Register", pageWidth / 2, 16, { align: "center" });
+                
+                doc.setFontSize(10);
+                doc.text("Gurukrupa Corner", pageWidth / 2, 22, { align: "center" });
 
-            doc.save(`GST_Sale_Register_${fromDate}_to_${toDate}.pdf`);
-            status.style.display = "none";
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "normal");
+                doc.text(`${reportDate}`, 15, 10);
+                doc.text(`From Date:  ${fFrom}  To  ${fTo}`, 15, 28);
+                
+                // Page Numbering
+                let str = "Page " + doc.internal.getNumberOfPages();
+                doc.text(str, pageWidth - 30, 28);
+            }
+        });
 
-        } catch (error) {
-            console.error(error);
-            alert("Error generating PDF. Check console.");
-            status.style.display = "none";
-        }
-    };
+        doc.save(`Sale_Register_${from}.pdf`);
+    }
 </script>
 
 </body>
 </html>
+
