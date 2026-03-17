@@ -1,251 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Distributor Sale Register | Shree Datarekha Enterprises</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    :root {
-        --primary: #007ea7;
-        --secondary: #003459;
-        --accent: #10b981;
-        --danger: #ef4444;
-        --bg: #f0f4f8;
-        --card-bg: #ffffff;
-        --text: #1e293b;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sale Register Details | Shree Datarekha Enterprises</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446); color: #fff; padding: 20px; min-height: 100vh; }
+        
+        .container { max-width: 1000px; margin: auto; background: rgba(0, 0, 0, 0.85); border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header-title { text-align: center; color: #ffb3d9; margin-bottom: 25px; font-size: 28px; font-weight: bold; border-bottom: 2px solid #ff2f92; padding-bottom: 10px; }
+        
+        .control-panel { display: flex; flex-direction: column; gap: 20px; }
+        .date-section { display: flex; gap: 15px; justify-content: center; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; }
+        .date-section div { display: flex; flex-direction: column; gap: 5px; }
+        input[type="date"] { padding: 10px; border-radius: 6px; border: none; background: #eee; color: #333; font-weight: bold; }
 
-    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 15px; line-height: 1.6; }
+        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        button { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; text-transform: uppercase; font-size: 13px; }
+        
+        .btn-main { background: #ff2f92; grid-column: span 2; font-size: 16px; }
+        .btn-sub { background: #5c0a2e; border: 1px solid #ff2f92; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,47,146,0.4); }
 
-    /* Header Styling */
-    .header { 
-        background: linear-gradient(135deg, var(--secondary), var(--primary)); 
-        color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-    .header h1 { font-size: 1.5rem; letter-spacing: 1px; }
-    .header p { opacity: 0.8; font-size: 0.9rem; }
-
-    /* Controls & Filters */
-    .filter-card { 
-        background: var(--card-bg); padding: 20px; border-radius: 12px; 
-        margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;
-    }
-    .input-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
-    .input-group label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    input { 
-        padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; 
-        outline: none; transition: border-color 0.2s; font-size: 0.9rem;
-    }
-    input:focus { border-color: var(--primary); ring: 2px solid var(--primary); }
-
-    /* Stats Dashboard */
-    .stats-container { 
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-        gap: 15px; margin-bottom: 20px; 
-    }
-    .stat-box { 
-        background: var(--card-bg); padding: 15px; border-radius: 12px; 
-        text-align: center; border-bottom: 4px solid var(--primary);
-    }
-    .stat-box span { display: block; font-size: 0.7rem; color: #64748b; font-weight: bold; text-transform: uppercase; }
-    .stat-box strong { font-size: 1.1rem; color: var(--text); }
-
-    /* Responsive Table/Cards */
-    .table-container { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    table { width: 100%; border-collapse: collapse; }
-    th { background: #f8fafc; padding: 15px; text-align: left; font-size: 0.75rem; color: #64748b; border-bottom: 2px solid #e2e8f0; }
-    td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
-
-    .btn-action {
-        background: var(--accent); color: white; border: none; padding: 10px 20px; 
-        border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px;
-    }
-
-    /* Mobile View Transformation */
-    @media (max-width: 768px) {
-        table, thead, tbody, th, td, tr { display: block; }
-        thead { display: none; } /* Hide headers on mobile */
-        tr { margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; background: white; }
-        td { display: flex; justify-content: space-between; padding: 8px 5px; border: none; border-bottom: 1px dashed #f1f5f9; }
-        td::before { content: attr(data-label); font-weight: bold; color: #64748b; }
-        td:last-child { border-bottom: none; background: #f8fafc; margin-top: 5px; border-radius: 5px; }
-    }
-
-    @media print {
-        .filter-card, .btn-action { display: none; }
-        body { background: white; padding: 0; }
-        .header { background: white; color: black; border: 1px solid #eee; box-shadow: none; }
-    }
-</style>
+        #statusMsg { text-align: center; margin-top: 20px; color: #00ff88; font-weight: bold; display: none; }
+    </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>Shree Datarekha Enterprises</h1>
-    <p>Detailed Sales Ledger & GST Breakdown</p>
-</div>
+<div class="container">
+    <div class="header-title">Shree Datarekha Enterprises</div>
+    
+    <div class="control-panel">
+        <div class="date-section">
+            <div>
+                <label>From Date:</label>
+                <input type="date" id="fromDate">
+            </div>
+            <div>
+                <label>To Date:</label>
+                <input type="date" id="toDate">
+            </div>
+        </div>
 
-<div class="filter-card">
-    <div class="input-group">
-        <label>Search Customer/Bill</label>
-        <input type="text" id="search" placeholder="Type name..." oninput="generateReport()">
+        <div class="button-grid">
+            <button class="btn-main" onclick="generateGSTRegister()">Show GST Sale Register Details (PDF)</button>
+            <button class="btn-sub">Show GST Sale Register Summary</button>
+            <button class="btn-sub">Company Brand Sale Register Details</button>
+            <button class="btn-sub">Show CA GST Sale Register Details</button>
+            <button class="btn-sub">Show Bill Short Summary</button>
+        </div>
     </div>
-    <div class="input-group">
-        <label>From Date</label>
-        <input type="date" id="fromDate" onchange="generateReport()">
-    </div>
-    <div class="input-group">
-        <label>To Date</label>
-        <input type="date" id="toDate" onchange="generateReport()">
-    </div>
-    <button class="btn-action" onclick="window.print()" style="flex: 0; min-width: 120px;">Print PDF</button>
-</div>
-
-<div class="stats-container">
-    <div class="stat-box"><span>Taxable</span><strong id="statTaxable">₹0</strong></div>
-    <div class="stat-box"><span>GST Total</span><strong id="statGST">₹0</strong></div>
-    <div class="stat-box"><span>Net Sales</span><strong id="statNet" style="color: var(--primary);">₹0</strong></div>
-</div>
-
-<div class="table-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Date/Bill</th>
-                <th>Party</th>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Taxable</th>
-                <th>GST</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody id="reportTableBody">
-            </tbody>
-    </table>
+    <div id="statusMsg">Processing Data... Please wait.</div>
 </div>
 
 <script type="module">
-/* 1. FIREBASE IMPORTS */
-import { db } from './firebase-config.js';
-import { 
-    collection, 
-    getDocs, 
-    query, 
-    orderBy 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* 🔐 LOGIN CHECK */
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+    window.generateGSTRegister = async function() {
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
 
-/* 📦 GLOBAL DATA HOLDER */
-let allSalesData = [];
+        if (!fromDate || !toDate) {
+            alert("Please select both From and To dates.");
+            return;
+        }
 
-/**
- * ☁️ FETCH DATA FROM CLOUD
- */
-async function loadSalesForReport() {
-    const body = document.getElementById('reportTableBody');
-    body.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Fetching Cloud Records...</td></tr>";
+        const status = document.getElementById('statusMsg');
+        status.style.display = "block";
 
-    try {
-        const q = query(collection(db, "sales"), orderBy("date", "desc"));
-        const querySnapshot = await getDocs(q);
-        
-        allSalesData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        try {
+            // 1. Fetch Sales Data
+            const q = query(collection(db, "sales"), orderBy("header.date", "asc"));
+            const querySnapshot = await getDocs(q);
+            
+            let allSales = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const saleDate = data.header.date; // Format YYYY-MM-DD
+                if (saleDate >= fromDate && saleDate <= toDate) {
+                    allSales.push(data);
+                }
+            });
 
-        console.log("Data loaded for Register:", allSalesData.length);
-        generateReport(); // Initial render
-    } catch (err) {
-        console.error("Report Load Error:", err);
-        body.innerHTML = "<tr><td colspan='7' style='color:red;'>Error connecting to Firebase.</td></tr>";
-    }
-}
+            if (allSales.length === 0) {
+                alert("No sales found for the selected period.");
+                status.style.display = "none";
+                return;
+            }
 
-/**
- * 📊 GENERATE REPORT & CALCULATE STATS
- */
-window.generateReport = function() {
-    const search = document.getElementById('search').value.toLowerCase();
-    const from = document.getElementById('fromDate').value;
-    const to = document.getElementById('toDate').value;
-    const body = document.getElementById('reportTableBody');
-    
-    let sums = { taxable: 0, gst: 0, net: 0 };
-    body.innerHTML = "";
+            // 2. Initialize PDF (A4 Landscape for better columns fit)
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const today = new Date().toLocaleDateString('en-GB');
 
-    // Filter Logic
-    const filteredSales = allSalesData.filter(sale => {
-        const matchesDate = (!from || sale.date >= from) && (!to || sale.date <= to);
-        const matchesSearch = !search || 
-                              sale.customerName.toLowerCase().includes(search) || 
-                              sale.billNo.toLowerCase().includes(search);
-        return matchesDate && matchesSearch;
-    });
+            // 3. Process Data for Table
+            // Grouping logic: We iterate and build the rows with sub-headers for Party
+            let tableRows = [];
+            let currentParty = "";
 
-    if (filteredSales.length === 0) {
-        body.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No records found for selected criteria.</td></tr>";
-    }
+            allSales.forEach(sale => {
+                // Add Party Header Row if party changes
+                if (currentParty !== sale.header.partyName) {
+                    currentParty = sale.header.partyName;
+                    tableRows.push([
+                        { content: `Party: ${currentParty}`, colSpan: 12, styles: { fillColor: [230, 230, 230], fontStyle: 'bold' } }
+                    ]);
+                }
 
-    filteredSales.forEach(sale => {
-        // We iterate through items within each sale to provide a line-by-line register
-        sale.items.forEach((item, idx) => {
-            const qty = parseFloat(item.qty) || 0;
-            const rate = parseFloat(item.rate) || 0;
-            const discPer = parseFloat(item.disc) || 0;
-            const cgstPer = parseFloat(item.cgst) || 0;
-            const sgstPer = parseFloat(item.sgst) || 0;
+                sale.items.forEach(item => {
+                    const gstAmt = (parseFloat(item.net) * parseFloat(item.taxP || 0) / 100).toFixed(2);
+                    tableRows.push([
+                        sale.header.billNo,
+                        sale.header.date,
+                        sale.header.partyName,
+                        item.name,
+                        item.group || '-',
+                        item.mrp || 0,
+                        item.rate,
+                        item.qty,
+                        item.freeQty || 0,
+                        item.discAmt || 0,
+                        `${item.taxP}% (${gstAmt})`,
+                        item.net
+                    ]);
+                });
 
-            // Calculations
-            const base = qty * rate;
-            const taxable = base - (base * (discPer / 100));
-            const gst = taxable * ((cgstPer + sgstPer) / 100);
-            const net = taxable + gst;
+                // Bill Subtotal Row
+                tableRows.push([
+                    { content: `Bill Sub Total for ${sale.header.billNo}:`, colSpan: 11, styles: { halign: 'right', fontStyle: 'bold' } },
+                    { content: sale.summary.grandTotal, styles: { fontStyle: 'bold' } }
+                ]);
+            });
 
-            // Adding to Dashboard Totals
-            sums.taxable += taxable;
-            sums.gst += gst;
-            sums.net += net;
+            // 4. Create Table with AutoTable
+            doc.autoTable({
+                head: [['Bill No', 'Date', 'Party', 'Item Name', 'Group', 'MRP', 'Rate', 'Qty', 'Free', 'Disc', 'GST', 'Net Amt']],
+                body: tableRows,
+                startY: 45,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 2 },
+                headStyles: { fillColor: [255, 47, 146] },
+                margin: { top: 45 },
+                didDrawPage: function (data) {
+                    // Header on every page
+                    doc.setFontSize(16);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text("Shree Datarekha Enterprises", pageWidth / 2, 15, { align: 'center' });
+                    
+                    doc.setFontSize(10);
+                    doc.text(`Date: ${today}`, 14, 22);
+                    
+                    doc.setFontSize(12);
+                    doc.text("[ GST SALE REGISTER ]", pageWidth / 2, 28, { align: 'center' });
+                    
+                    doc.setFontSize(10);
+                    const dateRange = `From: ${fromDate} To: ${toDate}`;
+                    doc.text(dateRange, pageWidth / 2, 34, { align: 'center' });
+                    
+                    // Shop Name (Taking first shop from first sale)
+                    const shopName = allSales[0].header.shopName || "Main Shop";
+                    doc.text(`Shop: ${shopName}`, pageWidth / 2, 40, { align: 'center' });
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td data-label="Bill/Date">${idx === 0 ? `<strong>${sale.billNo}</strong><br><small>${sale.date}</small>` : ''}</td>
-                <td data-label="Customer">${idx === 0 ? sale.customerName : ''}</td>
-                <td data-label="Item">${item.name}</td>
-                <td data-label="Qty">${qty}</td>
-                <td data-label="Taxable">₹${taxable.toFixed(2)}</td>
-                <td data-label="GST">₹${gst.toFixed(2)}</td>
-                <td data-label="Total"><strong>₹${net.toFixed(2)}</strong></td>
-            `;
-            body.appendChild(row);
-        });
-    });
+                    // Page Numbers
+                    const str = "Page " + doc.internal.getNumberOfPages();
+                    doc.text(str, pageWidth - 25, 40);
+                }
+            });
 
-    // Update Dashboard Stats with Indian Currency Formatting
-    const formatCurrency = (val) => "₹" + val.toLocaleString('en-IN', {
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2
-    });
+            doc.save(`GST_Sale_Register_${fromDate}_to_${toDate}.pdf`);
+            status.style.display = "none";
 
-    document.getElementById('statTaxable').innerText = formatCurrency(sums.taxable);
-    document.getElementById('statGST').innerText = formatCurrency(sums.gst);
-    document.getElementById('statNet').innerText = formatCurrency(sums.net);
-};
-
-/* 🖨️ PRINT REPORT */
-window.printReport = function() {
-    window.print();
-};
-
-/* 🚀 START */
-loadSalesForReport();
-
+        } catch (error) {
+            console.error(error);
+            alert("Error generating PDF. Check console.");
+            status.style.display = "none";
+        }
+    };
 </script>
+
 </body>
 </html>
