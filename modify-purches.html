@@ -6,13 +6,13 @@
 <title>Modify Purchase Entry | Shree Datarekha Enterprises</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+/* Keeping your exact original styling */
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI}
 
 body{
 background:linear-gradient(135deg,#2b000f,#5c0a2e,#8e1446);
 color:#fff;
 padding:15px;
-min-height: 100vh;
 }
 
 .container{
@@ -21,45 +21,36 @@ margin:auto;
 background:rgba(0,0,0,.75);
 border-radius:20px;
 padding:20px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .title{
 background:#ff2f92;
-padding:12px;
+padding:8px;
 border-radius:8px;
 text-align:center;
-font-weight:700;
+font-weight:600;
 margin-bottom:15px;
-text-transform: uppercase;
-letter-spacing: 1px;
 }
 
 .filters{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:12px;
+gap:10px;
 margin-bottom:15px;
-background: rgba(255,255,255,0.05);
-padding: 15px;
-border-radius: 10px;
 }
 
-.filters label { font-size: 11px; color: #ffb3d9; display: block; margin-bottom: 4px; }
-
-input, select{
-padding:10px;
+input{
+padding:7px;
 border:none;
 border-radius:6px;
 width:100%;
 background: #eee;
 color: #000;
-outline: none;
 }
 
 .main{
 display:grid;
-grid-template-columns:350px 1fr;
+grid-template-columns:1fr 2fr;
 gap:20px;
 }
 
@@ -67,9 +58,8 @@ gap:20px;
 background:rgba(0,0,0,.45);
 padding:10px;
 border-radius:15px;
-max-height:650px;
-overflow-y:auto;
-border: 1px solid rgba(255,255,255,0.1);
+max-height:500px;
+overflow:auto;
 }
 
 table{
@@ -78,64 +68,51 @@ border-collapse:collapse;
 }
 
 th,td{
-border:1px solid rgba(255,255,255,.1);
-padding:8px;
+border:1px solid rgba(255,255,255,.2);
+padding:6px;
 font-size:12px;
 text-align:center;
 }
 
-th{background:#ff2f92; position: sticky; top: 0;}
+th{background:#ff2f92}
 
 tr:hover{
-background:rgba(255,47,146,.2);
+background:rgba(255,47,146,0.3);
 cursor:pointer;
 }
 
-.paid-row { border-left: 5px solid #4CAF50; }
-.unpaid-row { border-left: 5px solid #f44336; }
+.paid{background:rgba(76,175,80,.3)}
+.unpaid{background:rgba(229,57,53,.3)}
 
 .form-section{
 background:rgba(0,0,0,.45);
-padding:20px;
+padding:15px;
 border-radius:15px;
-border: 1px solid rgba(255, 47, 146, 0.2);
-}
-
-h3 { color: #ff2f92; margin: 15px 0 10px 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.item-table-container { 
-    background: rgba(255,255,255,0.05); 
-    border-radius: 8px; 
-    margin: 10px 0;
-    overflow-x: auto;
+overflow:auto;
 }
 
 .buttons{
-margin-top:20px;
+margin-top:15px;
 display:flex;
-gap:12px;
+flex-wrap:wrap;
+gap:10px;
 }
 
 button{
-padding:12px 20px;
+padding:8px 12px;
 border:none;
 border-radius:8px;
 cursor:pointer;
 color:white;
 font-weight:600;
-transition: 0.3s;
 }
 
-button:hover { opacity: 0.8; transform: translateY(-2px); }
-.green{background:#2ecc71}
-.red{background:#e74c3c}
-.gray{background:#7f8c8d}
+.green{background:#4CAF50}
+.red{background:#e53935}
+.gray{background:#555}
+.blue{background:#2196F3}
+
+h3 { margin-bottom: 10px; color: #ffb3d9; font-size: 16px; border-left: 4px solid #ff2f92; padding-left: 10px; }
 
 @media(max-width:900px){
 .main{grid-template-columns:1fr}
@@ -149,9 +126,9 @@ button:hover { opacity: 0.8; transform: translateY(-2px); }
 <div class="title">Modify Purchase Entry</div>
 
 <div class="filters">
-    <div><label>Search Bill / Supplier</label><input type="text" id="searchBill" placeholder="Search..." oninput="applyFilters()"></div>
-    <div><label>From Date</label><input type="date" id="fromDate" onchange="applyFilters()"></div>
-    <div><label>To Date</label><input type="date" id="toDate" onchange="applyFilters()"></div>
+    <input type="text" id="searchBill" placeholder="Search Bill No or Supplier" oninput="applyFilters()">
+    <input type="date" id="fromDate" onchange="applyFilters()">
+    <input type="date" id="toDate" onchange="applyFilters()">
 </div>
 
 <div class="main">
@@ -161,54 +138,61 @@ button:hover { opacity: 0.8; transform: translateY(-2px); }
 <thead>
 <tr>
 <th>Bill</th>
+<th>Date</th>
 <th>Supplier</th>
-<th>Net Amt</th>
+<th>Net</th>
 </tr>
 </thead>
 <tbody id="purchaseList">
-    <tr><td colspan="3" style="padding:20px">Loading cloud data...</td></tr>
+    <tr><td colspan="4">Loading data...</td></tr>
 </tbody>
 </table>
 </div>
 
-<div class="form-section" id="editForm" style="opacity: 0.5; pointer-events: none;">
+<div class="form-section">
 
-<h3>1. Header Information</h3>
-<div class="form-grid">
-    <div><label>Bill No</label><input id="billNo"></div>
-    <div><label>Bill Date</label><input id="billDate"></div>
-    <div><label>Supplier Name</label><input id="supplier"></div>
-    <div><label>Payment Mode</label>
-        <select id="payment"><option>Cash</option><option>Credit</option></select>
-    </div>
-</div>
+<h3>Bill Information</h3>
+<label style="font-size: 11px;">Bill No</label>
+<input id="billNo" placeholder="Bill No">
+<label style="font-size: 11px;">Bill Date</label>
+<input id="billDate" placeholder="Bill Date">
+<label style="font-size: 11px;">Supplier</label>
+<input id="supplier" placeholder="Supplier">
+<label style="font-size: 11px;">Payment Type</label>
+<input id="payment" placeholder="Payment Type">
 
-<h3>2. Items in this Bill</h3>
-<div class="item-table-container">
+<br><br>
+
+<h3>Item Details</h3>
+<div style="overflow-x:auto;">
 <table id="itemTable">
 <thead>
 <tr>
-<th>Group</th>
-<th>Item Name</th>
-<th>Qty</th>
-<th>Net Amt</th>
+    <th>Group</th>
+    <th>Item Name</th>
+    <th>Rate</th>
+    <th>Qty</th>
+    <th>Net</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>
 
-<h3>3. Payment Summary</h3>
-<div class="form-grid">
-    <div><label>Grand Total</label><input id="netAmt" readonly style="background:#ccc"></div>
-    <div><label>Paid Amount</label><input id="paidAmt" type="number" oninput="calculateNewBalance()"></div>
-    <div><label>Balance Amount</label><input id="balanceAmt" readonly style="background:#ccc"></div>
-</div>
+<br>
+
+<h3>Summary</h3>
+<label style="font-size: 11px;">Net Amount</label>
+<input id="netAmt" placeholder="Net Amount" readonly style="background:#ccc">
+<label style="font-size: 11px;">Paid Amount</label>
+<input id="paidAmt" placeholder="Paid Amount" oninput="calculateBalance()">
+<label style="font-size: 11px;">Balance</label>
+<input id="balanceAmt" placeholder="Balance" readonly style="background:#ccc">
 
 <div class="buttons">
-<button class="green" onclick="updatePurchase()">Update Record</button>
-<button class="red" onclick="deletePurchase()">Delete Bill</button>
-<button class="gray" onclick="goBack()">Back</button>
+    <button class="green" onclick="updatePurchase()">Update</button>
+    <button class="red" onclick="deletePurchase()">Delete</button>
+    <button class="gray" onclick="goBack()">Back</button>
 </div>
 
 </div>
@@ -227,14 +211,17 @@ import {
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+/* 🔐 LOGIN CHECK (Optional - enable if you use login) */
+// if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
 let purchases = [];
 let selectedDocId = null;
 
-// Helper to convert DD-MM-YYYY string to Date Object for filtering
-function parseDate(dateStr) {
-    if(!dateStr) return new Date(0);
-    const [d, m, y] = dateStr.split('-');
-    return new Date(y, m - 1, d);
+// Helper function to handle date parsing for filtering
+function parseDate(str) {
+    if(!str) return new Date(0);
+    const parts = str.split('-'); // Assumes DD-MM-YYYY
+    return new Date(parts[2], parts[1]-1, parts[0]);
 }
 
 /* ☁️ LOAD PURCHASES FROM CLOUD */
@@ -251,26 +238,23 @@ async function loadPurchases() {
         renderList(purchases);
     } catch (err) {
         console.error("Cloud Fetch Error:", err);
+        document.getElementById("purchaseList").innerHTML = "<tr><td colspan='4'>Error loading data.</td></tr>";
     }
 }
 
-/* 📊 RENDER LEFT SIDE LIST */
+/* 📊 RENDER LIST */
 function renderList(list) {
     const tbody = document.getElementById("purchaseList");
     tbody.innerHTML = "";
     
-    if(list.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='3'>No records found</td></tr>";
-        return;
-    }
-
     list.forEach(p => {
         const balance = parseFloat(p.summary?.balance || 0);
-        const statusClass = balance <= 0 ? "paid-row" : "unpaid-row";
+        const statusClass = balance <= 0 ? "paid" : "unpaid";
 
         tbody.innerHTML += `
             <tr class="${statusClass}" onclick="selectPurchase('${p.id}')">
                 <td>${p.header?.billNo || 'N/A'}</td>
+                <td>${p.header?.date || 'N/A'}</td>
                 <td style="text-align:left">${p.header?.supplier || 'N/A'}</td>
                 <td>${p.summary?.grandTotal || 0}</td>
             </tr>`;
@@ -280,76 +264,76 @@ function renderList(list) {
 /* 🔍 FILTER LOGIC */
 window.applyFilters = function() {
     let search = document.getElementById("searchBill").value.toLowerCase();
-    let from = document.getElementById("fromDate").value; // YYYY-MM-DD
+    let from = document.getElementById("fromDate").value;
     let to = document.getElementById("toDate").value;
 
     let filtered = purchases.filter(p => {
-        let matchText = (p.header?.billNo || "").toString().toLowerCase().includes(search) || 
+        let matchBill = (p.header?.billNo || "").toString().toLowerCase().includes(search) || 
                         (p.header?.supplier || "").toLowerCase().includes(search);
 
-        let billDate = parseDate(p.header?.date);
-        let matchFrom = !from || billDate >= new Date(from);
-        let matchTo = !to || billDate <= new Date(to);
+        let billDateObj = parseDate(p.header?.date);
+        let matchFrom = !from || billDateObj >= new Date(from);
+        let matchTo = !to || billDateObj <= new Date(to);
 
-        return matchText && matchFrom && matchTo;
+        return matchBill && matchFrom && matchTo;
     });
 
     renderList(filtered);
 };
 
-/* 🖱️ SELECT BILL TO EDIT */
+/* 🖱️ SELECT BILL */
 window.selectPurchase = function(id) {
     const p = purchases.find(item => item.id === id);
     if (!p) return;
 
     selectedDocId = id;
-    document.getElementById("editForm").style.opacity = "1";
-    document.getElementById("editForm").style.pointerEvents = "auto";
 
-    // Fill Header
+    // Mapping to your new Firebase Structure
     document.getElementById("billNo").value = p.header?.billNo || "";
     document.getElementById("billDate").value = p.header?.date || "";
     document.getElementById("supplier").value = p.header?.supplier || "";
     document.getElementById("payment").value = p.header?.payment || "Cash";
     
-    // Fill Summary
     document.getElementById("netAmt").value = p.summary?.grandTotal || 0;
     document.getElementById("paidAmt").value = p.summary?.paid || 0;
     document.getElementById("balanceAmt").value = p.summary?.balance || 0;
 
-    // Fill Items (Read only names for modification safety)
+    /* LOAD ITEMS */
     let tbody = document.querySelector("#itemTable tbody");
     tbody.innerHTML = "";
+
     (p.items || []).forEach(item => {
         tbody.innerHTML += `
             <tr>
-                <td><input value="${item.group || ''}" readonly></td>
-                <td><input value="${item.name || ''}" readonly style="text-align:left"></td>
-                <td><input value="${item.qty || 0}"></td>
-                <td><input value="${item.net || 0}"></td>
+                <td><input value="${item.group || ''}"></td>
+                <td><input value="${item.name || ''}" style="text-align:left"></td>
+                <td><input type="number" value="${item.rate || 0}" oninput="recalcRow(this)"></td>
+                <td><input type="number" value="${item.qty || 0}" oninput="recalcRow(this)"></td>
+                <td><input type="number" class="row-net" value="${item.net || 0}" readonly></td>
             </tr>`;
     });
 };
 
-window.calculateNewBalance = function() {
-    const total = parseFloat(document.getElementById("netAmt").value) || 0;
+/* 🧮 CALCULATION HELPERS */
+window.calculateBalance = function() {
+    const net = parseFloat(document.getElementById("netAmt").value) || 0;
     const paid = parseFloat(document.getElementById("paidAmt").value) || 0;
-    document.getElementById("balanceAmt").value = (total - paid).toFixed(2);
+    document.getElementById("balanceAmt").value = (net - paid).toFixed(2);
 };
 
-/* 🆙 UPDATE FIREBASE */
+/* 🆙 UPDATE */
 window.updatePurchase = async function() {
-    if (!selectedDocId) return alert("Select a bill first");
+    if (!selectedDocId) return alert("Select a bill from the list first");
 
-    // Re-collect items from table
     let updatedItems = [];
     document.querySelectorAll("#itemTable tbody tr").forEach(row => {
         const inputs = row.querySelectorAll("input");
         updatedItems.push({
             group: inputs[0].value,
             name: inputs[1].value,
-            qty: inputs[2].value,
-            net: inputs[3].value
+            rate: parseFloat(inputs[2].value) || 0,
+            qty: parseFloat(inputs[3].value) || 0,
+            net: parseFloat(inputs[4].value) || 0
         });
     });
 
@@ -367,18 +351,18 @@ window.updatePurchase = async function() {
     try {
         const docRef = doc(db, "purchases", selectedDocId);
         await updateDoc(docRef, updatedData);
-        alert("Bill Updated Successfully! ✅");
-        loadPurchases(); // Refresh list
+        alert("Purchase Entry Updated! ✅");
+        loadPurchases();
     } catch (e) {
         alert("Update Failed: " + e.message);
     }
 };
 
-/* 🗑️ DELETE FROM FIREBASE */
+/* 🗑️ DELETE */
 window.deletePurchase = async function() {
     if (!selectedDocId) return alert("Select a bill first");
 
-    if (confirm("Permanently delete this purchase record?")) {
+    if (confirm("Delete this bill permanently?")) {
         try {
             await deleteDoc(doc(db, "purchases", selectedDocId));
             alert("Bill Deleted ❌");
@@ -391,8 +375,9 @@ window.deletePurchase = async function() {
 
 window.goBack = () => location.href = "purchase-entry.html";
 
-// Start
+/* 🚀 START */
 loadPurchases();
 </script>
 </body>
 </html>
+
