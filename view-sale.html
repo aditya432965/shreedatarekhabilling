@@ -12,63 +12,105 @@
         --bg: #0b0f19;
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
-    body { background: var(--bg); color: white; padding: 20px; }
+    body { background: var(--bg); color: white; padding: 15px; }
 
-    .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 5px solid var(--primary); }
+    /* Header Section */
+    .header-section { 
+        display: flex; justify-content: space-between; align-items: center; 
+        margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); 
+        border-radius: 12px; border-left: 5px solid var(--primary); 
+    }
     
-    .filter-bar { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
-    input { padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #0b0f19; color: white; outline: none; }
+    /* Filter Bar */
+    .filter-bar { 
+        background: #1e293b; padding: 15px; border-radius: 12px; 
+        margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; 
+    }
+    input { 
+        padding: 10px; border-radius: 6px; border: 1px solid #334155; 
+        background: #0b0f19; color: white; outline: none; flex: 1; min-width: 180px;
+    }
 
-    .table-container { background: #1e293b; border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    /* Table & Mobile Responsive Layout */
+    .table-container { background: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { background: #334155; padding: 15px; color: #a0d8ef; font-size: 14px; text-transform: uppercase; }
+    th { background: #334155; padding: 15px; color: #a0d8ef; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
     td { padding: 12px 15px; border-bottom: 1px solid #334155; font-size: 14px; }
     tr:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
 
-    /* Detail Modal - Enhanced Visibility */
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); padding: 20px; overflow-y: auto; align-items: center; justify-content: center; }
-    .modal-content { background: white; color: black; max-width: 800px; width: 100%; margin: auto; padding: 30px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-    .modal-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; }
-    
-    .customer-info-box { background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid var(--primary); margin-bottom: 20px; }
+    /* Mobile "Card" View */
+    @media (max-width: 768px) {
+        thead { display: none; }
+        tr { 
+            display: block; border-bottom: 8px solid #0b0f19; 
+            padding: 10px; background: #1e293b;
+        }
+        td { 
+            display: flex; justify-content: space-between; padding: 8px 5px; 
+            border: none; text-align: right; font-size: 13px;
+        }
+        td::before { 
+            content: attr(data-label); font-weight: bold; color: #a0d8ef; 
+            text-align: left; flex: 1;
+        }
+        .header-section { flex-direction: column; gap: 10px; text-align: center; }
+        .filter-bar { flex-direction: column; align-items: stretch; }
+        .btn-header-group { display: flex; gap: 5px; width: 100%; }
+        .btn-header-group .btn { flex: 1; }
+    }
 
-    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; }
+    /* Modal - Invoice Style */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); padding: 10px; overflow-y: auto; align-items: center; justify-content: center; }
+    .modal-content { background: white; color: black; max-width: 700px; width: 100%; margin: auto; padding: 25px; border-radius: 12px; }
+    .modal-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+    
+    .customer-info-box { background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid var(--primary); margin-bottom: 15px; }
+
+    /* Buttons */
+    .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; font-size: 13px; border-bottom: 2px solid rgba(0,0,0,0.1); }
     .btn-back { background: #334155; color: white; }
-    .btn-print { background: var(--primary); color: white; margin-top: 10px; }
-    .btn-gst { background: #10b981; color: white; margin-top: 10px; }
-    .btn-close { background: #ef4444; color: white; }
+    .btn-print { background: var(--primary); color: white; }
+    .btn-gst { background: #10b981; color: white; }
+    .btn-modify { background: #f59e0b; color: white; }
+    .btn-close { background: #ef4444; color: white; width: 100%; margin-top: 15px; }
 
     @media print {
         body * { visibility: hidden; }
         .modal-content, .modal-content * { visibility: visible; }
-        .modal-content { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; }
-        .btn-print, .btn-close, .btn-gst { display: none; }
+        .modal-content { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+        .btn, .btn-close { display: none !important; }
     }
 </style>
 </head>
 <body>
 
 <div class="header-section">
-    <h2>All Sales History</h2>
-    <a href="sale-entry.html" class="btn btn-back">← Back to Billing</a>
+    <div>
+        <h2 style="color: #a0d8ef;">Sales Ledger</h2>
+        <p style="font-size: 11px; opacity: 0.7;">Shree Datarekha Enterprises</p>
+    </div>
+    <div class="btn-header-group">
+        <a href="sale-entry.html" class="btn btn-gst">+ Add Sale</a>
+        <a href="sale-entry.html" class="btn btn-back">← Back</a>
+    </div>
 </div>
 
 <div class="filter-bar">
-    <input type="text" id="searchBar" placeholder="Search by Name or Bill..." oninput="filterSales()">
+    <input type="text" id="searchBar" placeholder="🔍 Search Customer or Bill..." oninput="filterSales()">
     <div style="display: flex; gap: 10px; align-items: center;">
-        <label style="font-size: 12px; color: #a0d8ef;">Filter by Date:</label>
+        <label style="font-size: 12px; color: #a0d8ef;">Date:</label>
         <input type="date" id="dateFilter" onchange="filterSales()">
     </div>
 </div>
 
 <div class="table-container">
-    <table>
+    <table id="salesTable">
         <thead>
             <tr>
                 <th>Bill No</th>
                 <th>Date</th>
                 <th>Customer Name</th>
-                <th>Total Amt</th>
+                <th>Total</th>
                 <th>Paid</th>
                 <th>Balance</th>
                 <th>Action</th>
@@ -82,44 +124,44 @@
     <div class="modal-content">
         <div class="modal-header">
             <div>
-                <h1 style="color: #007ea7; margin:0; font-size: 28px;">INVOICE</h1>
-                <p style="margin:0; font-weight: bold;">Shree Datarekha Enterprises</p>
-                <p style="margin:0; font-size: 12px; color: #666;">Gunwadi Rd, Baramati</p>
+                <h1 style="color: #007ea7; margin:0; font-size: 24px;">INVOICE</h1>
+                <p style="margin:0; font-size: 12px; color: #666;">Tax / Cash Bill</p>
             </div>
             <div style="text-align: right;">
-                <h3 id="invBillNo" style="margin:0; color: #334155;"></h3>
-                <p id="invDate" style="margin:0; font-weight: bold;"></p>
+                <h3 id="invBillNo" style="margin:0; color: #333;"></h3>
+                <p id="invDate" style="margin:0; font-size: 13px; font-weight: bold;"></p>
             </div>
         </div>
 
         <div class="customer-info-box">
-            <strong style="color: #64748b; text-transform: uppercase; font-size: 11px;">Bill To:</strong>
-            <p id="invCustName" style="font-weight: 800; font-size: 1.2em; margin: 5px 0; color: #000;"></p>
-            <p id="invCustMeta" style="font-size: 0.95em; color: #334155; line-height: 1.4;"></p>
+            <p id="invCustName" style="font-weight: 800; font-size: 1.1em; color: #000; margin-bottom: 3px;"></p>
+            <p id="invCustMeta" style="font-size: 13px; color: #555;"></p>
         </div>
 
-        <table style="width: 100%; border: 1px solid #ddd; color: black; margin-bottom: 20px; border-collapse: collapse;">
-            <thead style="background: #f1f5f9;">
-                <tr>
-                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: left;">Item Description</th>
-                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: center;">Qty</th>
-                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: center;">Rate</th>
-                    <th style="color: #334155; border: 1px solid #cbd5e1; padding: 10px; text-align: right;">Total</th>
-                </tr>
-            </thead>
-            <tbody id="invItems"></tbody>
-        </table>
-
-        <div style="text-align: right; line-height: 2;">
-            <p style="margin:0; border-bottom: 1px solid #eee;">Gross Total: <span id="invNet" style="font-weight: bold;">0.00</span></p>
-            <p style="margin:0; border-bottom: 1px solid #eee;">Amount Paid: <span id="invPaid" style="color: #10b981;">0.00</span></p>
-            <p style="margin:0;">Balance Due: <strong id="invBalance" style="color: #ef4444; font-size: 1.2em;">0.00</strong></p>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; color: black;">
+                <thead>
+                    <tr style="background: #f1f5f9; border-bottom: 2px solid #ddd;">
+                        <th style="padding: 8px; font-size: 12px; color: #333;">Item</th>
+                        <th style="padding: 8px; font-size: 12px; text-align:center; color: #333;">Qty</th>
+                        <th style="padding: 8px; font-size: 12px; text-align:right; color: #333;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="invItems"></tbody>
+            </table>
         </div>
 
-        <div style="margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid #eee; pt: 20px;">
-            <button class="btn btn-gst" onclick="reprintBill('WITH_GST')">Print Tax Invoice</button>
-            <button class="btn btn-print" onclick="reprintBill('WITHOUT_GST')">Print Cash Memo</button>
-            <button class="btn btn-close" onclick="closeModal()">Close Window</button>
+        <div style="text-align: right; line-height: 1.8; border-top: 1px dashed #ccc; padding-top: 10px;">
+            <p>Net Amount: <strong id="invNet">0.00</strong></p>
+            <p>Paid: <span id="invPaid" style="color: #10b981;">0.00</span></p>
+            <p>Remaining: <strong id="invBalance" style="color: #ef4444; font-size: 1.1em;">0.00</strong></p>
+        </div>
+
+        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="btn btn-gst" onclick="reprintBill('WITH_GST')">Print GST</button>
+            <button class="btn btn-print" onclick="reprintBill('WITHOUT_GST')">Print Cash</button>
+            <button class="btn btn-modify" onclick="openModifier()">Edit Bill</button>
+            <button class="btn btn-back" onclick="closeModal()">Close View</button>
         </div>
     </div>
 </div>
@@ -128,155 +170,117 @@
 import { db } from './firebase-config.js';
 import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
-
 let allSales = [];
 let selectedSale = null;
 
-async function loadSales() {
+// Auth Check
+if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
+
+async function fetchSales() {
     const log = document.getElementById('salesLog');
-    log.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">⚡ Connecting to Cloud Database...</td></tr>`;
+    log.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px;">⚡ Connecting to Cloud Database...</td></tr>`;
 
     try {
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        const snap = await getDocs(q);
         
-        allSales = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        renderTable(allSales);
-
-    } catch (err) {
-        log.innerHTML = `<tr><td colspan="7" style="text-align:center; color: #ff4d4d; padding: 20px;">❌ Error: ${err.message}</td></tr>`;
+        allSales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        render(allSales);
+    } catch (e) {
+        log.innerHTML = `<tr><td colspan="7" style="color: #ff4d4d;">❌ Error Loading: ${e.message}</td></tr>`;
     }
 }
 
-function renderTable(data) {
+function render(data) {
     const log = document.getElementById('salesLog');
-    log.innerHTML = "";
+    log.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align:center; padding:20px;">No sales records found.</td></tr>` : "";
 
-    if(data.length === 0) {
-        log.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">No sales found in Cloud.</td></tr>`;
-        return;
-    }
-
-    data.forEach((sale) => {
-        const netTotal = parseFloat(sale.netTotal || 0);
-        const paidAmt = parseFloat(sale.paid || 0);
-        const balance = netTotal - paidAmt;
+    data.forEach(sale => {
+        const net = parseFloat(sale.netTotal || 0);
+        const paid = parseFloat(sale.paid || 0);
+        const bal = net - paid;
 
         const row = document.createElement('tr');
-        row.onclick = () => showInvoice(sale.id); 
-        
+        row.onclick = () => showInvoice(sale.id);
         row.innerHTML = `
-            <td><strong>${sale.billNo}</strong></td>
-            <td>${sale.date}</td>
-            <td>${sale.customerName}</td>
-            <td>₹${netTotal.toFixed(2)}</td>
-            <td>₹${paidAmt.toFixed(2)}</td>
-            <td style="color: ${balance > 1 ? '#ef4444' : '#10b981'}; font-weight: bold;">
-                ₹${balance.toFixed(2)}
+            <td data-label="Bill No"><strong>${sale.billNo}</strong></td>
+            <td data-label="Date">${sale.date}</td>
+            <td data-label="Customer">${sale.customerName}</td>
+            <td data-label="Total">₹${net.toFixed(2)}</td>
+            <td data-label="Paid">₹${paid.toFixed(2)}</td>
+            <td data-label="Balance" style="color: ${bal > 1 ? '#ef4444' : '#10b981'}; font-weight: bold;">
+                ₹${bal.toFixed(2)}
             </td>
-            <td><button class="btn btn-print" style="padding: 5px 10px; font-size: 11px; margin-top:0;">View Bill</button></td>
+            <td data-label="Action"><button class="btn btn-print" style="padding: 4px 10px; font-size: 11px;">Details</button></td>
         `;
         log.appendChild(row);
     });
 }
 
 window.filterSales = function() {
-    const searchTerm = document.getElementById('searchBar').value.toLowerCase();
-    const dateTerm = document.getElementById('dateFilter').value;
+    const text = document.getElementById('searchBar').value.toLowerCase();
+    const date = document.getElementById('dateFilter').value;
 
     const filtered = allSales.filter(s => {
-        const matchesSearch = s.customerName.toLowerCase().includes(searchTerm) || 
-                              s.billNo.toLowerCase().includes(searchTerm);
-        const matchesDate = dateTerm ? s.date === dateTerm : true;
-        return matchesSearch && matchesDate;
+        const matchText = s.customerName.toLowerCase().includes(text) || s.billNo.toLowerCase().includes(text);
+        const matchDate = date ? s.date === date : true;
+        return matchText && matchDate;
     });
-
-    renderTable(filtered);
+    render(filtered);
 };
 
-window.showInvoice = function(docId) {
-    const sale = allSales.find(s => s.id === docId);
-    if (!sale) return;
-    selectedSale = sale;
+window.showInvoice = function(id) {
+    selectedSale = allSales.find(s => s.id === id);
+    if (!selectedSale) return;
 
-    const netTotal = parseFloat(sale.netTotal || 0);
-    const paidAmt = parseFloat(sale.paid || 0);
-    const balance = netTotal - paidAmt;
+    const net = parseFloat(selectedSale.netTotal || 0);
+    const paid = parseFloat(selectedSale.paid || 0);
 
-    // Billing Header
-    document.getElementById('invBillNo').innerText = "Bill No: " + (sale.billNo || 'N/A');
-    document.getElementById('invDate').innerText = "Date: " + (sale.date || 'N/A');
-    
-    // CUSTOMER DETAILS - These lines fix your visibility issue
-    document.getElementById('invCustName').innerText = sale.customerName || "Walking Customer";
-    document.getElementById('invCustMeta').innerText = sale.custMeta || "Contact details not recorded";
-    
-    const itemBody = document.getElementById('invItems');
-    itemBody.innerHTML = "";
-    
-    const items = sale.items || [];
-    items.forEach(item => {
-        itemBody.innerHTML += `
-            <tr>
-                <td style="border: 1px solid #ddd; padding: 10px;">${item.name}</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${item.qty}</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${item.rate}</td>
-                <td style="border: 1px solid #ddd; padding: 10px; text-align: right;">${parseFloat(item.net || 0).toFixed(2)}</td>
-            </tr>
-        `;
-    });
+    document.getElementById('invBillNo').innerText = "Bill: " + selectedSale.billNo;
+    document.getElementById('invDate').innerText = selectedSale.date;
+    document.getElementById('invCustName').innerText = selectedSale.customerName || "Walking Customer";
+    document.getElementById('invCustMeta').innerText = selectedSale.custMeta || "Contact details N/A";
 
-    // Summary
-    document.getElementById('invNet').innerText = "₹" + netTotal.toFixed(2);
-    document.getElementById('invPaid').innerText = "₹" + paidAmt.toFixed(2);
-    document.getElementById('invBalance').innerText = "₹" + balance.toFixed(2);
+    const itemHtml = (selectedSale.items || []).map(i => `
+        <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px;">${i.name}</td>
+            <td style="padding: 10px; text-align:center;">${i.qty}</td>
+            <td style="padding: 10px; text-align:right;">₹${parseFloat(i.net || 0).toFixed(2)}</td>
+        </tr>
+    `).join('');
+
+    document.getElementById('invItems').innerHTML = itemHtml;
+    document.getElementById('invNet').innerText = "₹" + net.toFixed(2);
+    document.getElementById('invPaid').innerText = "₹" + paid.toFixed(2);
+    document.getElementById('invBalance').innerText = "₹" + (net - paid).toFixed(2);
 
     document.getElementById('invoiceModal').style.display = "flex";
 };
 
 window.reprintBill = function(mode) {
     if(!selectedSale) return;
-
-    const printData = {
+    const data = {
         taxMode: mode,
         billNo: selectedSale.billNo,
         date: selectedSale.date,
         custName: selectedSale.customerName,
         custMeta: selectedSale.custMeta || "",
-        items: selectedSale.items.map(i => ({
-            name: i.name,
-            qty: i.qty,
-            free: i.free || 0,
-            mrp: i.mrp || i.rate,
-            rate: i.rate,
-            disc: i.disc || 0,
-            cgst: i.cgst || (mode === 'WITH_GST' ? 2.5 : 0), 
-            sgst: i.sgst || (mode === 'WITH_GST' ? 2.5 : 0),
-            net: i.net
-        })),
-        summary: {
-            gross: selectedSale.netTotal,
-            disc: 0,
-            cgst: selectedSale.cgstTotal || 0,
-            sgst: selectedSale.sgstTotal || 0,
-            net: selectedSale.netTotal
-        }
+        items: selectedSale.items,
+        summary: { net: selectedSale.netTotal, paid: selectedSale.paid }
     };
-
-    localStorage.setItem("lastBill", JSON.stringify(printData));
+    localStorage.setItem("lastBill", JSON.stringify(data));
     window.open('print.html', '_blank');
 };
 
-window.closeModal = function() {
-    document.getElementById('invoiceModal').style.display = "none";
+window.openModifier = function() {
+    if(!selectedSale) return;
+    localStorage.setItem("editBillNo", selectedSale.billNo);
+    window.location.href = 'modify-sale.html';
 };
 
-loadSales();
+window.closeModal = () => document.getElementById('invoiceModal').style.display = "none";
+
+fetchSales();
 </script>
 </body>
 </html>
