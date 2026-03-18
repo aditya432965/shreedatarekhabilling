@@ -202,36 +202,39 @@ window.calculateFinal = function() {
     const mode = document.getElementById('taxMode').value;
 
     document.querySelectorAll('#tableBody tr').forEach(row => {
-        let rateInput = row.querySelector('.rate');
-        let rate = parseFloat(rateInput.value) || 0;
+        let rate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const dP = parseFloat(row.querySelector('.disc').value) || 0;
         const sA = parseFloat(row.querySelector('.schm').value) || 0;
         const gP = parseFloat(row.querySelector('.gst').value) || 0;
 
-        const sub = rate * qty;
-        const dAmt = sub * (dP / 100);
-        const taxable = sub - dAmt - sA;
-        const gstVal = taxable * (gP / 100);
+        let taxable, gstVal, rowNet;
 
-        const rowNet = taxable + gstVal;
-        
         if(mode === "WITHOUT_GST") {
-            rateInput.value = rowNet.toFixed(2);
-            rate = rowNet; 
+            // In Cash Memo, Rate is the final price. 
+            // We back-calculate GST for the hidden database save.
+            rowNet = rate * qty;
+            taxable = rowNet / (1 + (gP / 100));
+            gstVal = rowNet - taxable;
+            tS += taxable; // Treat back-calculated taxable as Gross
+        } else {
+            const sub = rate * qty;
+            const dAmt = sub * (dP / 100);
+            taxable = sub - dAmt - sA;
+            gstVal = taxable * (gP / 100);
+            rowNet = taxable + gstVal;
+            tS += sub;
+            tD += (dAmt + sA);
         }
 
         row.querySelector('.net').value = rowNet.toFixed(2);
-
-        tS += (mode === "WITHOUT_GST") ? rowNet : sub;
-        tD += (dAmt + sA);
         totalGstAmt += gstVal;
         nG += rowNet;
     });
 
-    document.getElementById('sumTotalSale').innerText = (mode === "WITHOUT_GST") ? nG.toFixed(2) : tS.toFixed(2);
-    document.getElementById('sumTotalDisc').innerText = (mode === "WITHOUT_GST") ? "0.00" : tD.toFixed(2);
-    document.getElementById('sumGST').innerText = (mode === "WITH_GST") ? totalGstAmt.toFixed(2) : "0.00";
+    document.getElementById('sumTotalSale').innerText = tS.toFixed(2);
+    document.getElementById('sumTotalDisc').innerText = tD.toFixed(2);
+    document.getElementById('sumGST').innerText = totalGstAmt.toFixed(2);
     
     const finalRounded = Math.round(nG);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
@@ -244,20 +247,46 @@ window.saveSale = async function(shouldPrint = false) {
     const partyName = document.getElementById('partySearch').value;
     if(!partyName) return alert("Select a Customer!");
 
+    const mode = document.getElementById('taxMode').value;
     const billItems = [];
+    let savedTotalGst = 0;
+    let savedGross = 0;
+
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const name = row.querySelector('.i-name').value;
         if(name) {
+            const r = parseFloat(row.querySelector('.rate').value) || 0;
+            const q = parseFloat(row.querySelector('.qty').value) || 0;
+            const g = parseFloat(row.querySelector('.gst').value) || 0;
+            const n = parseFloat(row.querySelector('.net').value) || 0;
+
+            let finalRate = r;
+            let itemGstAmt = 0;
+
+            if(mode === "WITHOUT_GST") {
+                // FORCE GST CALCULATION FOR DATABASE
+                const taxable = n / (1 + (g / 100));
+                itemGstAmt = n - taxable;
+                finalRate = taxable / q; // Save the tax-exclusive rate
+                savedGross += taxable;
+            } else {
+                itemGstAmt = (n * g) / (100 + g);
+                savedGross += (r * q);
+            }
+
+            savedTotalGst += itemGstAmt;
+
             billItems.push({
                 group: row.querySelector('.i-group').value,
                 name: name,
-                qty: row.querySelector('.qty').value,
-                rate: row.querySelector('.rate').value,
+                qty: q,
+                rate: finalRate.toFixed(2),
                 mrp: row.querySelector('.mrp').value,
                 disc: row.querySelector('.disc').value,
                 schm: row.querySelector('.schm').value,
-                gst: row.querySelector('.gst').value,
-                net: row.querySelector('.net').value
+                gst: g,
+                gstAmt: itemGstAmt.toFixed(2), // New field for reports
+                net: n.toFixed(2)
             });
         }
     });
@@ -265,14 +294,14 @@ window.saveSale = async function(shouldPrint = false) {
     const saleData = {
         billNo: document.getElementById('billNo').innerText,
         customerName: partyName,
-        taxMode: document.getElementById('taxMode').value,
+        taxMode: mode, 
         custMeta: document.getElementById('partyMeta').value,
         date: document.getElementById('saleDate').value,
         items: billItems,
         summary: {
-            gross: document.getElementById('sumTotalSale').innerText,
+            gross: savedGross.toFixed(2),
             disc: document.getElementById('sumTotalDisc').innerText,
-            gst: document.getElementById('sumGST').innerText,
+            gst: savedTotalGst.toFixed(2), // This will now always have a value
             net: document.getElementById('sumNet').innerText
         },
         createdAt: serverTimestamp()
@@ -284,7 +313,7 @@ window.saveSale = async function(shouldPrint = false) {
             localStorage.setItem("lastBill", JSON.stringify(saleData));
             window.open('print.html', '_blank');
         } else {
-            alert("Saved Successfully!");
+            alert("Saved Successfully with GST details!");
         }
         location.reload();
     } catch (e) { alert("Error: " + e.message); }
@@ -294,24 +323,3 @@ init();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
