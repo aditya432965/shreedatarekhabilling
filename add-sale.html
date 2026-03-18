@@ -198,49 +198,49 @@ window.autoFillByName = function(input) {
 };
 
 window.calculateFinal = function() {
-    let screenGross = 0, screenTotalDisc = 0, screenTotalGst = 0, screenNet = 0;
+    let tGross = 0, tDisc = 0, tGst = 0, tNet = 0;
     const mode = document.getElementById('taxMode').value;
 
     document.querySelectorAll('#tableBody tr').forEach(row => {
-        let rate = parseFloat(row.querySelector('.rate').value) || 0;
+        const rate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
-        const discPerc = parseFloat(row.querySelector('.disc').value) || 0;
+        const dPerc = parseFloat(row.querySelector('.disc').value) || 0;
         const schmAmt = parseFloat(row.querySelector('.schm').value) || 0;
-        const gstPerc = parseFloat(row.querySelector('.gst').value) || 0;
+        const gPerc = parseFloat(row.querySelector('.gst').value) || 0;
+
+        let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
 
         if (mode === "WITHOUT_GST") {
-            // Business Rule: Gross = Net (UI side)
-            let rowNet = rate * qty;
-            row.querySelector('.net').value = rowNet.toFixed(2);
+            // Flow: Rate -> Apply GST -> Apply Discount
+            const amountWithGst = (rate * qty) * (1 + gPerc/100);
+            rowDisc = (amountWithGst * (dPerc/100)) + (schmAmt * qty);
+            rowNet = amountWithGst - rowDisc;
             
-            screenGross += rowNet;
-            screenNet += rowNet;
-            // Display zero for others on screen for Cash Memo
-            screenTotalDisc = 0;
-            screenTotalGst = 0;
+            rowGross = amountWithGst; // Seeing amount after GST as Gross in this mode
+            rowGst = (rate * qty) * (gPerc/100);
         } else {
-            // Standard Tax Invoice logic
+            // Standard Tax Flow
             const subtotal = rate * qty;
-            const discAmount = subtotal * (discPerc / 100);
-            const totalDiscForRow = discAmount + (schmAmt * qty); 
-            const taxable = subtotal - totalDiscForRow;
-            const gstAmount = taxable * (gstPerc / 100);
-            const rowNet = taxable + gstAmount;
-
-            row.querySelector('.net').value = rowNet.toFixed(2);
+            rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
+            const taxable = subtotal - rowDisc;
+            rowGst = taxable * (gPerc/100);
+            rowNet = taxable + rowGst;
             
-            screenGross += subtotal;
-            screenTotalDisc += totalDiscForRow;
-            screenTotalGst += gstAmount;
-            screenNet += rowNet;
+            rowGross = subtotal;
         }
+
+        row.querySelector('.net').value = rowNet.toFixed(2);
+        tGross += rowGross;
+        tDisc += rowDisc;
+        tGst += rowGst;
+        tNet += rowNet;
     });
 
-    document.getElementById('sumTotalSale').innerText = screenGross.toFixed(2);
-    document.getElementById('sumTotalDisc').innerText = screenTotalDisc.toFixed(2);
-    document.getElementById('sumGST').innerText = screenTotalGst.toFixed(2);
+    document.getElementById('sumTotalSale').innerText = tGross.toFixed(2);
+    document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
+    document.getElementById('sumGST').innerText = tGst.toFixed(2);
     
-    const finalRounded = Math.round(screenNet);
+    const finalRounded = Math.round(tNet);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
     
     const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
@@ -251,60 +251,20 @@ window.saveSale = async function(shouldPrint = false) {
     const partyName = document.getElementById('partySearch').value;
     if(!partyName) return alert("Select a Customer!");
 
-    const mode = document.getElementById('taxMode').value;
     const billItems = [];
-    
-    // Always calculate Tax Invoice structure for Database
-    let dbGross = 0;
-    let dbTotalDisc = 0;
-    let dbTotalGst = 0;
-    let dbNet = 0;
-
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const name = row.querySelector('.i-name').value;
         if(name) {
-            const r = parseFloat(row.querySelector('.rate').value) || 0;
-            const q = parseFloat(row.querySelector('.qty').value) || 0;
-            const dp = parseFloat(row.querySelector('.disc').value) || 0;
-            const sa = parseFloat(row.querySelector('.schm').value) || 0;
-            const g = parseFloat(row.querySelector('.gst').value) || 0;
-            const n = parseFloat(row.querySelector('.net').value) || 0;
-
-            let taxableRate, itemGstAmt, itemNet, itemGross;
-
-            if (mode === "WITHOUT_GST") {
-                // Back-calculate for Database (Tax Invoice Format)
-                itemNet = n;
-                const taxableValTotal = itemNet / (1 + (g / 100));
-                itemGstAmt = itemNet - taxableValTotal;
-                taxableRate = taxableValTotal / q;
-                itemGross = taxableValTotal; // In Cash memo, treated as inclusive
-            } else {
-                // Standard Tax Invoice
-                itemGross = r * q;
-                const dAmt = itemGross * (dp / 100) + (sa * q);
-                const taxable = itemGross - dAmt;
-                itemGstAmt = taxable * (g / 100);
-                itemNet = n;
-                taxableRate = r;
-                dbTotalDisc += dAmt;
-            }
-
-            dbGross += itemGross;
-            dbTotalGst += itemGstAmt;
-            dbNet += itemNet;
-
             billItems.push({
                 group: row.querySelector('.i-group').value,
                 name: name,
-                qty: q,
-                rate: taxableRate.toFixed(2),
+                qty: row.querySelector('.qty').value,
+                rate: row.querySelector('.rate').value,
                 mrp: row.querySelector('.mrp').value,
-                disc: dp,
-                schm: sa,
-                gst: g,
-                gstAmt: itemGstAmt.toFixed(2),
-                net: itemNet.toFixed(2)
+                disc: row.querySelector('.disc').value, // Saved for Bill/Report
+                schm: row.querySelector('.schm').value, // Saved for Bill/Report
+                gst: row.querySelector('.gst').value,
+                net: row.querySelector('.net').value
             });
         }
     });
@@ -312,15 +272,15 @@ window.saveSale = async function(shouldPrint = false) {
     const saleData = {
         billNo: document.getElementById('billNo').innerText,
         customerName: partyName,
-        taxMode: mode,
+        taxMode: document.getElementById('taxMode').value,
         custMeta: document.getElementById('partyMeta').value,
         date: document.getElementById('saleDate').value,
         items: billItems,
         summary: {
-            gross: dbGross.toFixed(2),
-            disc: dbTotalDisc.toFixed(2),
-            gst: dbTotalGst.toFixed(2),
-            net: Math.round(dbNet).toFixed(2)
+            gross: document.getElementById('sumTotalSale').innerText,
+            disc: document.getElementById('sumTotalDisc').innerText,
+            gst: document.getElementById('sumGST').innerText,
+            net: document.getElementById('sumNet').innerText
         },
         createdAt: serverTimestamp()
     };
@@ -331,7 +291,7 @@ window.saveSale = async function(shouldPrint = false) {
             localStorage.setItem("lastBill", JSON.stringify(saleData));
             window.open('print.html', '_blank');
         } else {
-            alert("Saved successfully in Tax Invoice format!");
+            alert("Saved Successfully!");
         }
         location.reload();
     } catch (e) { alert("Error: " + e.message); }
