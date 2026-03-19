@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Modify/Delete Sale | Shree Datarekha Enterprises</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -13,27 +13,20 @@ body {
   background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
   display: flex;
   justify-content: center;
-  padding: 10px;
+  padding: 15px; 
   color: white;
 }
 
 .container {
   width: 100%;
-  max-width: 1200px;
-  background: rgba(0, 0, 0, .8);
-  border-radius: 18px;
-  padding: 15px;
-  border: 1px solid rgba(255, 47, 146, 0.3);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  max-width: 1100px; /* Balanced width between Master and Sale */
+  background: rgba(0, 0, 0, .75);
+  border-radius: 22px;
+  padding: 20px; 
+  border: 1px solid rgba(255, 47, 146, 0.2);
 }
 
-h1 { 
-  text-align: center; 
-  margin-bottom: 20px; 
-  font-size: 1.4rem; 
-  color: #ffb3d9;
-  letter-spacing: 0.5px;
-}
+h1 { text-align: center; margin-bottom: 15px; font-size: 1.5rem; color: #ffb3d9; }
 
 /* SEARCH SECTION */
 .search-box {
@@ -43,135 +36,112 @@ h1 {
 }
 .search-box input {
   width: 100%;
-  max-width: 600px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 500px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
   outline: none;
   background: white;
   color: #333;
-  font-size: 16px; /* Prevents iOS zoom on focus */
+  font-size: 16px;
 }
 
 /* MAIN LAYOUT */
 .main {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 350px 1fr;
   gap: 20px;
 }
 
 /* LEFT SIDE: BILL LIST */
 .list {
-  border: 1px solid rgba(255, 159, 197, 0.2);
-  border-radius: 12px;
+  border: 1px solid #ff9fc555;
+  border-radius: 16px;
   overflow: auto;
-  max-height: 600px;
-  background: rgba(255, 255, 255, 0.03);
+  max-height: 550px; 
+  background: rgba(255, 255, 255, 0.05);
 }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 159, 197, 0.1); font-size: 13px; text-align: left; }
-th { background: #ff2f92; position: sticky; top: 0; z-index: 5; color: white; font-weight: 600; }
-tr:hover { background: rgba(255, 255, 255, .05); cursor: pointer; }
-.selected-row { background: rgba(255, 47, 146, 0.25) !important; border-left: 4px solid #ff2f92; }
+th, td { padding: 12px; border-bottom: 1px solid #ff9fc533; font-size: 13px; text-align: left; }
+th { background: #ff2f92; position: sticky; top: 0; z-index: 5; color: white; }
+tr:hover { background: rgba(255, 255, 255, .1); cursor: pointer; }
+.selected-row { background: rgba(255, 47, 146, 0.3) !important; border-left: 4px solid #ff2f92; }
 
 /* RIGHT SIDE: EDIT FORM */
 .form-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 .bill-header-fields {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   background: rgba(255, 255, 255, 0.05);
   padding: 15px;
-  border-radius: 12px;
+  border-radius: 15px;
 }
 
-.input-group { display: flex; flex-direction: column; gap: 6px; }
-label { font-size: 11px; color: #ffb3d9; font-weight: 700; text-transform: uppercase; }
-input { 
-  padding: 12px; 
-  border: 1px solid rgba(255,255,255,0.1); 
-  border-radius: 8px; 
-  background: white; 
-  color: #333; 
-  width: 100%;
-  font-size: 14px;
-}
-input:disabled { background: #e0e0e0; color: #666; }
+.input-group { display: flex; flex-direction: column; gap: 5px; }
+label { font-size: 12px; color: #ffb3d9; font-weight: 600; }
+input { padding: 11px; border: none; border-radius: 12px; background: white; color: #333; width: 100%; }
+input:disabled { background: #ccc; cursor: not-allowed; }
 
 /* ITEMS TABLE AREA */
 .items-container {
   overflow-x: auto;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  -webkit-overflow-scrolling: touch; /* Smooth scroll for iOS */
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid #444;
+  max-height: 300px;
 }
-.items-table { min-width: 700px; }
-.row-input { 
-  background: rgba(255,255,255,0.05); 
-  color: white; 
-  border: 1px solid rgba(255,255,255,0.2); 
-  padding: 8px; 
-  border-radius: 6px; 
-  text-align: center; 
-}
-.row-input:focus { background: white; color: #333; border-color: #ff2f92; }
+.items-table { min-width: 800px; }
+.row-input { background: transparent; color: white; border: 1px solid #555; padding: 6px; border-radius: 6px; text-align: center; }
+.row-input:focus { background: rgba(255,255,255,0.1); border-color: #ff2f92; outline: none; }
 
-/* SUMMARY BOX */
+/* SUMMARY BAR */
 .summary-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  background: rgba(255, 47, 146, 0.1);
+  background: rgba(255, 47, 146, 0.15);
   padding: 15px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 47, 146, 0.2);
+  border: 1px solid rgba(255, 47, 146, 0.3);
 }
 .sum-item { text-align: center; }
-.sum-item span { display: block; font-size: 10px; color: #ffb3d9; text-transform: uppercase; margin-bottom: 4px; }
-.sum-item strong { font-size: 1.1rem; color: #00ff88; }
+.sum-item span { display: block; font-size: 11px; color: #ffb3d9; }
+.sum-item strong { font-size: 16px; color: #00ff88; }
 
 /* BUTTONS */
 .buttons {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
 }
 button {
-  padding: 15px;
+  padding: 14px;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   font-weight: 700;
   color: white;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: 0.2s ease;
 }
-.update { background: #2e7d32; }
-.delete { background: #c62828; }
-.reset { background: #616161; }
-.back { background: #424242; }
-button:active { transform: scale(0.96); }
+.update { background: #4CAF50; }
+.delete { background: #d32f2f; }
+.reset { background: #777; }
+.back { background: #444; }
+button:active { transform: scale(0.95); }
 
-/* MOBILE RESPONSIVENESS CUSTOMIZATIONS */
-@media(max-width: 900px) {
+/* MOBILE RESPONSIVENESS */
+@media(max-width: 850px) {
   .main { grid-template-columns: 1fr; }
-  .list { max-height: 200px; } /* Give more space to the form on tablet */
-}
-
-@media(max-width: 600px) {
-  h1 { font-size: 1.2rem; }
+  .list { max-height: 250px; }
   .bill-header-fields { grid-template-columns: 1fr; }
-  .summary-bar { grid-template-columns: 1fr; gap: 15px; }
-  .buttons { grid-template-columns: 1fr; }
-  .sum-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
-  .sum-item:last-child { border-bottom: none; }
+  .summary-bar { grid-template-columns: 1fr; }
+  .buttons { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
@@ -182,7 +152,7 @@ button:active { transform: scale(0.96); }
   <h1>Modify / Delete Sale Entry</h1>
 
   <div class="search-box">
-    <input id="searchInput" placeholder="Search Bill No or Name..." oninput="filterBills()">
+    <input id="searchInput" placeholder="Search Bill No or Customer..." oninput="filterBills()">
   </div>
 
   <div class="main">
@@ -209,12 +179,12 @@ button:active { transform: scale(0.96); }
           <label>Bill Date</label>
           <input type="date" id="billDate">
         </div>
-        <div class="input-group">
+        <div class="input-group" style="grid-column: span 1;">
           <label>Customer Name</label>
           <input id="custName">
         </div>
         <div class="input-group">
-          <label>Paid Amount</label>
+          <label>Paid Amount (₹)</label>
           <input type="number" id="paidAmt" oninput="calculateTotals()">
         </div>
       </div>
@@ -223,12 +193,12 @@ button:active { transform: scale(0.96); }
         <table class="items-table">
           <thead>
             <tr>
-              <th width="40">#</th>
+              <th width="50">#</th>
               <th>Item Name</th>
-              <th width="70">Qty</th>
-              <th width="90">Rate</th>
-              <th width="70">Disc%</th>
-              <th width="110">Net Amt</th>
+              <th width="80">Qty</th>
+              <th width="100">Rate</th>
+              <th width="80">Disc%</th>
+              <th width="120">Net Amt</th>
             </tr>
           </thead>
           <tbody id="itemsTableBody"></tbody>
@@ -242,8 +212,8 @@ button:active { transform: scale(0.96); }
       </div>
 
       <div class="buttons">
-        <button class="update" onclick="updateBill()">Update Bill</button>
-        <button class="delete" onclick="deleteBill()">Delete Bill</button>
+        <button class="update" onclick="updateBill()">Update</button>
+        <button class="delete" onclick="deleteBill()">Delete</button>
         <button class="reset" onclick="resetForm()">Reset</button>
         <button class="back" onclick="goBack()">Back</button>
       </div>
@@ -268,7 +238,7 @@ async function loadSales() {
         const snap = await getDocs(q);
         allSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderList(allSales);
-    } catch (e) { console.error("Load Error: ", e); }
+    } catch (e) { console.error("Firebase Error:", e); }
 }
 
 function renderList(data) {
@@ -277,7 +247,7 @@ function renderList(data) {
         <tr onclick="selectBill('${s.id}')" id="row-${s.id}">
             <td>${s.billNo}</td>
             <td>${s.customerName}</td>
-            <td>₹${s.summary?.total || s.netTotal || 0}</td>
+            <td>₹${s.summary?.total || 0}</td>
         </tr>
     `).join('');
 }
@@ -297,8 +267,7 @@ window.selectBill = function(id) {
     
     selectedDocId = id;
     document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
-    const row = document.getElementById(`row-${id}`);
-    if(row) row.classList.add('selected-row');
+    document.getElementById(`row-${id}`).classList.add('selected-row');
 
     document.getElementById("billNo").value = s.billNo;
     document.getElementById("custName").value = s.customerName;
@@ -345,7 +314,7 @@ window.calculateTotals = function() {
 };
 
 window.updateBill = async function() {
-    if(!selectedDocId) return alert("Select a bill first!");
+    if(!selectedDocId) return alert("Please select a bill first!");
 
     const updatedItems = [];
     document.querySelectorAll('#itemsTableBody tr').forEach(row => {
@@ -359,7 +328,7 @@ window.updateBill = async function() {
     });
 
     const data = {
-        customerName: document.getElementById("custName").value,
+        customerName: document.getElementById("custName").value.trim(),
         date: document.getElementById("billDate").value,
         items: updatedItems,
         summary: {
@@ -371,32 +340,28 @@ window.updateBill = async function() {
 
     try {
         await updateDoc(doc(db, "sales", selectedDocId), data);
-        alert("Bill updated successfully! ✅");
+        alert("Sale Updated Successfully ✅");
         loadSales();
     } catch (e) { alert("Error: " + e.message); }
 };
 
 window.deleteBill = async function() {
-    if(!selectedDocId || !confirm("Permanently delete this bill?")) return;
+    if(!selectedDocId || !confirm("Confirm permanent deletion of this bill?")) return;
     try {
         await deleteDoc(doc(db, "sales", selectedDocId));
-        alert("Deleted! 🗑️");
+        alert("Bill Deleted 🗑️");
         resetForm();
-        loadSales();
     } catch (e) { alert("Error: " + e.message); }
 };
 
-window.resetForm = function() {
-    location.reload();
-};
+window.resetForm = function() { location.reload(); };
 
-window.goBack = function() {
-    window.location.href = "sale-entry.html";
-};
+window.goBack = function() { window.location.href = "sale-entry.html"; };
 
 loadSales();
 </script>
 </body>
 </html>
+
 
 
