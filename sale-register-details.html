@@ -6,6 +6,7 @@
     <title>GST Sale Register | Shree Datarekha Enterprises</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
         :root { --primary: #334155; --bg: #f1f5f9; --border: #94a3b8; }
@@ -25,21 +26,22 @@
         .date-input { padding: 5px; border: 1px solid var(--border); font-size: 14px; }
         
         .btn { 
-            padding: 6px 14px; 
+            padding: 8px 16px; 
             background: #e2e8f0; 
             border: 2px outset #fff; 
             cursor: pointer; 
             font-weight: bold; 
-            font-size: 12px;
+            font-size: 13px;
             color: #000;
             box-shadow: 2px 2px 0px #475569;
         }
         .btn:active { border-style: inset; box-shadow: none; transform: translate(1px, 1px); }
-        .btn-pdf { background: #059669 !important; color: white !important; display: none; margin-left: 10px; }
+        .btn-pdf { background: #059669 !important; color: white !important; display: none; }
+        .btn-excel { background: #1d4ed8 !important; color: white !important; display: none; margin-left: 10px; }
 
         #reportPreview {
             background: white;
-            padding: 15mm;
+            padding: 12mm;
             width: 210mm;
             min-height: 297mm;
             margin: auto;
@@ -48,19 +50,19 @@
             color: #000;
         }
 
-        .report-header { text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
-        .info-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+        .report-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+        .info-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
 
-        .report-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
-        .report-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 5px; text-align: left; }
-        .report-table td { padding: 3px 5px; vertical-align: top; }
+        .report-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        .report-table th { border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 6px; text-align: left; font-weight: bold; }
+        .report-table td { padding: 4px 6px; vertical-align: top; border-bottom: 0.5px solid #eee; }
         
-        .subtotal-row { border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; background-color: #fafafa; }
-        .brand-header { font-weight: bold; text-decoration: underline; padding: 8px 5px !important; }
-        .party-name-row { font-weight: bold; font-size: 13px; padding-top: 10px !important; }
-        .total-footer { border-top: 2px double #000; font-weight: bold; background-color: #eee; }
+        .subtotal-row { border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; background-color: #f8fafc; }
+        .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; padding: 10px 5px !important; }
+        .party-name-row { font-weight: bold; font-size: 14px; padding-top: 12px !important; }
+        .total-footer { border-top: 2px double #000; border-bottom: 2px double #000; font-weight: bold; font-size: 14px; background-color: #e2e8f0; }
 
-        @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; } }
+        @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; padding: 0; } }
     </style>
 </head>
 <body>
@@ -74,12 +76,13 @@
         
         <button class="btn" onclick="fetchAndRender('DETAILS')">Show GST Sale Register Details</button>
         <button class="btn" onclick="fetchAndRender('SUMMARY')">Show GST Sale Reg. Summary</button>
-        <button id="pdfBtn" class="btn btn-pdf" onclick="window.downloadPDF()">Download PDF</button>
     </div>
     
     <div class="row">
         <button class="btn" onclick="fetchAndRender('BRAND_DETAILS')">Company Brand Sale Register Details</button>
         <button class="btn" onclick="fetchAndRender('CA_DETAILS')">Show CA GST Sale Register Details</button>
+        <button id="pdfBtn" class="btn btn-pdf" onclick="window.downloadPDF()">Download PDF</button>
+        <button id="excelBtn" class="btn btn-excel" onclick="window.downloadExcel()">Download Excel</button>
         <button class="btn" onclick="location.href='index.html'">Exit</button>
     </div>
 </div>
@@ -88,12 +91,12 @@
     <div class="report-header">
         <div class="info-line">
             <span id="pPrintDate"></span>
-            <strong style="font-size: 16px;">SHREE DATAREKHA ENTERPRISES</strong>
+            <strong style="font-size: 18px;">SHREE DATAREKHA ENTERPRISES</strong>
             <span id="pPageCount">Page 1 of 1</span>
         </div>
-        <p id="reportTitle" style="font-size: 13px; font-weight: bold;">GST Sale Register</p>
+        <p id="reportTitle" style="font-size: 15px; font-weight: bold; text-transform: uppercase; margin-top: 5px;">GST Sale Register</p>
         <div class="info-line">
-            <span id="pDateRange"></span>
+            <span id="pDateRange" style="font-weight: bold;"></span>
         </div>
     </div>
 
@@ -144,28 +147,29 @@
         const preview = document.getElementById('reportPreview');
         const title = document.getElementById('reportTitle');
         
-        document.getElementById('pPrintDate').innerText = formatDate(new Date().toISOString().split('T')[0]);
-        document.getElementById('pDateRange').innerText = `From Date: ${formatDate(from)} To: ${formatDate(to)}`;
+        document.getElementById('pPrintDate').innerText = "Date: " + formatDate(new Date().toISOString().split('T')[0]);
+        document.getElementById('pDateRange').innerText = `Period: ${formatDate(from)} To: ${formatDate(to)}`;
         
         preview.style.display = "block";
         document.getElementById('pdfBtn').style.display = "inline-block";
+        document.getElementById('excelBtn').style.display = "inline-block";
         body.innerHTML = "";
 
         if (activeReportType === 'DETAILS') {
-            title.innerText = "GST Sale Register (Detailed)";
+            title.innerText = "GST Sale Register (Detailed Report)";
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Disc</th><th>GST%</th><th>GST Amt</th><th>Net Amt</th></tr>`;
 
             fetchedSales.forEach(sale => {
-                body.innerHTML += `<tr class="party-name-row"><td colspan="10">${sale.billNo} &nbsp; ${sale.customerName}</td></tr>`;
+                body.innerHTML += `<tr class="party-name-row"><td colspan="10"><b>${sale.billNo} | ${sale.customerName}</b></td></tr>`;
                 sale.items.forEach(item => {
-                    body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td>${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td></tr>`;
+                    body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td>${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td><b>${item.net}</b></td></tr>`;
                 });
                 body.innerHTML += `<tr class="subtotal-row"><td colspan="5" align="right">Bill Sub Total ===></td><td>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</td><td>${sale.summary.disc}</td><td></td><td>${sale.summary.gst}</td><td>${sale.summary.net}</td></tr>`;
             });
         } 
         else if (activeReportType === 'BRAND_DETAILS') {
-            title.innerText = "Company Brand Sale Register Details";
-            head.innerHTML = `<tr><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Free Qty</th><th>Disc Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
+            title.innerText = "Company Brand Wise Sale Register";
+            head.innerHTML = `<tr><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Free</th><th>Disc Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
 
             const brandGroups = {};
             fetchedSales.forEach(sale => {
@@ -181,38 +185,36 @@
             });
 
             let grandQ = 0, grandD = 0, grandG = 0, grandN = 0;
-
             for (const grp in brandGroups) {
                 body.innerHTML += `<tr><td colspan="9" class="brand-header">${grp}</td></tr>`;
                 brandGroups[grp].items.forEach(item => {
-                    body.innerHTML += `<tr><td style="padding-left:15px">${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>0</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td></tr>`;
+                    body.innerHTML += `<tr><td style="padding-left:20px">${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>0</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td></tr>`;
                 });
-                // Group Sub Total
-                body.innerHTML += `<tr class="subtotal-row"><td colspan="3" align="right">${grp} Total ===></td><td>${brandGroups[grp].q}</td><td>0</td><td>${brandGroups[grp].d.toFixed(2)}</td><td></td><td>${brandGroups[grp].g.toFixed(2)}</td><td>${brandGroups[grp].n.toFixed(2)}</td></tr>`;
+                body.innerHTML += `<tr class="subtotal-row"><td colspan="3" align="right"><b>${grp} TOTAL</b></td><td><b>${brandGroups[grp].q}</b></td><td>0</td><td>${brandGroups[grp].d.toFixed(2)}</td><td></td><td>${brandGroups[grp].g.toFixed(2)}</td><td><b>${brandGroups[grp].n.toFixed(2)}</b></td></tr>`;
                 grandQ += brandGroups[grp].q; grandD += brandGroups[grp].d; grandG += brandGroups[grp].g; grandN += brandGroups[grp].n;
             }
             body.innerHTML += `<tr class="total-footer"><td colspan="3" align="right">GRAND TOTALS ===></td><td>${grandQ}</td><td>0</td><td>${grandD.toFixed(2)}</td><td></td><td>${grandG.toFixed(2)}</td><td>${grandN.toFixed(2)}</td></tr>`;
         }
         else if (activeReportType === 'CA_DETAILS') {
-            title.innerText = "GST Sale Register (CA Format)";
+            title.innerText = "CA GST Sale Register Details";
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Party Name</th><th>Taxable Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th><th>GST No</th></tr>`;
 
             fetchedSales.forEach(sale => {
-                body.innerHTML += `<tr><td colspan="3" class="party-name-row">${sale.billNo} &nbsp; ${sale.customerName}</td><td colspan="5"></td></tr>`;
+                body.innerHTML += `<tr><td colspan="3" class="party-name-row"><b>${sale.billNo} | ${sale.customerName}</b></td><td colspan="5"></td></tr>`;
                 sale.items.forEach(item => {
                     const taxable = (Number(item.net) - (Number(item.gstAmt) || 0)).toFixed(2);
                     body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td></td><td>${taxable}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td><td>${sale.gstNo || '-'}</td></tr>`;
                 });
                 const totalTaxable = (Number(sale.summary.net) - Number(sale.summary.gst)).toFixed(2);
-                body.innerHTML += `<tr class="subtotal-row"><td colspan="3" align="right">Bill Total</td><td>${totalTaxable}</td><td></td><td>${sale.summary.gst}</td><td>${sale.summary.net}</td><td></td></tr>`;
+                body.innerHTML += `<tr class="subtotal-row"><td colspan="3" align="right"><b>TOTAL</b></td><td><b>${totalTaxable}</b></td><td></td><td><b>${sale.summary.gst}</b></td><td><b>${sale.summary.net}</b></td><td></td></tr>`;
             });
         }
         else {
-            title.innerText = "GST Sale Register (Summary)";
+            title.innerText = "GST Sale Register (Summary Report)";
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Qty</th><th>Gross Amt</th><th>Disc Amt</th><th>CGST</th><th>SGST</th><th>Net Amount</th></tr>`;
             fetchedSales.forEach(sale => {
                 const tax = (parseFloat(sale.summary.gst) / 2).toFixed(2);
-                body.innerHTML += `<tr><td>${sale.billNo}</td><td>${formatDate(sale.date)}</td><td>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</td><td>${sale.summary.gross}</td><td>${sale.summary.disc}</td><td>${tax}</td><td>${tax}</td><td><b>${sale.summary.net}</b></td></tr>`;
+                body.innerHTML += `<tr><td><b>${sale.billNo}</b></td><td>${formatDate(sale.date)}</td><td>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</td><td>${sale.summary.gross}</td><td>${sale.summary.disc}</td><td>${tax}</td><td>${tax}</td><td><b>${sale.summary.net}</b></td></tr>`;
             });
         }
     };
@@ -230,10 +232,21 @@
             html: '#dataTable',
             startY: 30,
             theme: 'plain',
-            styles: { font: 'courier', fontSize: 7, cellPadding: 1, textColor: 0 },
-            headStyles: { borderBottom: 1, borderTop: 1, fillColor: [255, 255, 255] }
+            styles: { font: 'courier', fontSize: 8, cellPadding: 1.5, textColor: 0 },
+            headStyles: { borderBottom: 1, borderTop: 1, fontStyle: 'bold' },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.cell.raw.innerText && data.cell.raw.innerHTML.includes('<b>')) {
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            }
         });
-        doc.save(`Sale_Register_${activeReportType}.pdf`);
+        doc.save(`${activeReportType}_Report.pdf`);
+    };
+
+    window.downloadExcel = function() {
+        const table = document.getElementById("dataTable");
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Report" });
+        XLSX.writeFile(wb, `${activeReportType}_Report.xlsx`);
     };
 </script>
 </body>
