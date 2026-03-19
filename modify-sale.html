@@ -3,161 +3,175 @@
 <head>
 <meta charset="UTF-8">
 <title>Modify/Delete Sale | Shree Datarekha Enterprises</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
 
 body {
   min-height: 100vh;
   background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
   display: flex;
   justify-content: center;
-  padding: 15px;
+  padding: 10px;
   color: white;
 }
 
 .container {
   width: 100%;
   max-width: 1200px;
-  background: rgba(0, 0, 0, .75);
-  border-radius: 22px;
-  padding: 20px;
+  background: rgba(0, 0, 0, .8);
+  border-radius: 18px;
+  padding: 15px;
   border: 1px solid rgba(255, 47, 146, 0.3);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-h1 { text-align: center; margin-bottom: 15px; font-size: 1.5rem; color: #ffb3d9; }
+h1 { 
+  text-align: center; 
+  margin-bottom: 20px; 
+  font-size: 1.4rem; 
+  color: #ffb3d9;
+  letter-spacing: 0.5px;
+}
 
 /* SEARCH SECTION */
 .search-box {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-  gap: 10px;
 }
 .search-box input {
   width: 100%;
-  max-width: 500px;
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
+  max-width: 600px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   outline: none;
   background: white;
   color: #333;
+  font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
 /* MAIN LAYOUT */
 .main {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 20px;
 }
 
 /* LEFT SIDE: BILL LIST */
 .list {
-  border: 1px solid #ff9fc555;
-  border-radius: 16px;
+  border: 1px solid rgba(255, 159, 197, 0.2);
+  border-radius: 12px;
   overflow: auto;
   max-height: 600px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
 }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px; border-bottom: 1px solid #ff9fc533; font-size: 13px; text-align: left; }
-th { background: #ff2f92; position: sticky; top: 0; z-index: 5; }
-tr:hover { background: rgba(255, 255, 255, .1); cursor: pointer; }
-.selected-row { background: rgba(255, 47, 146, 0.3) !important; }
+th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 159, 197, 0.1); font-size: 13px; text-align: left; }
+th { background: #ff2f92; position: sticky; top: 0; z-index: 5; color: white; font-weight: 600; }
+tr:hover { background: rgba(255, 255, 255, .05); cursor: pointer; }
+.selected-row { background: rgba(255, 47, 146, 0.25) !important; border-left: 4px solid #ff2f92; }
 
 /* RIGHT SIDE: EDIT FORM */
 .form-panel {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .bill-header-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   background: rgba(255, 255, 255, 0.05);
   padding: 15px;
-  border-radius: 15px;
+  border-radius: 12px;
 }
 
-.input-group { display: flex; flex-direction: column; gap: 5px; }
-label { font-size: 12px; color: #ffb3d9; font-weight: 600; }
-input { padding: 10px; border: none; border-radius: 10px; background: white; color: #333; width: 100%; }
-input:disabled { background: #ccc; }
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 11px; color: #ffb3d9; font-weight: 700; text-transform: uppercase; }
+input { 
+  padding: 12px; 
+  border: 1px solid rgba(255,255,255,0.1); 
+  border-radius: 8px; 
+  background: white; 
+  color: #333; 
+  width: 100%;
+  font-size: 14px;
+}
+input:disabled { background: #e0e0e0; color: #666; }
 
 /* ITEMS TABLE AREA */
 .items-container {
   overflow-x: auto;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  border: 1px solid #444;
-  max-height: 300px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  -webkit-overflow-scrolling: touch; /* Smooth scroll for iOS */
 }
-.items-table { min-width: 800px; }
-.row-input { background: transparent; color: white; border: 1px solid #555; padding: 5px; border-radius: 4px; text-align: center; }
-.row-input:focus { background: rgba(255,255,255,0.1); border-color: #ff2f92; }
+.items-table { min-width: 700px; }
+.row-input { 
+  background: rgba(255,255,255,0.05); 
+  color: white; 
+  border: 1px solid rgba(255,255,255,0.2); 
+  padding: 8px; 
+  border-radius: 6px; 
+  text-align: center; 
+}
+.row-input:focus { background: white; color: #333; border-color: #ff2f92; }
 
 /* SUMMARY BOX */
 .summary-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  background: #ff2f9222;
+  background: rgba(255, 47, 146, 0.1);
   padding: 15px;
   border-radius: 12px;
-  border: 1px solid #ff2f9244;
+  border: 1px solid rgba(255, 47, 146, 0.2);
 }
-.sum-item span { display: block; font-size: 11px; color: #ffb3d9; }
-.sum-item strong { font-size: 16px; color: #00ff88; }
+.sum-item { text-align: center; }
+.sum-item span { display: block; font-size: 10px; color: #ffb3d9; text-transform: uppercase; margin-bottom: 4px; }
+.sum-item strong { font-size: 1.1rem; color: #00ff88; }
 
 /* BUTTONS */
 .buttons {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 button {
-  padding: 14px;
+  padding: 15px;
   border: none;
-  border-radius: 14px;
+  border-radius: 10px;
   font-weight: 700;
   color: white;
   cursor: pointer;
-  transition: 0.3s;
+  font-size: 14px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-.update { background: #4CAF50; }
-.delete { background: #d32f2f; }
-.reset { background: #777; }
-.back { background: #444; }
-button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+.update { background: #2e7d32; }
+.delete { background: #c62828; }
+.reset { background: #616161; }
+.back { background: #424242; }
+button:active { transform: scale(0.96); }
 
-/* --- ENHANCED MOBILE RESPONSIVENESS --- */
-@media(max-width: 950px) {
+/* MOBILE RESPONSIVENESS CUSTOMIZATIONS */
+@media(max-width: 900px) {
   .main { grid-template-columns: 1fr; }
-  .bill-header-fields { grid-template-columns: 1fr 1fr; }
-  .list { max-height: 300px; } /* Ensures the list doesn't take up the entire screen on tablets */
+  .list { max-height: 200px; } /* Give more space to the form on tablet */
 }
 
 @media(max-width: 600px) {
-  body { padding: 10px; }
-  .container { padding: 15px; }
-  
-  /* Switches grid to flex to safely bypass the inline 'grid-column: span 2' style */
-  .bill-header-fields { display: flex; flex-direction: column; }
-  
-  /* Stacks summary items better on small screens */
-  .summary-bar { grid-template-columns: 1fr 1fr; text-align: center; }
-  
-  /* Creates a 2x2 grid for buttons so they don't squish */
-  .buttons { grid-template-columns: 1fr 1fr; }
-}
-
-@media(max-width: 400px) {
-  .summary-bar { grid-template-columns: 1fr; }
+  h1 { font-size: 1.2rem; }
+  .bill-header-fields { grid-template-columns: 1fr; }
+  .summary-bar { grid-template-columns: 1fr; gap: 15px; }
   .buttons { grid-template-columns: 1fr; }
+  .sum-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+  .sum-item:last-child { border-bottom: none; }
 }
 </style>
 </head>
@@ -168,7 +182,7 @@ button:hover { filter: brightness(1.2); transform: translateY(-2px); }
   <h1>Modify / Delete Sale Entry</h1>
 
   <div class="search-box">
-    <input id="searchInput" placeholder="Search by Bill No or Customer Name..." oninput="filterBills()">
+    <input id="searchInput" placeholder="Search Bill No or Name..." oninput="filterBills()">
   </div>
 
   <div class="main">
@@ -181,8 +195,7 @@ button:hover { filter: brightness(1.2); transform: translateY(-2px); }
             <th>Total</th>
           </tr>
         </thead>
-        <tbody id="billListBody">
-          </tbody>
+        <tbody id="billListBody"></tbody>
       </table>
     </div>
 
@@ -192,13 +205,13 @@ button:hover { filter: brightness(1.2); transform: translateY(-2px); }
           <label>Bill Number</label>
           <input id="billNo" disabled>
         </div>
-        <div class="input-group" style="grid-column: span 2;">
-          <label>Customer Name</label>
-          <input id="custName">
-        </div>
         <div class="input-group">
           <label>Bill Date</label>
           <input type="date" id="billDate">
+        </div>
+        <div class="input-group">
+          <label>Customer Name</label>
+          <input id="custName">
         </div>
         <div class="input-group">
           <label>Paid Amount</label>
@@ -210,16 +223,15 @@ button:hover { filter: brightness(1.2); transform: translateY(-2px); }
         <table class="items-table">
           <thead>
             <tr>
-              <th width="50">#</th>
+              <th width="40">#</th>
               <th>Item Name</th>
-              <th width="80">Qty</th>
-              <th width="100">Rate</th>
-              <th width="80">Disc%</th>
-              <th width="120">Net Amt</th>
+              <th width="70">Qty</th>
+              <th width="90">Rate</th>
+              <th width="70">Disc%</th>
+              <th width="110">Net Amt</th>
             </tr>
           </thead>
-          <tbody id="itemsTableBody">
-            </tbody>
+          <tbody id="itemsTableBody"></tbody>
         </table>
       </div>
 
@@ -245,17 +257,18 @@ import {
     collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* LOGIN CHECK */
 if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
 
 let allSales = [];
 let selectedDocId = null;
 
 async function loadSales() {
-    const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    allSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderList(allSales);
+    try {
+        const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        allSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderList(allSales);
+    } catch (e) { console.error("Load Error: ", e); }
 }
 
 function renderList(data) {
@@ -283,18 +296,15 @@ window.selectBill = function(id) {
     if(!s) return;
     
     selectedDocId = id;
-    
-    // Highlight selected row
     document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
-    document.getElementById(`row-${id}`).classList.add('selected-row');
+    const row = document.getElementById(`row-${id}`);
+    if(row) row.classList.add('selected-row');
 
-    // Fill Header
     document.getElementById("billNo").value = s.billNo;
     document.getElementById("custName").value = s.customerName;
     document.getElementById("billDate").value = s.date;
     document.getElementById("paidAmt").value = s.summary?.paid || 0;
 
-    // Fill Items
     const itBody = document.getElementById("itemsTableBody");
     itBody.innerHTML = (s.items || []).map((it, idx) => `
         <tr>
@@ -388,4 +398,5 @@ loadSales();
 </script>
 </body>
 </html>
+
 
