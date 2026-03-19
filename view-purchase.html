@@ -1,204 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Purchase Register</title>
-    <style>
-        /* [Keeping your original CSS exactly as it was] */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446); color: #fff; padding: 20px; min-height: 100vh; }
-        .container { max-width: 1600px; margin: auto; background: rgba(0, 0, 0, 0.85); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 25px; border-bottom: 2px solid #ff2f92; padding-bottom: 15px; }
-        .title { font-size: 24px; font-weight: 700; color: #ffb3d9; }
-        .search-box { display: flex; gap: 15px; flex-wrap: wrap; }
-        .search-box input { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 15px; border-radius: 8px; color: white; outline: none; }
-        .table-container { overflow-x: auto; background: rgba(0, 0, 0, 0.3); border-radius: 12px; max-height: 70vh; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
-        th { background: #ff2f92; color: white; padding: 12px; position: sticky; top: 0; z-index: 10; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; color: #ddd; }
-        tr:hover { background: rgba(255, 47, 146, 0.15); }
-        td input, td select { background: transparent; border: 1px solid transparent; color: white; padding: 4px; width: 100%; border-radius: 4px; }
-        td input:focus, td select:focus { background: rgba(0,0,0,0.5); border-color: #ff2f92; }
-        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; color: white; margin-right: 5px; transition: 0.3s; }
-        .btn-view { background: #2196F3; } .btn-update { background: #4CAF50; } .btn-delete { background: #e53935; } .btn-back { background: #555; padding: 10px 20px; font-size: 14px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #1a0510; padding: 25px; border-radius: 15px; width: 90%; max-width: 900px; border: 1px solid #ff2f92; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .close-modal { background: none; border: none; color: #ff2f92; font-size: 24px; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Purchase Register | Shree Datarekha Enterprises</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+        background: linear-gradient(135deg, #1a000a, #3d071e, #610d30);
+        color: #fff;
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 100%;
+        margin: auto;
+        background: rgba(0, 0, 0, 0.9);
+        border-radius: 15px;
+        padding: 20px;
+        border: 1px solid #ff2f92;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #ff2f92;
+    }
+
+    .title { font-size: 22px; font-weight: 700; color: #ffb3d9; text-transform: uppercase; }
+
+    .search-box { display: flex; gap: 10px; }
+    .search-box input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid #ff2f92;
+        padding: 8px 15px;
+        border-radius: 5px;
+        color: white;
+    }
+
+    /* TABLE STYLES - Optimized for many columns */
+    .table-container {
+        overflow-x: auto;
+        max-height: 75vh;
+        border-radius: 8px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1800px; /* Forces scroll for many columns */
+        font-size: 12px;
+    }
+
+    th {
+        background: #ff2f92;
+        color: white;
+        padding: 12px 8px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 10px 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e0e0e0;
+    }
+
+    tr:nth-child(even) { background: rgba(255, 255, 255, 0.03); }
+    tr:hover { background: rgba(255, 47, 146, 0.1); }
+
+    .bill-info-row {
+        background: rgba(255, 47, 146, 0.2) !important;
+        font-weight: bold;
+        color: #ffb3d9;
+    }
+
+    .text-green { color: #00ff88; font-weight: bold; }
+    .text-orange { color: #ff9800; }
+    
+    .btn-back {
+        background: #ff2f92;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    @media print {
+        body { background: white; color: black; padding: 0; }
+        .container { border: none; width: 100%; max-width: 100%; }
+        .search-box, .btn-back { display: none; }
+        th { background: #eee !important; color: black; border: 1px solid #000; }
+        td { border: 1px solid #ddd; color: black; }
+    }
+</style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="title">📋 View Purchase Registry</div>
+        <div class="title">Purchase Detail Register</div>
         <div class="search-box">
-            <input type="text" id="searchBill" placeholder="🔍 Search Bill or Supplier..." onkeyup="filterData()">
+            <input type="text" id="searchBill" placeholder="Search Bill/Supplier..." onkeyup="filterData()">
             <input type="date" id="searchDate" onchange="filterData()">
-            <button class="btn btn-back" onclick="location.href='add-purchase.html'">⬅ Back to Entry</button>
+            <button class="btn-back" onclick="window.print()">Print Register</button>
+            <a href="add-purchase.html" class="btn-back">Back to Entry</a>
         </div>
     </div>
 
     <div class="table-container">
-        <table id="purchaseTable">
+        <table id="fullRegisterTable">
             <thead>
                 <tr>
-                    <th width="5%">S.No</th>
-                    <th width="10%">Bill No</th>
-                    <th width="10%">Bill Date</th>
-                    <th width="20%">Supplier Name</th>
-                    <th width="10%">Payment</th>
-                    <th width="10%">Total Amount</th>
-                    <th width="10%">Paid</th>
-                    <th width="10%">Balance</th>
-                    <th width="15%">Actions</th>
+                    <th>Bill No</th>
+                    <th>Date</th>
+                    <th>Supplier</th>
+                    <th>Item Group</th>
+                    <th>Item Name</th>
+                    <th>MRP</th>
+                    <th>Pur Rate</th>
+                    <th>Sale Rate</th>
+                    <th>Qty</th>
+                    <th>Free</th>
+                    <th>Unit</th>
+                    <th>Basic Amt</th>
+                    <th>GST%</th>
+                    <th>CGST</th>
+                    <th>GST%</th>
+                    <th>SGST</th>
+                    <th>Net Total</th>
                 </tr>
             </thead>
-            <tbody id="tableBody"></tbody>
+            <tbody id="registerBody">
+                </tbody>
         </table>
-    </div>
-</div>
-
-<div id="itemModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalTitle">Bill Items</h2>
-            <button class="close-modal" onclick="closeModal()">×</button>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Qty</th>
-                        <th>Unit</th>
-                        <th>Net Total</th>
-                    </tr>
-                </thead>
-                <tbody id="itemsBody"></tbody>
-            </table>
-        </div>
     </div>
 </div>
 
 <script type="module">
 import { db } from './firebase-config.js';
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-let purchaseData = [];
+let allPurchases = [];
 
 async function loadData() {
-    const tbody = document.getElementById("tableBody");
-    tbody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Fetching Cloud Data...</td></tr>";
+    const tbody = document.getElementById("registerBody");
+    tbody.innerHTML = "<tr><td colspan='17' style='text-align:center;'>Loading detailed records...</td></tr>";
 
     try {
         const q = query(collection(db, "purchases"), orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
+        const snap = await getDocs(q);
         
-        purchaseData = querySnapshot.docs.map(d => ({
-            id: d.id,
-            ...d.data()
-        }));
-        
-        renderTable(purchaseData);
-    } catch (err) {
-        console.error(err);
-        tbody.innerHTML = "<tr><td colspan='9' style='color:red;'>Error connecting to Firebase.</td></tr>";
+        allPurchases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderData(allPurchases);
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan='17' style='color:red;'>Error: ${e.message}</td></tr>`;
     }
 }
 
-function renderTable(data) {
-    const tbody = document.getElementById("tableBody");
+function renderData(data) {
+    const tbody = document.getElementById("registerBody");
     tbody.innerHTML = "";
 
-    data.forEach((bill, index) => {
-        // MATCHING THE SAVED KEYS: bill.header.supplier, bill.totals.grandTotal, etc.
+    if(data.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='17' style='text-align:center;'>No records found.</td></tr>";
+        return;
+    }
+
+    data.forEach(bill => {
+        // We display a summary row for the bill header
         tbody.innerHTML += `
-            <tr>
-                <td>${index + 1}</td>
+            <tr class="bill-info-row">
                 <td>${bill.header.billNo}</td>
                 <td>${bill.header.date}</td>
-                <td><input type="text" value="${bill.header.supplier}" id="supp-${bill.id}"></td>
-                <td>
-                    <select id="pay-${bill.id}">
-                        <option value="Cash" ${bill.header.payment === 'Cash' ? 'selected' : ''}>Cash</option>
-                        <option value="Credit" ${bill.header.payment === 'Credit' ? 'selected' : ''}>Credit</option>
-                    </select>
-                </td>
-                <td style="font-weight:bold; color:#00ff88;">₹ ${bill.totals.grandTotal}</td>
-                <td><input type="number" value="${bill.totals.paid}" id="paid-${bill.id}" oninput="recalcLocalRow('${bill.id}')"></td>
-                <td id="bal-${bill.id}" style="color:#ff9800;">₹ ${bill.totals.balance}</td>
-                <td>
-                    <button class="btn btn-view" onclick="viewItems('${bill.id}')">👁️</button>
-                    <button class="btn btn-update" onclick="updateBill('${bill.id}')">💾</button>
-                    <button class="btn btn-delete" onclick="deleteBill('${bill.id}')">🗑️</button>
-                </td>
+                <td colspan="14">${bill.header.supplier} (Total: ₹ ${bill.totals.grandTotal})</td>
+                <td>₹ ${bill.totals.grandTotal}</td>
             </tr>
         `;
+
+        // Then list every item inside that bill with full columns
+        bill.items.forEach(item => {
+            // Note: Since individual item GST breakdown isn't always saved in the items array, 
+            // we calculate the visual display logic based on the 5% standard if specific fields are missing.
+            const basic = parseFloat(item.net) / 1.18; // Example fallback if basic is not saved
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td></td> <td></td> <td></td> <td>${item.group || '-'}</td>
+                    <td>${item.name}</td>
+                    <td>${item.mrp || '0'}</td>
+                    <td>${item.rate || '-'}</td>
+                    <td>${item.saleRate || '-'}</td>
+                    <td>${item.qty}</td>
+                    <td>${item.free || '0'}</td>
+                    <td>${item.unit}</td>
+                    <td>${item.basic || '-'}</td>
+                    <td>${item.gstP || '9'}%</td>
+                    <td>${item.cgst || '-'}</td>
+                    <td>${item.gstP || '9'}%</td>
+                    <td>${item.sgst || '-'}</td>
+                    <td class="text-green">${item.net}</td>
+                </tr>
+            `;
+        });
     });
 }
 
-// Recalculate balance locally when typing in "Paid"
-window.recalcLocalRow = function(docId) {
-    const bill = purchaseData.find(b => b.id === docId);
-    const paidVal = parseFloat(document.getElementById(`paid-${docId}`).value) || 0;
-    const totalVal = parseFloat(bill.totals.grandTotal);
-    document.getElementById(`bal-${docId}`).innerText = "₹ " + (totalVal - paidVal).toFixed(2);
-};
-
 window.filterData = function() {
-    const q = document.getElementById("searchBill").value.toLowerCase();
-    const d = document.getElementById("searchDate").value;
-    const filtered = purchaseData.filter(item => {
-        const matchesQuery = item.header.billNo.toString().includes(q) || item.header.supplier.toLowerCase().includes(q);
-        const matchesDate = !d || item.header.date === d;
-        return matchesQuery && matchesDate;
+    const billQuery = document.getElementById("searchBill").value.toLowerCase();
+    const dateQuery = document.getElementById("searchDate").value;
+
+    const filtered = allPurchases.filter(b => {
+        const matchesBill = b.header.billNo.toString().includes(billQuery) || 
+                            b.header.supplier.toLowerCase().includes(billQuery);
+        const matchesDate = !dateQuery || b.header.date === dateQuery;
+        return matchesBill && matchesDate;
     });
-    renderTable(filtered);
+
+    renderData(filtered);
 };
-
-window.updateBill = async function(docId) {
-    const newSupp = document.getElementById(`supp-${docId}`).value;
-    const newPay = document.getElementById(`pay-${docId}`).value;
-    const newPaid = parseFloat(document.getElementById(`paid-${docId}`).value) || 0;
-    
-    const bill = purchaseData.find(b => b.id === docId);
-    const newBal = (parseFloat(bill.totals.grandTotal) - newPaid).toFixed(2);
-
-    try {
-        await updateDoc(doc(db, "purchases", docId), {
-            "header.supplier": newSupp,
-            "header.payment": newPay,
-            "totals.paid": newPaid,
-            "totals.balance": newBal
-        });
-        alert("Updated Successfully!");
-        loadData();
-    } catch (e) { alert(e.message); }
-};
-
-window.deleteBill = async function(docId) {
-    if(confirm("Delete Permanently?")) {
-        await deleteDoc(doc(db, "purchases", docId));
-        loadData();
-    }
-};
-
-window.viewItems = function(docId) {
-    const bill = purchaseData.find(b => b.id === docId);
-    document.getElementById("modalTitle").innerText = `Bill No: ${bill.header.billNo}`;
-    const ib = document.getElementById("itemsBody");
-    ib.innerHTML = "";
-    bill.items.forEach(i => {
-        ib.innerHTML += `<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.unit}</td><td>₹ ${i.net}</td></tr>`;
-    });
-    document.getElementById("itemModal").style.display = "flex";
-};
-
-window.closeModal = () => document.getElementById("itemModal").style.display = "none";
 
 loadData();
 </script>
+
 </body>
 </html>
