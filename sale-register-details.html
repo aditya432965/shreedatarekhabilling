@@ -160,53 +160,78 @@
         if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
             head.innerHTML = `<tr>
-                <th>Bill No</th>
-                <th>Date</th>
-                <th>Party Name</th>
-                <th>GST No</th>
-                <th>Taxable Amt</th>
-                <th>GST %</th>
-                <th>GST Amt</th>
-                <th>Net Amount</th>
+                <th style="width: 8%">Bill No</th>
+                <th style="width: 10%">Date</th>
+                <th style="width: 20%">Party Name</th>
+                <th style="width: 15%">GST No</th>
+                <th style="text-align: right; width: 12%">Taxable Amt</th>
+                <th style="text-align: center; width: 8%">GST %</th>
+                <th style="text-align: right; width: 12%">GST Amt</th>
+                <th style="text-align: right; width: 15%">Net Amount</th>
             </tr>`;
 
-            fetchedSales.forEach(sale => {
-                let gst5 = 0, gst9 = 0, gst18 = 0, totalTaxable = 0;
+            let grandTaxable = 0, grandGst = 0, grandNet = 0;
 
-                sale.items.forEach((item, index) => {
+            fetchedSales.forEach(sale => {
+                let gst5 = 0, gst9 = 0, gst18 = 0, totalTaxable = 0, totalGst = 0;
+
+                // Dedicated row for Bill Information (Much cleaner for CAs)
+                body.innerHTML += `<tr class="party-name-row">
+                    <td>${sale.billNo}</td>
+                    <td>${formatDate(sale.date)}</td>
+                    <td>${sale.customerName}</td>
+                    <td>${sale.gstNo || 'URD'}</td>
+                    <td colspan="4"></td>
+                </tr>`;
+
+                sale.items.forEach(item => {
                     const taxable = Number(item.net) - (Number(item.gstAmt) || 0);
                     const gstRate = parseFloat(item.gst);
                     const gstAmt = Number(item.gstAmt) || 0;
 
                     totalTaxable += taxable;
+                    totalGst += gstAmt;
+                    
                     if(gstRate === 5) gst5 += gstAmt;
                     if(gstRate === 9) gst9 += gstAmt;
                     if(gstRate === 18) gst18 += gstAmt;
 
+                    // Item rows with right-aligned financials
                     body.innerHTML += `<tr>
-                        <td>${index === 0 ? sale.billNo : ''}</td>
-                        <td>${formatDate(sale.date)}</td>
-                        <td>${index === 0 ? sale.customerName : ''}</td>
-                        <td>${index === 0 ? (sale.gstNo || '-') : ''}</td>
-                        <td>${taxable.toFixed(2)}</td>
-                        <td>${item.gst}%</td>
-                        <td>${gstAmt.toFixed(2)}</td>
-                        <td>${item.net}</td>
+                        <td colspan="4"></td>
+                        <td style="text-align: right">${taxable.toFixed(2)}</td>
+                        <td style="text-align: center">${item.gst}%</td>
+                        <td style="text-align: right">${gstAmt.toFixed(2)}</td>
+                        <td style="text-align: right">${Number(item.net).toFixed(2)}</td>
                     </tr>`;
                 });
+
+                grandTaxable += totalTaxable;
+                grandGst += totalGst;
+                grandNet += Number(sale.summary.net);
 
                 // Summary rows for this specific bill
                 body.innerHTML += `
                 <tr class="subtotal-row">
                     <td colspan="4" align="right">BILL SUMMARY (No: ${sale.billNo}) ===></td>
-                    <td><b>Taxable: ${totalTaxable.toFixed(2)}</b></td>
-                    <td colspan="2">
-                        5% GST: ${gst5.toFixed(2)} | 9% GST: ${gst9.toFixed(2)} | 18% GST: ${gst18.toFixed(2)}
+                    <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
+                    <td colspan="2" style="text-align: right; font-size: 11px; line-height: 1.4;">
+                        <b>Total GST: ${totalGst.toFixed(2)}</b><br>
+                        (5%: ${gst5.toFixed(2)} | 9%: ${gst9.toFixed(2)} | 18%: ${gst18.toFixed(2)})
                     </td>
-                    <td><b>Net: ${sale.summary.net}</b></td>
+                    <td style="text-align: right"><b>${Number(sale.summary.net).toFixed(2)}</b></td>
                 </tr>
-                <tr><td colspan="8" style="border-bottom: 2px solid #334155; height: 5px; padding:0;"></td></tr>`;
+                <tr><td colspan="8" style="border-bottom: 1px dashed #94a3b8; height: 5px; padding:0;"></td></tr>`;
             });
+
+            // Grand Total for the CA (Crucial for accounting)
+            body.innerHTML += `
+            <tr class="total-footer">
+                <td colspan="4" align="right">GRAND TOTAL FOR PERIOD ===></td>
+                <td style="text-align: right"><b>${grandTaxable.toFixed(2)}</b></td>
+                <td colspan="2" style="text-align: right"><b>${grandGst.toFixed(2)}</b></td>
+                <td style="text-align: right"><b>${grandNet.toFixed(2)}</b></td>
+            </tr>`;
         } 
         else if (activeReportType === 'DETAILS') {
             title.innerText = "GST Sale Register (Detailed Report)";
@@ -287,6 +312,7 @@
 </script>
 </body>
 </html>
+
 
 
 
