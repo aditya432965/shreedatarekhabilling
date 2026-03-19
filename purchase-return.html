@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Return | Shree Datarekha Enterprises</title>
+    <style>
+        :root { --brand-pink: #ff2f92; --glass: rgba(255, 255, 255, 0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446); color: #fff; padding: 20px; min-height: 100vh; }
+        
+        .container { max-width: 1200px; margin: auto; background: rgba(0, 0, 0, 0.85); border-radius: 15px; padding: 25px; border: 1px solid rgba(255, 47, 146, 0.3); }
+        .header-box { border-bottom: 2px solid var(--brand-pink); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .title { font-size: 24px; font-weight: 800; color: #ffb3d9; text-transform: uppercase; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 13px; color: #ffb3d9; font-weight: 600; }
+        
+        select, input {
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px; border-radius: 8px; color: white; outline: none;
+        }
+        select option { background: #5c0a2e; }
+        input:read-only { background: rgba(255,255,255,0.02); color: #aaa; }
+
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn-save { background: var(--brand-pink); color: white; width: 100%; font-size: 16px; }
+        .btn-back { background: #4a5568; color: white; text-decoration: none; padding: 10px 20px; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .stock-info { background: rgba(255, 47, 146, 0.1); padding: 15px; border-radius: 10px; border: 1px dashed var(--brand-pink); margin-top: 10px; }
+        
+        /* Table for Returns */
+        .log-section { margin-top: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(0,0,0,0.2); }
+        th { background: var(--brand-pink); padding: 12px; font-size: 12px; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-box">
+        <div class="title">Purchase Return Entry</div>
+        <a href="index.html" class="btn btn-back">Dashboard</a>
+    </div>
+
+    <div class="form-grid">
+        <div class="input-group">
+            <label>Select Supplier</label>
+            <select id="supplierSelect" onchange="loadSupplierBills()">
+                <option value="">-- Choose Supplier --</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Bill Number</label>
+            <select id="billSelect" onchange="loadBillProducts()">
+                <option value="">-- Select Bill --</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Product to Return</label>
+            <select id="productSelect" onchange="showProductDetails()">
+                <option value="">-- Select Product --</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="returnDetailSection" style="display: none;">
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Purchased Qty</label>
+                <input type="text" id="purchasedQty" readonly>
+            </div>
+            <div class="input-group">
+                <label>Purchase Rate</label>
+                <input type="text" id="purRate" readonly>
+            </div>
+            <div class="input-group">
+                <label>Quantity to Return</label>
+                <input type="number" id="returnQty" placeholder="Enter Qty" oninput="calculateRefund()">
+            </div>
+            <div class="input-group">
+                <label>Refund Amount</label>
+                <input type="text" id="refundAmt" readonly>
+            </div>
+        </div>
+
+        <div class="stock-info" id="stockStatus">
+            Fetching current master stock...
+        </div>
+
+        <button class="btn btn-save" onclick="processReturn()">Confirm & Process Return</button>
+    </div>
+
+    <div class="log-section">
+        <div class="title" style="font-size: 16px;">Recent Returns History</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Supplier</th>
+                    <th>Bill No</th>
+                    <th>Product</th>
+                    <th>Qty Returned</th>
+                    <th>Refund</th>
+                </tr>
+            </thead>
+            <tbody id="returnLogs"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { db } from './firebase-config.js';
+    import { 
+        collection, getDocs, query, where, addDoc, 
+        updateDoc, doc, serverTimestamp, orderBy, limit 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let allPurchases = [];
+    let selectedItemData = null;
+    let masterStockId = null;
+
+    // Initialize: Load Suppliers and Return Logs
+    async function init() {
+        // 1. Load Suppliers from your purchases collection
+        const q = query(collection(db, "purchases"));
+        const snap = await getDocs(q);
+        allPurchases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const supplierSelect = document.getElementById("supplierSelect");
+        const uniqueSuppliers = [...new Set(allPurchases.map(p => p.header.supplier))];
+        
+        uniqueSuppliers.forEach(supp => {
+            const opt = document.createElement("option");
+            opt.value = opt.text = supp;
+            supplierSelect.add(opt);
+        });
+
+        loadReturnHistory();
+    }
+
+    // Load Bills for selected supplier
+    window.loadSupplierBills = function() {
+        const supp = document.getElementById("supplierSelect").value;
+        const billSelect = document.getElementById("billSelect");
+        billSelect.innerHTML = '<option value="">-- Select Bill --</option>';
+        
+        allPurchases.filter(p => p.header.supplier === supp).forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.text = `Bill No: ${p.header.billNo} (${p.header.date})`;
+            billSelect.add(opt);
+        });
+    };
+
+    // Load Products from selected bill
+    window.loadBillProducts = function() {
+        const purchaseId = document.getElementById("billSelect").value;
+        const productSelect = document.getElementById("productSelect");
+        productSelect.innerHTML = '<option value="">-- Select Product --</option>';
+
+        const purchase = allPurchases.find(p => p.id === purchaseId);
+        if(purchase) {
+            purchase.items.forEach((item, index) => {
+                const opt = document.createElement("option");
+                opt.value = index; 
+                opt.text = item.name;
+                productSelect.add(opt);
+            });
+        }
+    };
+
+    // Show Details and check Master Stock
+    window.showProductDetails = async function() {
+        const purchaseId = document.getElementById("billSelect").value;
+        const itemIndex = document.getElementById("productSelect").value;
+        const section = document.getElementById("returnDetailSection");
+
+        if(!itemIndex) { section.style.display = "none"; return; }
+        section.style.display = "block";
+
+        const purchase = allPurchases.find(p => p.id === purchaseId);
+        selectedItemData = purchase.items[itemIndex];
+
+        document.getElementById("purchasedQty").value = selectedItemData.qty;
+        document.getElementById("purRate").value = selectedItemData.rate || (selectedItemData.net / selectedItemData.qty).toFixed(2);
+        
+        // Check current stock in 'items' collection
+        const q = query(collection(db, "items"), where("name", "==", selectedItemData.name));
+        const stockSnap = await getDocs(q);
+        
+        if(!stockSnap.empty) {
+            const stockDoc = stockSnap.docs[0];
+            masterStockId = stockDoc.id;
+            const currentStock = stockDoc.data().stock || 0;
+            document.getElementById("stockStatus").innerHTML = `Current Master Stock: <b>${currentStock}</b> ${selectedItemData.unit}`;
+        } else {
+            document.getElementById("stockStatus").innerHTML = "Warning: Product not found in Master Item list.";
+        }
+    };
+
+    window.calculateRefund = function() {
+        const rQty = parseFloat(document.getElementById("returnQty").value) || 0;
+        const rate = parseFloat(document.getElementById("purRate").value) || 0;
+        document.getElementById("refundAmt").value = "₹" + (rQty * rate).toFixed(2);
+    };
+
+    // Process Return Logic
+    window.processReturn = async function() {
+        const rQty = parseFloat(document.getElementById("returnQty").value);
+        const pQty = parseFloat(selectedItemData.qty);
+
+        if(!rQty || rQty <= 0) return alert("Enter valid return quantity");
+        if(rQty > pQty) return alert("Return quantity cannot be more than purchased quantity");
+
+        try {
+            // 1. Save Return Transaction
+            const bill = allPurchases.find(p => p.id === document.getElementById("billSelect").value);
+            await addDoc(collection(db, "purchase_returns"), {
+                supplier: bill.header.supplier,
+                billNo: bill.header.billNo,
+                productName: selectedItemData.name,
+                returnQty: rQty,
+                refundAmt: document.getElementById("refundAmt").value,
+                date: serverTimestamp()
+            });
+
+            // 2. Reduce Master Stock
+            if(masterStockId) {
+                const itemRef = doc(db, "items", masterStockId);
+                const q = query(collection(db, "items"), where("name", "==", selectedItemData.name));
+                const snap = await getDocs(q);
+                const currentStock = snap.docs[0].data().stock || 0;
+                
+                await updateDoc(itemRef, {
+                    stock: currentStock - rQty
+                });
+            }
+
+            alert("Purchase Return Processed & Stock Updated! ✅");
+            location.reload();
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
+    };
+
+    async function loadReturnHistory() {
+        const q = query(collection(db, "purchase_returns"), orderBy("date", "desc"), limit(10));
+        const snap = await getDocs(q);
+        const tbody = document.getElementById("returnLogs");
+        tbody.innerHTML = "";
+        
+        snap.forEach(d => {
+            const data = d.data();
+            const date = data.date ? data.date.toDate().toLocaleDateString() : 'Just now';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${date}</td>
+                    <td>${data.supplier}</td>
+                    <td>${data.billNo}</td>
+                    <td>${data.productName}</td>
+                    <td>${data.returnQty}</td>
+                    <td style="color:#00ff88">${data.refundAmt}</td>
+                </tr>
+            `;
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
