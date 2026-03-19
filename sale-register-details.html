@@ -108,7 +108,7 @@
 
 <script type="module">
     import { db } from './firebase-config.js';
-    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebasejs/10.8.0/firebase-firestore.js";
 
     let activeReportType = "";
     let fetchedSales = [];
@@ -201,43 +201,41 @@
         }
         else if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
-            // Column structure changed as per request
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Party Name</th><th>GST No</th><th>Taxable Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
 
-            let gTaxable = 0, g5 = 0, g9 = 0, g18 = 0, gNet = 0;
+            let totalTaxable = 0, totalGst = 0, totalNet = 0;
+            let gst5 = 0, gst9 = 0, gst18 = 0;
 
             fetchedSales.forEach(sale => {
-                let billTaxable = 0;
                 sale.items.forEach(item => {
-                    const gstRate = Number(item.gst);
-                    const gstAmt = Number(item.gstAmt || 0);
-                    const taxable = Number(item.net) - gstAmt;
-                    
-                    billTaxable += taxable;
-                    gTaxable += taxable;
-                    gNet += Number(item.net);
+                    const gAmt = Number(item.gstAmt) || 0;
+                    const net = Number(item.net) || 0;
+                    const taxable = net - gAmt;
+                    const gRate = parseInt(item.gst);
 
-                    // Track individual GST brackets
-                    if(gstRate === 5) g5 += gstAmt;
-                    if(gstRate === 9 || gstRate === 12) g9 += gstAmt; // Grouping 9/12 or adjusting as needed
-                    if(gstRate === 18) g18 += gstAmt;
+                    totalTaxable += taxable;
+                    totalGst += gAmt;
+                    totalNet += net;
 
-                    body.innerHTML += `<tr><td>${sale.billNo}</td><td>${formatDate(sale.date)}</td><td>${sale.customerName}</td><td>${sale.gstNo || '-'}</td><td>${taxable.toFixed(2)}</td><td>${item.gst}%</td><td>${gstAmt.toFixed(2)}</td><td>${item.net}</td></tr>`;
+                    if (gRate === 5) gst5 += gAmt;
+                    else if (gRate === 9) gst9 += gAmt;
+                    else if (gRate === 18) gst18 += gAmt;
+
+                    body.innerHTML += `<tr><td>${sale.billNo}</td><td>${formatDate(sale.date)}</td><td>${sale.customerName}</td><td>${sale.gstNo || '-'}</td><td>${taxable.toFixed(2)}</td><td>${item.gst}%</td><td>${gAmt.toFixed(2)}</td><td><b>${net.toFixed(2)}</b></td></tr>`;
                 });
             });
 
-            // Summary Table at bottom
             body.innerHTML += `
                 <tr class="total-footer">
-                    <td colspan="4" align="right"><b>SUMMARY BILL TOTAL ===></b></td>
-                    <td><b>${gTaxable.toFixed(2)}</b></td>
+                    <td colspan="4" align="right">GRAND TOTAL BILL SUMMARY ===></td>
+                    <td>${totalTaxable.toFixed(2)}</td>
                     <td>-</td>
-                    <td><b>${(g5 + g9 + g18).toFixed(2)}</b></td>
-                    <td><b>${gNet.toFixed(2)}</b></td>
+                    <td>${totalGst.toFixed(2)}</td>
+                    <td>${totalNet.toFixed(2)}</td>
                 </tr>
                 <tr class="subtotal-row">
                     <td colspan="8" align="center">
-                        5% GST: ${g5.toFixed(2)} | 9% GST: ${g9.toFixed(2)} | 18% GST: ${g18.toFixed(2)} | Total GST: ${(g5 + g9 + g18).toFixed(2)}
+                        GST BREAKDOWN: 5% = ${gst5.toFixed(2)} | 9% = ${gst9.toFixed(2)} | 18% = ${gst18.toFixed(2)}
                     </td>
                 </tr>`;
         }
@@ -283,4 +281,5 @@
 </script>
 </body>
 </html>
+
 
