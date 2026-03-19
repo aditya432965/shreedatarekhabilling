@@ -126,7 +126,6 @@
         if (!from || !to) return alert("Please select date range.");
 
         activeReportType = mode;
-        // Fetch ordered by date
         const q = query(collection(db, "sales"), orderBy("date", "asc"));
         const snapshot = await getDocs(q);
         
@@ -138,7 +137,6 @@
             }
         });
 
-        // SEQUENCE ALIGNMENT: Sort by Bill Number numerically/alphabetically
         fetchedSales.sort((a, b) => {
             return String(a.billNo).localeCompare(String(b.billNo), undefined, {numeric: true, sensitivity: 'base'});
         });
@@ -203,17 +201,45 @@
         }
         else if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
-            head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Party Name</th><th>Taxable Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th><th>GST No</th></tr>`;
+            // Column structure changed as per request
+            head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Party Name</th><th>GST No</th><th>Taxable Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
+
+            let gTaxable = 0, g5 = 0, g9 = 0, g18 = 0, gNet = 0;
 
             fetchedSales.forEach(sale => {
-                body.innerHTML += `<tr><td colspan="3" class="party-name-row"><b>${sale.billNo} | ${sale.customerName}</b></td><td colspan="5"></td></tr>`;
+                let billTaxable = 0;
                 sale.items.forEach(item => {
-                    const taxable = (Number(item.net) - (Number(item.gstAmt) || 0)).toFixed(2);
-                    body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td></td><td>${taxable}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td><td>${sale.gstNo || '-'}</td></tr>`;
+                    const gstRate = Number(item.gst);
+                    const gstAmt = Number(item.gstAmt || 0);
+                    const taxable = Number(item.net) - gstAmt;
+                    
+                    billTaxable += taxable;
+                    gTaxable += taxable;
+                    gNet += Number(item.net);
+
+                    // Track individual GST brackets
+                    if(gstRate === 5) g5 += gstAmt;
+                    if(gstRate === 9 || gstRate === 12) g9 += gstAmt; // Grouping 9/12 or adjusting as needed
+                    if(gstRate === 18) g18 += gstAmt;
+
+                    body.innerHTML += `<tr><td>${sale.billNo}</td><td>${formatDate(sale.date)}</td><td>${sale.customerName}</td><td>${sale.gstNo || '-'}</td><td>${taxable.toFixed(2)}</td><td>${item.gst}%</td><td>${gstAmt.toFixed(2)}</td><td>${item.net}</td></tr>`;
                 });
-                const totalTaxable = (Number(sale.summary.net) - Number(sale.summary.gst)).toFixed(2);
-                body.innerHTML += `<tr class="subtotal-row"><td colspan="3" align="right"><b>BILL TOTAL</b></td><td><b>${totalTaxable}</b></td><td></td><td><b>${sale.summary.gst}</b></td><td><b>${sale.summary.net}</b></td><td></td></tr>`;
             });
+
+            // Summary Table at bottom
+            body.innerHTML += `
+                <tr class="total-footer">
+                    <td colspan="4" align="right"><b>SUMMARY BILL TOTAL ===></b></td>
+                    <td><b>${gTaxable.toFixed(2)}</b></td>
+                    <td>-</td>
+                    <td><b>${(g5 + g9 + g18).toFixed(2)}</b></td>
+                    <td><b>${gNet.toFixed(2)}</b></td>
+                </tr>
+                <tr class="subtotal-row">
+                    <td colspan="8" align="center">
+                        5% GST: ${g5.toFixed(2)} | 9% GST: ${g9.toFixed(2)} | 18% GST: ${g18.toFixed(2)} | Total GST: ${(g5 + g9 + g18).toFixed(2)}
+                    </td>
+                </tr>`;
         }
         else {
             title.innerText = "GST Sale Register (Summary Report)";
@@ -257,3 +283,4 @@
 </script>
 </body>
 </html>
+
