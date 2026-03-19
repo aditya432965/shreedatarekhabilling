@@ -1,131 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Full Purchase Register | Shree Datarekha Enterprises</title>
-<style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Register | Shree Datarekha Enterprises</title>
+    <style>
+        :root {
+            --brand-pink: #ff2f92;
+            --dark-bg: #1a0510;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
 
-    body {
-        background: linear-gradient(135deg, #1a000a, #3d071e, #610d30);
-        color: #fff;
-        padding: 20px;
-        min-height: 100vh;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
-    .container {
-        max-width: 100%;
-        margin: auto;
-        background: rgba(0, 0, 0, 0.9);
-        border-radius: 15px;
-        padding: 20px;
-        border: 1px solid #ff2f92;
-    }
+        body {
+            background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
 
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #ff2f92;
-    }
+        .container {
+            max-width: 1800px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 47, 146, 0.3);
+        }
 
-    .title { font-size: 22px; font-weight: 700; color: #ffb3d9; text-transform: uppercase; }
+        /* Top Navigation & Search */
+        .header-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--brand-pink);
+            padding-bottom: 15px;
+        }
 
-    .search-box { display: flex; gap: 10px; }
-    .search-box input {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid #ff2f92;
-        padding: 8px 15px;
-        border-radius: 5px;
-        color: white;
-    }
+        .title { font-size: 24px; font-weight: 800; color: #ffb3d9; text-transform: uppercase; }
 
-    /* TABLE STYLES - Optimized for many columns */
-    .table-container {
-        overflow-x: auto;
-        max-height: 75vh;
-        border-radius: 8px;
-    }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        input[type="text"], input[type="date"] {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 1800px; /* Forces scroll for many columns */
-        font-size: 12px;
-    }
+        input:focus { border-color: var(--brand-pink); background: rgba(0,0,0,0.3); }
 
-    th {
-        background: #ff2f92;
-        color: white;
-        padding: 12px 8px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        text-align: left;
-        white-space: nowrap;
-    }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
 
-    td {
-        padding: 10px 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        color: #e0e0e0;
-    }
+        .btn-entry { background: var(--brand-pink); color: white; }
+        .btn-print { background: #4a5568; color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
-    tr:nth-child(even) { background: rgba(255, 255, 255, 0.03); }
-    tr:hover { background: rgba(255, 47, 146, 0.1); }
+        /* Table Architecture */
+        .table-viewport {
+            overflow-x: auto;
+            max-height: 70vh;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
 
-    .bill-info-row {
-        background: rgba(255, 47, 146, 0.2) !important;
-        font-weight: bold;
-        color: #ffb3d9;
-    }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1600px; /* Ensures all detailed columns fit */
+        }
 
-    .text-green { color: #00ff88; font-weight: bold; }
-    .text-orange { color: #ff9800; }
-    
-    .btn-back {
-        background: #ff2f92;
-        color: white;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        text-decoration: none;
-        font-weight: bold;
-    }
+        thead th {
+            background: var(--brand-pink);
+            color: white;
+            padding: 12px 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-    @media print {
-        body { background: white; color: black; padding: 0; }
-        .container { border: none; width: 100%; max-width: 100%; }
-        .search-box, .btn-back { display: none; }
-        th { background: #eee !important; color: black; border: 1px solid #000; }
-        td { border: 1px solid #ddd; color: black; }
-    }
-</style>
+        tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Grouping Rows (Bill Headers) */
+        .bill-group-row {
+            background: rgba(255, 47, 146, 0.15);
+            font-weight: bold;
+            text-align: left;
+            color: #ffb3d9;
+        }
+
+        .bill-group-row td { text-align: left; padding-left: 15px; border-left: 4px solid var(--brand-pink); }
+
+        .net-total-cell { color: #00ff88; font-weight: bold; }
+        .gst-cell { color: #cbd5e0; font-size: 11px; }
+
+        tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+        @media print {
+            body { background: white !important; color: black; padding: 0; }
+            .container { box-shadow: none; border: 1px solid #000; width: 100%; max-width: 100%; }
+            .controls, .btn-entry { display: none !important; }
+            th { background: #ddd !important; color: black !important; border: 1px solid #000; }
+            td { border: 1px solid #ddd !important; color: black !important; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <div class="title">Purchase Detail Register</div>
-        <div class="search-box">
-            <input type="text" id="searchBill" placeholder="Search Bill/Supplier..." onkeyup="filterData()">
-            <input type="date" id="searchDate" onchange="filterData()">
-            <button class="btn-back" onclick="window.print()">Print Register</button>
-            <a href="add-purchase.html" class="btn-back">Back to Entry</a>
+    <div class="header-box">
+        <div class="title">Purchase Detail Registry</div>
+        <div class="controls">
+            <input type="text" id="searchBox" placeholder="Search Bill / Supplier..." onkeyup="filterRegistry()">
+            <input type="date" id="dateFilter" onchange="filterRegistry()">
+            <button class="btn btn-print" onclick="window.print()">Print A4</button>
+            <a href="add-purchase.html" class="btn btn-entry">Add New Purchase</a>
         </div>
     </div>
 
-    <div class="table-container">
-        <table id="fullRegisterTable">
+    <div class="table-viewport">
+        <table id="registryTable">
             <thead>
                 <tr>
-                    <th>Bill No</th>
-                    <th>Date</th>
-                    <th>Supplier</th>
+                    <th>Bill Info</th>
                     <th>Item Group</th>
                     <th>Item Name</th>
                     <th>MRP</th>
@@ -142,96 +162,97 @@
                     <th>Net Total</th>
                 </tr>
             </thead>
-            <tbody id="registerBody">
+            <tbody id="registryBody">
                 </tbody>
         </table>
     </div>
 </div>
 
 <script type="module">
-import { db } from './firebase-config.js';
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-let allPurchases = [];
+    let localRegistry = [];
 
-async function loadData() {
-    const tbody = document.getElementById("registerBody");
-    tbody.innerHTML = "<tr><td colspan='17' style='text-align:center;'>Loading detailed records...</td></tr>";
+    // 1. Fetch Data
+    async function initRegistry() {
+        const body = document.getElementById("registryBody");
+        body.innerHTML = "<tr><td colspan='15'>Synchronizing with Firebase...</td></tr>";
 
-    try {
-        const q = query(collection(db, "purchases"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-        
-        allPurchases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderData(allPurchases);
-    } catch (e) {
-        tbody.innerHTML = `<tr><td colspan='17' style='color:red;'>Error: ${e.message}</td></tr>`;
-    }
-}
-
-function renderData(data) {
-    const tbody = document.getElementById("registerBody");
-    tbody.innerHTML = "";
-
-    if(data.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='17' style='text-align:center;'>No records found.</td></tr>";
-        return;
-    }
-
-    data.forEach(bill => {
-        // We display a summary row for the bill header
-        tbody.innerHTML += `
-            <tr class="bill-info-row">
-                <td>${bill.header.billNo}</td>
-                <td>${bill.header.date}</td>
-                <td colspan="14">${bill.header.supplier} (Total: ₹ ${bill.totals.grandTotal})</td>
-                <td>₹ ${bill.totals.grandTotal}</td>
-            </tr>
-        `;
-
-        // Then list every item inside that bill with full columns
-        bill.items.forEach(item => {
-            // Note: Since individual item GST breakdown isn't always saved in the items array, 
-            // we calculate the visual display logic based on the 5% standard if specific fields are missing.
-            const basic = parseFloat(item.net) / 1.18; // Example fallback if basic is not saved
+        try {
+            const q = query(collection(db, "purchases"), orderBy("createdAt", "desc"));
+            const snap = await getDocs(q);
             
-            tbody.innerHTML += `
-                <tr>
-                    <td></td> <td></td> <td></td> <td>${item.group || '-'}</td>
-                    <td>${item.name}</td>
-                    <td>${item.mrp || '0'}</td>
+            localRegistry = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderRegistry(localRegistry);
+        } catch (e) {
+            body.innerHTML = `<tr><td colspan='15' style='color:red;'>Error: ${e.message}</td></tr>`;
+        }
+    }
+
+    // 2. Render List
+    function renderRegistry(data) {
+        const body = document.getElementById("registryBody");
+        body.innerHTML = "";
+
+        if(data.length === 0) {
+            body.innerHTML = "<tr><td colspan='15'>No records found matching criteria.</td></tr>";
+            return;
+        }
+
+        data.forEach(bill => {
+            // Summary Header Row for the Bill
+            const headerRow = document.createElement("tr");
+            headerRow.className = "bill-group-row";
+            headerRow.innerHTML = `
+                <td colspan="14">
+                    Bill No: ${bill.header.billNo} | Date: ${bill.header.date} | Supplier: ${bill.header.supplier} | Pay: ${bill.header.payment}
+                </td>
+                <td class="net-total-cell">₹${bill.totals.grandTotal}</td>
+            `;
+            body.appendChild(headerRow);
+
+            // Detailed Item Rows
+            bill.items.forEach(item => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td style="font-size:10px; opacity:0.6;">${bill.header.billNo}</td>
+                    <td>${item.group || '-'}</td>
+                    <td style="text-align:left; font-weight:600;">${item.name}</td>
+                    <td>${item.mrp || '-'}</td>
                     <td>${item.rate || '-'}</td>
                     <td>${item.saleRate || '-'}</td>
                     <td>${item.qty}</td>
                     <td>${item.free || '0'}</td>
-                    <td>${item.unit}</td>
+                    <td>${item.unit || 'PCS'}</td>
                     <td>${item.basic || '-'}</td>
-                    <td>${item.gstP || '9'}%</td>
-                    <td>${item.cgst || '-'}</td>
-                    <td>${item.gstP || '9'}%</td>
-                    <td>${item.sgst || '-'}</td>
-                    <td class="text-green">${item.net}</td>
-                </tr>
-            `;
+                    <td class="gst-cell">${item.gstP || '9'}%</td>
+                    <td class="gst-cell">${item.cgst || '-'}</td>
+                    <td class="gst-cell">${item.gstP || '9'}%</td>
+                    <td class="gst-cell">${item.sgst || '-'}</td>
+                    <td style="font-weight:bold;">${item.net}</td>
+                `;
+                body.appendChild(row);
+            });
         });
-    });
-}
+    }
 
-window.filterData = function() {
-    const billQuery = document.getElementById("searchBill").value.toLowerCase();
-    const dateQuery = document.getElementById("searchDate").value;
+    // 3. Search Logic
+    window.filterRegistry = function() {
+        const text = document.getElementById("searchBox").value.toLowerCase();
+        const date = document.getElementById("dateFilter").value;
 
-    const filtered = allPurchases.filter(b => {
-        const matchesBill = b.header.billNo.toString().includes(billQuery) || 
-                            b.header.supplier.toLowerCase().includes(billQuery);
-        const matchesDate = !dateQuery || b.header.date === dateQuery;
-        return matchesBill && matchesDate;
-    });
+        const filtered = localRegistry.filter(b => {
+            const matchText = b.header.billNo.toString().includes(text) || 
+                              b.header.supplier.toLowerCase().includes(text);
+            const matchDate = !date || b.header.date === date;
+            return matchText && matchDate;
+        });
 
-    renderData(filtered);
-};
+        renderRegistry(filtered);
+    };
 
-loadData();
+    initRegistry();
 </script>
 
 </body>
