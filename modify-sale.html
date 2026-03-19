@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Modify/Delete Sale | Shree Datarekha Enterprises</title>
+<title>Modify Sale | Shree Datarekha Enterprises</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
@@ -19,161 +19,108 @@ body {
 
 .container {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1000px;
   background: rgba(0, 0, 0, .75);
-  border-radius: 22px;
+  border-radius: 20px;
   padding: 15px; 
   border: 1px solid rgba(255, 47, 146, 0.2);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
 }
 
-h1 { 
-  text-align: center; 
-  margin-bottom: 20px; 
-  font-size: 1.4rem; 
-  color: #ffb3d9; 
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
+h1 { text-align: center; margin-bottom: 15px; font-size: 1.3rem; color: #ffb3d9; }
 
 /* SEARCH SECTION */
-.search-box {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 15px;
-}
+.search-box { margin-bottom: 15px; }
 .search-box input {
   width: 100%;
-  max-width: 500px;
-  padding: 14px;
+  padding: 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.2);
-  outline: none;
-  background: white;
-  color: #333;
-  font-size: 16px; /* Prevents auto-zoom on iOS */
+  border: none;
+  font-size: 16px;
 }
 
 /* MAIN LAYOUT */
-.main {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 15px;
-}
+.main { display: grid; grid-template-columns: 300px 1fr; gap: 15px; }
 
-/* LEFT SIDE: BILL LIST */
+/* LIST SECTION */
 .list {
-  border: 1px solid rgba(255, 159, 197, 0.3);
-  border-radius: 16px;
-  overflow: auto;
-  max-height: 550px; 
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 159, 197, 0.2);
+  border-radius: 12px;
+  overflow-y: auto;
+  max-height: 500px;
+  background: rgba(255, 255, 255, 0.05);
 }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 159, 197, 0.15); font-size: 13px; text-align: left; }
-th { background: #ff2f92; position: sticky; top: 0; z-index: 5; color: white; font-weight: 600; }
-tr:hover { background: rgba(255, 255, 255, .08); cursor: pointer; }
-.selected-row { background: rgba(255, 47, 146, 0.4) !important; border-left: 5px solid #ff2f92; }
+th, td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px; text-align: left; }
+th { background: #ff2f92; position: sticky; top: 0; }
+tr:hover { background: rgba(255, 255, 255, 0.1); cursor: pointer; }
+.selected-row { background: rgba(255, 47, 146, 0.4) !important; border-left: 4px solid #ff2f92; }
 
-/* RIGHT SIDE: EDIT FORM */
-.form-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
+/* FORM SECTION */
+.form-panel { display: flex; flex-direction: column; gap: 15px; }
 
-.bill-header-fields {
+.header-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 15px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: rgba(255,255,255,0.05);
+  padding: 12px;
+  border-radius: 12px;
 }
+.input-group { display: flex; flex-direction: column; gap: 4px; }
+label { font-size: 11px; color: #ffb3d9; font-weight: bold; }
+input { padding: 10px; border-radius: 8px; border: none; font-size: 14px; width: 100%; }
+input:disabled { background: #888; color: #222; }
 
-.input-group { display: flex; flex-direction: column; gap: 6px; }
-label { font-size: 11px; color: #ffb3d9; font-weight: 700; text-transform: uppercase; }
-input { 
-  padding: 12px; 
-  border: 1px solid rgba(255,255,255,0.1); 
-  border-radius: 10px; 
-  background: white; 
-  color: #333; 
-  width: 100%;
-  font-size: 14px;
-}
-input:focus { border-color: #ff2f92; outline: none; }
-input:disabled { background: #999; color: #333; cursor: not-allowed; }
+/* ITEMS SECTION - MOBILE FRIENDLY CARDS */
+.items-container { display: flex; flex-direction: column; gap: 10px; }
 
-/* ITEMS TABLE AREA */
-.items-container {
-  overflow-x: auto;
-  background: rgba(0, 0, 0, 0.2);
+/* Item Card Style (Mobile) / Row Style (Desktop) */
+.item-card {
+  background: rgba(255,255,255,0.07);
+  padding: 12px;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.1);
-  max-height: 350px;
-  -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 3 columns for numeric inputs */
+  gap: 8px;
 }
-.items-table { min-width: 750px; }
-.row-input { 
-  background: rgba(255,255,255,0.05); 
-  color: white; 
-  border: 1px solid rgba(255,255,255,0.2); 
-  padding: 8px; 
-  border-radius: 6px; 
-  text-align: center;
-  font-size: 13px;
-}
-.row-input:focus { background: white; color: #333; }
+.item-card .name-box { grid-column: span 3; }
+.item-card input { background: #eee; color: #333; padding: 8px; }
 
-/* SUMMARY BAR */
+/* SUMMARY SECTION */
 .summary-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  background: rgba(255, 47, 146, 0.1);
-  padding: 15px;
-  border-radius: 15px;
-  border: 1px solid rgba(255, 47, 146, 0.2);
+  gap: 8px;
+  background: rgba(255, 47, 146, 0.15);
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
 }
-.sum-item { text-align: center; }
-.sum-item span { display: block; font-size: 10px; color: #ffb3d9; text-transform: uppercase; margin-bottom: 4px; }
-.sum-item strong { font-size: 1.1rem; color: #00ff88; }
+.summary-bar div span { display: block; font-size: 10px; color: #ffb3d9; }
+.summary-bar div strong { font-size: 14px; color: #00ff88; }
 
 /* BUTTONS */
-.buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
+.buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 button {
-  padding: 15px;
+  padding: 12px;
+  border-radius: 10px;
   border: none;
-  border-radius: 12px;
-  font-weight: 700;
+  font-weight: bold;
   color: white;
   cursor: pointer;
-  transition: 0.3s;
-  font-size: 14px;
-  text-transform: uppercase;
+  font-size: 13px;
 }
-.update { background: #2e7d32; box-shadow: 0 4px 10px rgba(46,125,50,0.3); }
-.delete { background: #c62828; box-shadow: 0 4px 10px rgba(198,40,40,0.3); }
-.reset { background: #616161; }
-.back { background: #424242; }
-button:active { transform: scale(0.96); opacity: 0.9; }
+.update { background: #4CAF50; }
+.delete { background: #d32f2f; }
+.reset { background: #777; }
+.back { background: #444; }
 
-/* MOBILE RESPONSIVENESS */
-@media(max-width: 850px) {
+/* RESPONSIVE FIXES */
+@media (max-width: 800px) {
   .main { grid-template-columns: 1fr; }
-  .list { max-height: 200px; }
-  .bill-header-fields { grid-template-columns: 1fr; }
-  .summary-bar { grid-template-columns: 1fr; gap: 15px; }
-}
-
-@media(max-width: 480px) {
-    .buttons { grid-template-columns: 1fr; }
-    .container { padding: 10px; }
+  .list { max-height: 180px; }
+  .header-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -184,7 +131,7 @@ button:active { transform: scale(0.96); opacity: 0.9; }
   <h1>Modify Sale Entry</h1>
 
   <div class="search-box">
-    <input id="searchInput" placeholder="Search Bill No or Customer..." oninput="filterBills()">
+    <input id="searchInput" placeholder="Search Bill No or Name..." oninput="filterBills()">
   </div>
 
   <div class="main">
@@ -192,7 +139,7 @@ button:active { transform: scale(0.96); opacity: 0.9; }
       <table>
         <thead>
           <tr>
-            <th>Bill No</th>
+            <th>Bill</th>
             <th>Customer</th>
             <th>Total</th>
           </tr>
@@ -202,50 +149,38 @@ button:active { transform: scale(0.96); opacity: 0.9; }
     </div>
 
     <div class="form-panel">
-      <div class="bill-header-fields">
+      <div class="header-grid">
         <div class="input-group">
-          <label>Bill Number</label>
+          <label>Bill No</label>
           <input id="billNo" disabled>
         </div>
         <div class="input-group">
-          <label>Bill Date</label>
+          <label>Date</label>
           <input type="date" id="billDate">
         </div>
-        <div class="input-group">
+        <div class="input-group" style="grid-column: span 2;">
           <label>Customer Name</label>
           <input id="custName">
         </div>
-        <div class="input-group">
-          <label>Paid Amount (₹)</label>
+        <div class="input-group" style="grid-column: span 2;">
+          <label>Paid Amount</label>
           <input type="number" id="paidAmt" oninput="calculateTotals()">
         </div>
       </div>
 
-      <div class="items-container">
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th width="40">#</th>
-              <th>Item Name</th>
-              <th width="80">Qty</th>
-              <th width="100">Rate</th>
-              <th width="80">Disc%</th>
-              <th width="110">Net Amt</th>
-            </tr>
-          </thead>
-          <tbody id="itemsTableBody"></tbody>
-        </table>
-      </div>
+      <label style="margin-left:5px">Items List</label>
+      <div id="itemsContainer" class="items-container">
+        </div>
 
       <div class="summary-bar">
-        <div class="sum-item"><span>Net Total</span><strong id="dispNet">0.00</strong></div>
-        <div class="sum-item"><span>Total Disc</span><strong id="dispDisc">0.00</strong></div>
-        <div class="sum-item"><span>Balance</span><strong id="dispBal" style="color:#ff9800;">0.00</strong></div>
+        <div><span>Net Total</span><strong id="dispNet">0.00</strong></div>
+        <div><span>Disc</span><strong id="dispDisc">0.00</strong></div>
+        <div><span>Balance</span><strong id="dispBal">0.00</strong></div>
       </div>
 
       <div class="buttons">
         <button class="update" onclick="updateBill()">Update Bill</button>
-        <button class="delete" onclick="deleteBill()">Delete Sale</button>
+        <button class="delete" onclick="deleteBill()">Delete Bill</button>
         <button class="reset" onclick="resetForm()">Reset</button>
         <button class="back" onclick="goBack()">Back</button>
       </div>
@@ -259,20 +194,18 @@ import {
     collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Security Check
 if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
 
 let allSales = [];
 let selectedDocId = null;
 
-// Initial Load
 async function loadSales() {
     try {
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
         const snap = await getDocs(q);
         allSales = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderList(allSales);
-    } catch (e) { console.error("Firebase Error:", e); }
+    } catch (e) { console.error(e); }
 }
 
 function renderList(data) {
@@ -280,8 +213,8 @@ function renderList(data) {
     tbody.innerHTML = data.map(s => `
         <tr onclick="selectBill('${s.id}')" id="row-${s.id}">
             <td>${s.billNo}</td>
-            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${s.customerName}</td>
-            <td>₹${s.summary?.total || 0}</td>
+            <td>${s.customerName}</td>
+            <td>${s.summary?.total || 0}</td>
         </tr>
     `).join('');
 }
@@ -289,8 +222,7 @@ function renderList(data) {
 window.filterBills = function() {
     const q = document.getElementById("searchInput").value.toLowerCase();
     const filtered = allSales.filter(s => 
-        s.billNo.toLowerCase().includes(q) || 
-        s.customerName.toLowerCase().includes(q)
+        s.billNo.toLowerCase().includes(q) || s.customerName.toLowerCase().includes(q)
     );
     renderList(filtered);
 };
@@ -298,79 +230,75 @@ window.filterBills = function() {
 window.selectBill = function(id) {
     const s = allSales.find(x => x.id === id);
     if(!s) return;
-    
     selectedDocId = id;
+    
     document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
-    const selectedRow = document.getElementById(`row-${id}`);
-    if(selectedRow) selectedRow.classList.add('selected-row');
+    document.getElementById(`row-${id}`).classList.add('selected-row');
 
     document.getElementById("billNo").value = s.billNo;
     document.getElementById("custName").value = s.customerName;
     document.getElementById("billDate").value = s.date;
     document.getElementById("paidAmt").value = s.summary?.paid || 0;
 
-    const itBody = document.getElementById("itemsTableBody");
-    itBody.innerHTML = (s.items || []).map((it, idx) => `
-        <tr>
-            <td>${idx+1}</td>
-            <td><input class="row-input" value="${it.name}" style="text-align:left; width:100%"></td>
-            <td><input type="number" class="row-input item-qty" value="${it.qty}" oninput="calculateTotals()"></td>
-            <td><input type="number" class="row-input item-rate" value="${it.rate}" oninput="calculateTotals()"></td>
-            <td><input type="number" class="row-input item-disc" value="${it.disc || 0}" oninput="calculateTotals()"></td>
-            <td><input class="row-input item-net" value="${it.net}" readonly></td>
-        </tr>
+    const container = document.getElementById("itemsContainer");
+    container.innerHTML = (s.items || []).map((it, idx) => `
+        <div class="item-card">
+            <div class="name-box">
+                <label>Item Name</label>
+                <input class="it-name" value="${it.name}">
+            </div>
+            <div>
+                <label>Qty</label>
+                <input type="number" class="it-qty" value="${it.qty}" oninput="calculateTotals()">
+            </div>
+            <div>
+                <label>Rate</label>
+                <input type="number" class="it-rate" value="${it.rate}" oninput="calculateTotals()">
+            </div>
+            <div>
+                <label>Net</label>
+                <input class="it-net" value="${it.net}" readonly>
+            </div>
+            <input type="hidden" class="it-disc" value="${it.disc || 0}">
+        </div>
     `).join('');
     
     calculateTotals();
-    
-    // Auto-scroll to form on mobile after selection
-    if(window.innerWidth < 850) {
-        document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth' });
-    }
 };
 
 window.calculateTotals = function() {
     let totalNet = 0;
-    let totalDiscVal = 0;
-
-    document.querySelectorAll('#itemsTableBody tr').forEach(row => {
-        const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-        const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
-        const discP = parseFloat(row.querySelector('.item-disc').value) || 0;
-
-        const gross = qty * rate;
-        const discVal = gross * (discP / 100);
-        const net = gross - discVal;
-        
-        row.querySelector('.item-net').value = net.toFixed(2);
+    document.querySelectorAll('.item-card').forEach(card => {
+        const qty = parseFloat(card.querySelector('.it-qty').value) || 0;
+        const rate = parseFloat(card.querySelector('.it-rate').value) || 0;
+        const net = qty * rate;
+        card.querySelector('.it-net').value = net.toFixed(2);
         totalNet += net;
-        totalDiscVal += discVal;
     });
 
     const paid = parseFloat(document.getElementById("paidAmt").value) || 0;
     document.getElementById("dispNet").innerText = totalNet.toFixed(2);
-    document.getElementById("dispDisc").innerText = totalDiscVal.toFixed(2);
     document.getElementById("dispBal").innerText = (totalNet - paid).toFixed(2);
 };
 
 window.updateBill = async function() {
-    if(!selectedDocId) return alert("Please select a bill first!");
-
-    const updatedItems = [];
-    document.querySelectorAll('#itemsTableBody tr').forEach(row => {
-        updatedItems.push({
-            name: row.cells[1].querySelector('input').value,
-            qty: parseFloat(row.querySelector('.item-qty').value),
-            rate: parseFloat(row.querySelector('.item-rate').value),
-            disc: parseFloat(row.querySelector('.item-disc').value),
-            net: parseFloat(row.querySelector('.item-net').value)
+    if(!selectedDocId) return alert("Select a bill!");
+    
+    const items = [];
+    document.querySelectorAll('.item-card').forEach(card => {
+        items.push({
+            name: card.querySelector('.it-name').value,
+            qty: parseFloat(card.querySelector('.it-qty').value),
+            rate: parseFloat(card.querySelector('.it-rate').value),
+            net: parseFloat(card.querySelector('.it-net').value),
+            disc: parseFloat(card.querySelector('.it-disc').value)
         });
     });
 
     const data = {
-        customerName: document.getElementById("custName").value.trim(),
+        customerName: document.getElementById("custName").value,
         date: document.getElementById("billDate").value,
-        items: updatedItems,
+        items: items,
         summary: {
             total: document.getElementById("dispNet").innerText,
             paid: parseFloat(document.getElementById("paidAmt").value),
@@ -380,24 +308,22 @@ window.updateBill = async function() {
 
     try {
         await updateDoc(doc(db, "sales", selectedDocId), data);
-        alert("Sale Updated Successfully ✅");
+        alert("Updated!");
         loadSales();
-    } catch (e) { alert("Error: " + e.message); }
+    } catch (e) { alert(e.message); }
 };
 
 window.deleteBill = async function() {
-    if(!selectedDocId || !confirm("Are you sure? This action cannot be undone.")) return;
-    try {
-        await deleteDoc(doc(db, "sales", selectedDocId));
-        alert("Bill Permanently Deleted 🗑️");
-        resetForm();
-    } catch (e) { alert("Error: " + e.message); }
+    if(!selectedDocId || !confirm("Delete this?")) return;
+    await deleteDoc(doc(db, "sales", selectedDocId));
+    location.reload();
 };
 
-window.resetForm = function() { location.reload(); };
-window.goBack = function() { window.location.href = "sale-entry.html"; };
+window.resetForm = () => location.reload();
+window.goBack = () => window.location.href = "sale-entry.html";
 
 loadSales();
 </script>
 </body>
 </html>
+
