@@ -134,9 +134,30 @@ button {
 .back { background: #444; }
 button:hover { filter: brightness(1.2); transform: translateY(-2px); }
 
+/* --- ENHANCED MOBILE RESPONSIVENESS --- */
 @media(max-width: 950px) {
   .main { grid-template-columns: 1fr; }
   .bill-header-fields { grid-template-columns: 1fr 1fr; }
+  .list { max-height: 300px; } /* Ensures the list doesn't take up the entire screen on tablets */
+}
+
+@media(max-width: 600px) {
+  body { padding: 10px; }
+  .container { padding: 15px; }
+  
+  /* Switches grid to flex to safely bypass the inline 'grid-column: span 2' style */
+  .bill-header-fields { display: flex; flex-direction: column; }
+  
+  /* Stacks summary items better on small screens */
+  .summary-bar { grid-template-columns: 1fr 1fr; text-align: center; }
+  
+  /* Creates a 2x2 grid for buttons so they don't squish */
+  .buttons { grid-template-columns: 1fr 1fr; }
+}
+
+@media(max-width: 400px) {
+  .summary-bar { grid-template-columns: 1fr; }
+  .buttons { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -367,3 +388,4 @@ loadSales();
 </script>
 </body>
 </html>
+
