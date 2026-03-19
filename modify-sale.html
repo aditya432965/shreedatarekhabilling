@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Modify/Delete Sale | Shree Datarekha Enterprises</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
@@ -13,59 +13,67 @@ body {
   background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
   display: flex;
   justify-content: center;
-  padding: 15px; 
+  padding: 10px; 
   color: white;
 }
 
 .container {
   width: 100%;
-  max-width: 1100px; /* Balanced width between Master and Sale */
+  max-width: 1100px;
   background: rgba(0, 0, 0, .75);
   border-radius: 22px;
-  padding: 20px; 
+  padding: 15px; 
   border: 1px solid rgba(255, 47, 146, 0.2);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
 }
 
-h1 { text-align: center; margin-bottom: 15px; font-size: 1.5rem; color: #ffb3d9; }
+h1 { 
+  text-align: center; 
+  margin-bottom: 20px; 
+  font-size: 1.4rem; 
+  color: #ffb3d9; 
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 /* SEARCH SECTION */
 .search-box {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 .search-box input {
   width: 100%;
   max-width: 500px;
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
   outline: none;
   background: white;
   color: #333;
-  font-size: 16px;
+  font-size: 16px; /* Prevents auto-zoom on iOS */
 }
 
 /* MAIN LAYOUT */
 .main {
   display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 20px;
+  grid-template-columns: 320px 1fr;
+  gap: 15px;
 }
 
 /* LEFT SIDE: BILL LIST */
 .list {
-  border: 1px solid #ff9fc555;
+  border: 1px solid rgba(255, 159, 197, 0.3);
   border-radius: 16px;
   overflow: auto;
   max-height: 550px; 
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
 }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px; border-bottom: 1px solid #ff9fc533; font-size: 13px; text-align: left; }
-th { background: #ff2f92; position: sticky; top: 0; z-index: 5; color: white; }
-tr:hover { background: rgba(255, 255, 255, .1); cursor: pointer; }
-.selected-row { background: rgba(255, 47, 146, 0.3) !important; border-left: 4px solid #ff2f92; }
+th, td { padding: 12px 10px; border-bottom: 1px solid rgba(255, 159, 197, 0.15); font-size: 13px; text-align: left; }
+th { background: #ff2f92; position: sticky; top: 0; z-index: 5; color: white; font-weight: 600; }
+tr:hover { background: rgba(255, 255, 255, .08); cursor: pointer; }
+.selected-row { background: rgba(255, 47, 146, 0.4) !important; border-left: 5px solid #ff2f92; }
 
 /* RIGHT SIDE: EDIT FORM */
 .form-panel {
@@ -76,72 +84,96 @@ tr:hover { background: rgba(255, 255, 255, .1); cursor: pointer; }
 
 .bill-header-fields {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
   background: rgba(255, 255, 255, 0.05);
   padding: 15px;
   border-radius: 15px;
 }
 
-.input-group { display: flex; flex-direction: column; gap: 5px; }
-label { font-size: 12px; color: #ffb3d9; font-weight: 600; }
-input { padding: 11px; border: none; border-radius: 12px; background: white; color: #333; width: 100%; }
-input:disabled { background: #ccc; cursor: not-allowed; }
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 11px; color: #ffb3d9; font-weight: 700; text-transform: uppercase; }
+input { 
+  padding: 12px; 
+  border: 1px solid rgba(255,255,255,0.1); 
+  border-radius: 10px; 
+  background: white; 
+  color: #333; 
+  width: 100%;
+  font-size: 14px;
+}
+input:focus { border-color: #ff2f92; outline: none; }
+input:disabled { background: #999; color: #333; cursor: not-allowed; }
 
 /* ITEMS TABLE AREA */
 .items-container {
   overflow-x: auto;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-  border: 1px solid #444;
-  max-height: 300px;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-height: 350px;
+  -webkit-overflow-scrolling: touch;
 }
-.items-table { min-width: 800px; }
-.row-input { background: transparent; color: white; border: 1px solid #555; padding: 6px; border-radius: 6px; text-align: center; }
-.row-input:focus { background: rgba(255,255,255,0.1); border-color: #ff2f92; outline: none; }
+.items-table { min-width: 750px; }
+.row-input { 
+  background: rgba(255,255,255,0.05); 
+  color: white; 
+  border: 1px solid rgba(255,255,255,0.2); 
+  padding: 8px; 
+  border-radius: 6px; 
+  text-align: center;
+  font-size: 13px;
+}
+.row-input:focus { background: white; color: #333; }
 
 /* SUMMARY BAR */
 .summary-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  background: rgba(255, 47, 146, 0.15);
+  background: rgba(255, 47, 146, 0.1);
   padding: 15px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 47, 146, 0.3);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 47, 146, 0.2);
 }
 .sum-item { text-align: center; }
-.sum-item span { display: block; font-size: 11px; color: #ffb3d9; }
-.sum-item strong { font-size: 16px; color: #00ff88; }
+.sum-item span { display: block; font-size: 10px; color: #ffb3d9; text-transform: uppercase; margin-bottom: 4px; }
+.sum-item strong { font-size: 1.1rem; color: #00ff88; }
 
 /* BUTTONS */
 .buttons {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 button {
-  padding: 14px;
+  padding: 15px;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   font-weight: 700;
   color: white;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: 0.3s;
+  font-size: 14px;
+  text-transform: uppercase;
 }
-.update { background: #4CAF50; }
-.delete { background: #d32f2f; }
-.reset { background: #777; }
-.back { background: #444; }
-button:active { transform: scale(0.95); }
+.update { background: #2e7d32; box-shadow: 0 4px 10px rgba(46,125,50,0.3); }
+.delete { background: #c62828; box-shadow: 0 4px 10px rgba(198,40,40,0.3); }
+.reset { background: #616161; }
+.back { background: #424242; }
+button:active { transform: scale(0.96); opacity: 0.9; }
 
 /* MOBILE RESPONSIVENESS */
 @media(max-width: 850px) {
   .main { grid-template-columns: 1fr; }
-  .list { max-height: 250px; }
+  .list { max-height: 200px; }
   .bill-header-fields { grid-template-columns: 1fr; }
-  .summary-bar { grid-template-columns: 1fr; }
-  .buttons { grid-template-columns: 1fr 1fr; }
+  .summary-bar { grid-template-columns: 1fr; gap: 15px; }
+}
+
+@media(max-width: 480px) {
+    .buttons { grid-template-columns: 1fr; }
+    .container { padding: 10px; }
 }
 </style>
 </head>
@@ -149,7 +181,7 @@ button:active { transform: scale(0.95); }
 <body>
 
 <div class="container">
-  <h1>Modify / Delete Sale Entry</h1>
+  <h1>Modify Sale Entry</h1>
 
   <div class="search-box">
     <input id="searchInput" placeholder="Search Bill No or Customer..." oninput="filterBills()">
@@ -179,7 +211,7 @@ button:active { transform: scale(0.95); }
           <label>Bill Date</label>
           <input type="date" id="billDate">
         </div>
-        <div class="input-group" style="grid-column: span 1;">
+        <div class="input-group">
           <label>Customer Name</label>
           <input id="custName">
         </div>
@@ -193,12 +225,12 @@ button:active { transform: scale(0.95); }
         <table class="items-table">
           <thead>
             <tr>
-              <th width="50">#</th>
+              <th width="40">#</th>
               <th>Item Name</th>
               <th width="80">Qty</th>
               <th width="100">Rate</th>
               <th width="80">Disc%</th>
-              <th width="120">Net Amt</th>
+              <th width="110">Net Amt</th>
             </tr>
           </thead>
           <tbody id="itemsTableBody"></tbody>
@@ -212,8 +244,8 @@ button:active { transform: scale(0.95); }
       </div>
 
       <div class="buttons">
-        <button class="update" onclick="updateBill()">Update</button>
-        <button class="delete" onclick="deleteBill()">Delete</button>
+        <button class="update" onclick="updateBill()">Update Bill</button>
+        <button class="delete" onclick="deleteBill()">Delete Sale</button>
         <button class="reset" onclick="resetForm()">Reset</button>
         <button class="back" onclick="goBack()">Back</button>
       </div>
@@ -227,11 +259,13 @@ import {
     collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// Security Check
 if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
 
 let allSales = [];
 let selectedDocId = null;
 
+// Initial Load
 async function loadSales() {
     try {
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
@@ -246,7 +280,7 @@ function renderList(data) {
     tbody.innerHTML = data.map(s => `
         <tr onclick="selectBill('${s.id}')" id="row-${s.id}">
             <td>${s.billNo}</td>
-            <td>${s.customerName}</td>
+            <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${s.customerName}</td>
             <td>₹${s.summary?.total || 0}</td>
         </tr>
     `).join('');
@@ -267,7 +301,8 @@ window.selectBill = function(id) {
     
     selectedDocId = id;
     document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
-    document.getElementById(`row-${id}`).classList.add('selected-row');
+    const selectedRow = document.getElementById(`row-${id}`);
+    if(selectedRow) selectedRow.classList.add('selected-row');
 
     document.getElementById("billNo").value = s.billNo;
     document.getElementById("custName").value = s.customerName;
@@ -287,6 +322,11 @@ window.selectBill = function(id) {
     `).join('');
     
     calculateTotals();
+    
+    // Auto-scroll to form on mobile after selection
+    if(window.innerWidth < 850) {
+        document.querySelector('.form-panel').scrollIntoView({ behavior: 'smooth' });
+    }
 };
 
 window.calculateTotals = function() {
@@ -346,22 +386,18 @@ window.updateBill = async function() {
 };
 
 window.deleteBill = async function() {
-    if(!selectedDocId || !confirm("Confirm permanent deletion of this bill?")) return;
+    if(!selectedDocId || !confirm("Are you sure? This action cannot be undone.")) return;
     try {
         await deleteDoc(doc(db, "sales", selectedDocId));
-        alert("Bill Deleted 🗑️");
+        alert("Bill Permanently Deleted 🗑️");
         resetForm();
     } catch (e) { alert("Error: " + e.message); }
 };
 
 window.resetForm = function() { location.reload(); };
-
 window.goBack = function() { window.location.href = "sale-entry.html"; };
 
 loadSales();
 </script>
 </body>
 </html>
-
-
-
