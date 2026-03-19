@@ -108,7 +108,7 @@
 
 <script type="module">
     import { db } from './firebase-config.js';
-    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebasejs/10.8.0/firebase-firestore.js";
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     let activeReportType = "";
     let fetchedSales = [];
@@ -201,41 +201,52 @@
         }
         else if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
+            // Structural change: New header sequence
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Party Name</th><th>GST No</th><th>Taxable Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
 
-            let totalTaxable = 0, totalGst = 0, totalNet = 0;
-            let gst5 = 0, gst9 = 0, gst18 = 0;
+            let overallTaxable = 0, overallGst5 = 0, overallGst9 = 0, overallGst18 = 0, overallGstTotal = 0, overallNet = 0;
 
             fetchedSales.forEach(sale => {
                 sale.items.forEach(item => {
-                    const gAmt = Number(item.gstAmt) || 0;
-                    const net = Number(item.net) || 0;
-                    const taxable = net - gAmt;
-                    const gRate = parseInt(item.gst);
+                    const gstVal = Number(item.gst);
+                    const gstAmt = Number(item.gstAmt || 0);
+                    const netAmt = Number(item.net || 0);
+                    const taxableAmt = netAmt - gstAmt;
 
-                    totalTaxable += taxable;
-                    totalGst += gAmt;
-                    totalNet += net;
+                    // Accumulate overall totals
+                    overallTaxable += taxableAmt;
+                    overallNet += netAmt;
+                    overallGstTotal += gstAmt;
+                    
+                    if (gstVal === 5) overallGst5 += gstAmt;
+                    else if (gstVal === 9) overallGst9 += gstAmt;
+                    else if (gstVal === 18) overallGst18 += gstAmt;
 
-                    if (gRate === 5) gst5 += gAmt;
-                    else if (gRate === 9) gst9 += gAmt;
-                    else if (gRate === 18) gst18 += gAmt;
-
-                    body.innerHTML += `<tr><td>${sale.billNo}</td><td>${formatDate(sale.date)}</td><td>${sale.customerName}</td><td>${sale.gstNo || '-'}</td><td>${taxable.toFixed(2)}</td><td>${item.gst}%</td><td>${gAmt.toFixed(2)}</td><td><b>${net.toFixed(2)}</b></td></tr>`;
+                    body.innerHTML += `<tr>
+                        <td>${sale.billNo}</td>
+                        <td>${formatDate(sale.date)}</td>
+                        <td>${sale.customerName}</td>
+                        <td>${sale.gstNo || '-'}</td>
+                        <td>${taxableAmt.toFixed(2)}</td>
+                        <td>${gstVal}%</td>
+                        <td>${gstAmt.toFixed(2)}</td>
+                        <td>${netAmt.toFixed(2)}</td>
+                    </tr>`;
                 });
             });
 
+            // Summary structure as requested
             body.innerHTML += `
                 <tr class="total-footer">
-                    <td colspan="4" align="right">GRAND TOTAL BILL SUMMARY ===></td>
-                    <td>${totalTaxable.toFixed(2)}</td>
+                    <td colspan="4" align="right">SUMMARY BILL TOTAL ===></td>
+                    <td>${overallTaxable.toFixed(2)}</td>
                     <td>-</td>
-                    <td>${totalGst.toFixed(2)}</td>
-                    <td>${totalNet.toFixed(2)}</td>
+                    <td>${overallGstTotal.toFixed(2)}</td>
+                    <td>${overallNet.toFixed(2)}</td>
                 </tr>
                 <tr class="subtotal-row">
-                    <td colspan="8" align="center">
-                        GST BREAKDOWN: 5% = ${gst5.toFixed(2)} | 9% = ${gst9.toFixed(2)} | 18% = ${gst18.toFixed(2)}
+                    <td colspan="8" align="center" style="padding: 10px;">
+                        <b>GST BREAKUP:</b> 5% GST: ${overallGst5.toFixed(2)} | 9% GST: ${overallGst9.toFixed(2)} | 18% GST: ${overallGst18.toFixed(2)} | <b>Total GST: ${overallGstTotal.toFixed(2)}</b>
                     </td>
                 </tr>`;
         }
@@ -281,5 +292,6 @@
 </script>
 </body>
 </html>
+
 
 
