@@ -1,201 +1,517 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Return | Shree Datarekha Enterprises</title>
+
+    <title>Purchase Register | Shree Datarekha Enterprises</title>
+
     <style>
-        :root { --brand-pink: #ff2f92; --glass: rgba(255, 255, 255, 0.05); }
+
+        :root {
+
+            --brand-pink: #ff2f92;
+
+            --dark-bg: #1a0510;
+
+            --glass: rgba(255, 255, 255, 0.05);
+
+        }
+
+
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446); color: #fff; padding: 20px; min-height: 100vh; }
-        
-        .container { max-width: 1200px; margin: auto; background: rgba(0, 0, 0, 0.85); border-radius: 15px; padding: 25px; border: 1px solid rgba(255, 47, 146, 0.3); }
-        .header-box { border-bottom: 2px solid var(--brand-pink); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+
+
+
+        body {
+
+            background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
+
+            color: #fff;
+
+            padding: 20px;
+
+            min-height: 100vh;
+
+        }
+
+
+
+        .container {
+
+            max-width: 1800px;
+
+            margin: auto;
+
+            background: rgba(0, 0, 0, 0.85);
+
+            border-radius: 15px;
+
+            padding: 20px;
+
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+
+            border: 1px solid rgba(255, 47, 146, 0.3);
+
+        }
+
+
+
+        /* Top Navigation & Search */
+
+        .header-box {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 20px;
+
+            border-bottom: 2px solid var(--brand-pink);
+
+            padding-bottom: 15px;
+
+        }
+
+
+
         .title { font-size: 24px; font-weight: 800; color: #ffb3d9; text-transform: uppercase; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        label { font-size: 13px; color: #ffb3d9; font-weight: 600; }
-        
-        select, input {
-            background: var(--glass); border: 1px solid rgba(255,255,255,0.2);
-            padding: 12px; border-radius: 8px; color: white; outline: none;
-        }
-        select option { background: #5c0a2e; color: white; }
 
-        .btn-save { background: var(--brand-pink); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 20px; }
-        .status-card { background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
+
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+
         
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th { background: var(--brand-pink); padding: 12px; font-size: 12px; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; }
+
+        input[type="text"], input[type="date"] {
+
+            background: var(--glass);
+
+            border: 1px solid rgba(255,255,255,0.2);
+
+            padding: 10px 15px;
+
+            border-radius: 8px;
+
+            color: white;
+
+            outline: none;
+
+            transition: 0.3s;
+
+        }
+
+
+
+        input:focus { border-color: var(--brand-pink); background: rgba(0,0,0,0.3); }
+
+
+
+        .btn {
+
+            padding: 10px 20px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: 600;
+
+            transition: 0.3s;
+
+            text-decoration: none;
+
+            display: inline-block;
+
+            text-align: center;
+
+        }
+
+
+
+        .btn-entry { background: var(--brand-pink); color: white; }
+
+        .btn-print { background: #4a5568; color: white; }
+
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+
+
+        /* Table Architecture */
+
+        .table-viewport {
+
+            overflow-x: auto;
+
+            max-height: 70vh;
+
+            background: rgba(0,0,0,0.2);
+
+            border-radius: 10px;
+
+        }
+
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 1600px; /* Ensures all detailed columns fit */
+
+        }
+
+
+
+        thead th {
+
+            background: var(--brand-pink);
+
+            color: white;
+
+            padding: 12px 8px;
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 10;
+
+        }
+
+
+
+        tbody td {
+
+            padding: 10px 8px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+            font-size: 13px;
+
+            text-align: center;
+
+        }
+
+
+
+        /* Grouping Rows (Bill Headers) */
+
+        .bill-group-row {
+
+            background: rgba(255, 47, 146, 0.15);
+
+            font-weight: bold;
+
+            text-align: left;
+
+            color: #ffb3d9;
+
+        }
+
+
+
+        .bill-group-row td { text-align: left; padding-left: 15px; border-left: 4px solid var(--brand-pink); }
+
+
+
+        .net-total-cell { color: #00ff88; font-weight: bold; }
+
+        .gst-cell { color: #cbd5e0; font-size: 11px; }
+
+
+
+        tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+
+
+        @media print {
+
+            body { background: white !important; color: black; padding: 0; }
+
+            .container { box-shadow: none; border: 1px solid #000; width: 100%; max-width: 100%; }
+
+            .controls, .btn-entry { display: none !important; }
+
+            th { background: #ddd !important; color: black !important; border: 1px solid #000; }
+
+            td { border: 1px solid #ddd !important; color: black !important; }
+
+        }
+
     </style>
+
 </head>
+
 <body>
 
+
+
 <div class="container">
+
     <div class="header-box">
-        <div class="title">Process Purchase Return</div>
-        <a href="purchase-register.html" style="color: white; text-decoration: none;">View Register</a>
+
+        <div class="title">Purchase Detail Registry</div>
+
+        <div class="controls">
+
+            <input type="text" id="searchBox" placeholder="Search Bill / Supplier..." onkeyup="filterRegistry()">
+
+            <input type="date" id="dateFilter" onchange="filterRegistry()">
+
+            <button class="btn btn-print" onclick="window.print()">Print A4</button>
+
+            <a href="add-purchase.html" class="btn btn-entry">Add New Purchase</a>
+
+        </div>
+
     </div>
 
-    <div class="form-grid">
-        <div class="input-group">
-            <label>1. Supplier</label>
-            <select id="supSelect" onchange="fetchBills()">
-                <option value="">Select Supplier</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label>2. Bill No</label>
-            <select id="billSelect" onchange="fetchItems()">
-                <option value="">Select Bill</option>
-            </select>
-        </div>
-        <div class="input-group">
-            <label>3. Product</label>
-            <select id="itemSelect" onchange="setupReturn()">
-                <option value="">Select Product</option>
-            </select>
-        </div>
+
+
+    <div class="table-viewport">
+
+        <table id="registryTable">
+
+            <thead>
+
+                <tr>
+
+                    <th>Bill Info</th>
+
+                    <th>Item Group</th>
+
+                    <th>Item Name</th>
+
+                    <th>MRP</th>
+
+                    <th>Pur Rate</th>
+
+                    <th>Sale Rate</th>
+
+                    <th>Qty</th>
+
+                    <th>Free</th>
+
+                    <th>Unit</th>
+
+                    <th>Basic Amt</th>
+
+                    <th>GST%</th>
+
+                    <th>CGST</th>
+
+                    <th>GST%</th>
+
+                    <th>SGST</th>
+
+                    <th>Net Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="registryBody">
+
+                </tbody>
+
+        </table>
+
     </div>
 
-    <div id="returnForm" style="display:none;">
-        <div class="form-grid">
-            <div class="input-group"><label>Purchased Qty</label><input type="text" id="pQty" readonly></div>
-            <div class="input-group"><label>Return Qty</label><input type="number" id="rQty" oninput="calcRefund()"></div>
-            <div class="input-group"><label>Refund Amt</label><input type="text" id="refund" readonly></div>
-        </div>
-        <div id="stockNotice" class="status-card" style="display:block;"></div>
-        <button class="btn-save" onclick="submitReturn()">Update Stock & Original Bill</button>
-    </div>
-
-    <table id="historyTable">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Supplier</th>
-                <th>Bill</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Refund</th>
-            </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-    </table>
 </div>
 
+
+
 <script type="module">
+
     import { db } from './firebase-config.js';
-    import { collection, getDocs, query, where, doc, updateDoc, addDoc, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    let purchases = [];
-    let selectedBill = null;
-    let selectedItemIdx = null;
-    let masterItemId = null;
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    async function init() {
-        const snap = await getDocs(collection(db, "purchases"));
-        purchases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        const sups = [...new Set(purchases.map(p => p.header.supplier))];
-        const sel = document.getElementById("supSelect");
-        sups.forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
-        loadHistory();
-    }
 
-    window.fetchBills = () => {
-        const s = document.getElementById("supSelect").value;
-        const bSel = document.getElementById("billSelect");
-        bSel.innerHTML = '<option value="">Select Bill</option>';
-        purchases.filter(p => p.header.supplier === s).forEach(p => {
-            bSel.innerHTML += `<option value="${p.id}">${p.header.billNo}</option>`;
-        });
-    };
 
-    window.fetchItems = () => {
-        const bid = document.getElementById("billSelect").value;
-        selectedBill = purchases.find(p => p.id === bid);
-        const iSel = document.getElementById("itemSelect");
-        iSel.innerHTML = '<option value="">Select Product</option>';
-        selectedBill.items.forEach((item, i) => {
-            iSel.innerHTML += `<option value="${i}">${item.name}</option>`;
-        });
-    };
+    let localRegistry = [];
 
-    window.setupReturn = async () => {
-        selectedItemIdx = document.getElementById("itemSelect").value;
-        if(selectedItemIdx === "") return;
-        
-        const item = selectedBill.items[selectedItemIdx];
-        document.getElementById("returnForm").style.display = "block";
-        document.getElementById("pQty").value = item.qty;
-        
-        // Find Master Stock
-        const q = query(collection(db, "items"), where("name", "==", item.name));
-        const sSnap = await getDocs(q);
-        if(!sSnap.empty) {
-            masterItemId = sSnap.docs[0].id;
-            document.getElementById("stockNotice").innerHTML = `Master Stock: ${sSnap.docs[0].data().stock} ${item.unit}`;
-        }
-    };
 
-    window.calcRefund = () => {
-        const qty = document.getElementById("rQty").value;
-        const rate = selectedBill.items[selectedItemIdx].rate;
-        document.getElementById("refund").value = (qty * rate).toFixed(2);
-    };
 
-    window.submitReturn = async () => {
-        const rQty = parseFloat(document.getElementById("rQty").value);
-        if(!rQty || rQty > selectedBill.items[selectedItemIdx].qty) return alert("Invalid Quantity");
+    // 1. Fetch Data
+
+    async function initRegistry() {
+
+        const body = document.getElementById("registryBody");
+
+        body.innerHTML = "<tr><td colspan='15'>Synchronizing with Firebase...</td></tr>";
+
+
 
         try {
-            // 1. Update Master Stock
-            const itemRef = doc(db, "items", masterItemId);
-            const sSnap = await getDocs(query(collection(db, "items"), where("name", "==", selectedBill.items[selectedItemIdx].name)));
-            const newStock = sSnap.docs[0].data().stock - rQty;
-            await updateDoc(itemRef, { stock: newStock });
 
-            // 2. Update Original Purchase Bill
-            const updatedItems = [...selectedBill.items];
-            const oldQty = parseFloat(updatedItems[selectedItemIdx].qty);
-            const newQty = oldQty - rQty;
+            const q = query(collection(db, "purchases"), orderBy("createdAt", "desc"));
+
+            const snap = await getDocs(q);
+
             
-            // Recalculate item net
-            const rate = parseFloat(updatedItems[selectedItemIdx].rate);
-            updatedItems[selectedItemIdx].qty = newQty;
-            updatedItems[selectedItemIdx].net = (newQty * rate).toFixed(2);
 
-            const billRef = doc(db, "purchases", selectedBill.id);
-            await updateDoc(billRef, { items: updatedItems });
+            localRegistry = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // 3. Log the Return
-            await addDoc(collection(db, "returns"), {
-                supplier: selectedBill.header.supplier,
-                billNo: selectedBill.header.billNo,
-                item: updatedItems[selectedItemIdx].name,
-                qty: rQty,
-                refund: document.getElementById("refund").value,
-                timestamp: serverTimestamp()
-            });
+            renderRegistry(localRegistry);
 
-            alert("Return Successful! Stock and Original Bill Updated.");
-            location.reload();
-        } catch (e) { alert("Error: " + e.message); }
-    };
+        } catch (e) {
 
-    async function loadHistory() {
-        const q = query(collection(db, "returns"), orderBy("timestamp", "desc"), limit(5));
-        const snap = await getDocs(q);
-        const body = document.getElementById("historyBody");
-        snap.forEach(d => {
-            const data = d.data();
-            body.innerHTML += `<tr><td>${data.timestamp?.toDate().toLocaleDateString() || 'Today'}</td><td>${data.supplier}</td><td>${data.billNo}</td><td>${data.item}</td><td>${data.qty}</td><td>${data.refund}</td></tr>`;
-        });
+            body.innerHTML = `<tr><td colspan='15' style='color:red;'>Error: ${e.message}</td></tr>`;
+
+        }
+
     }
 
-    init();
+
+
+    // 2. Render List
+
+    function renderRegistry(data) {
+
+        const body = document.getElementById("registryBody");
+
+        body.innerHTML = "";
+
+
+
+        if(data.length === 0) {
+
+            body.innerHTML = "<tr><td colspan='15'>No records found matching criteria.</td></tr>";
+
+            return;
+
+        }
+
+
+
+        data.forEach(bill => {
+
+            // Summary Header Row for the Bill
+
+            const headerRow = document.createElement("tr");
+
+            headerRow.className = "bill-group-row";
+
+            headerRow.innerHTML = `
+
+                <td colspan="14">
+
+                    Bill No: ${bill.header.billNo} | Date: ${bill.header.date} | Supplier: ${bill.header.supplier} | Pay: ${bill.header.payment}
+
+                </td>
+
+                <td class="net-total-cell">₹${bill.totals.grandTotal}</td>
+
+            `;
+
+            body.appendChild(headerRow);
+
+
+
+            // Detailed Item Rows
+
+            bill.items.forEach(item => {
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+
+                    <td style="font-size:10px; opacity:0.6;">${bill.header.billNo}</td>
+
+                    <td>${item.group || '-'}</td>
+
+                    <td style="text-align:left; font-weight:600;">${item.name}</td>
+
+                    <td>${item.mrp || '-'}</td>
+
+                    <td>${item.rate || '-'}</td>
+
+                    <td>${item.saleRate || '-'}</td>
+
+                    <td>${item.qty}</td>
+
+                    <td>${item.free || '0'}</td>
+
+                    <td>${item.unit || 'PCS'}</td>
+
+                    <td>${item.basic || '-'}</td>
+
+                    <td class="gst-cell">${item.gstP || '9'}%</td>
+
+                    <td class="gst-cell">${item.cgst || '-'}</td>
+
+                    <td class="gst-cell">${item.gstP || '9'}%</td>
+
+                    <td class="gst-cell">${item.sgst || '-'}</td>
+
+                    <td style="font-weight:bold;">${item.net}</td>
+
+                `;
+
+                body.appendChild(row);
+
+            });
+
+        });
+
+    }
+
+
+
+    // 3. Search Logic
+
+    window.filterRegistry = function() {
+
+        const text = document.getElementById("searchBox").value.toLowerCase();
+
+        const date = document.getElementById("dateFilter").value;
+
+
+
+        const filtered = localRegistry.filter(b => {
+
+            const matchText = b.header.billNo.toString().includes(text) || 
+
+                              b.header.supplier.toLowerCase().includes(text);
+
+            const matchDate = !date || b.header.date === date;
+
+            return matchText && matchDate;
+
+        });
+
+
+
+        renderRegistry(filtered);
+
+    };
+
+
+
+    initRegistry();
+
 </script>
+
+
+
 </body>
+
 </html>
