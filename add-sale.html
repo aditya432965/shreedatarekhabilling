@@ -193,12 +193,13 @@ window.autoFillByName = function(input) {
         const baseRate = item.sale || 0;
         const gstPerc = item.gst || 0;
         
-        row.querySelector('.i-group').value = item.group || 'General';
+        // FIX: Taking group name directly from the item data (from add-item.html)
+        row.querySelector('.i-group').value = item.group || ''; 
+        
         row.querySelector('.mrp').value = item.mrp || 0;
         row.querySelector('.gst').value = gstPerc;
         row.querySelector('.rate').dataset.baseRate = baseRate;
         
-        // Show rate with GST if in Cash Memo mode
         if(mode === "WITHOUT_GST") {
             row.querySelector('.rate').value = (baseRate * (1 + gstPerc/100)).toFixed(2);
         } else {
@@ -210,7 +211,6 @@ window.autoFillByName = function(input) {
 };
 
 window.handleTaxModeChange = function() {
-    // When mode changes, refresh all rates in the table
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const baseRate = parseFloat(row.querySelector('.rate').dataset.baseRate) || 0;
         const gstPerc = parseFloat(row.querySelector('.gst').value) || 0;
@@ -239,17 +239,13 @@ window.calculateFinal = function() {
         let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
 
         if (mode === "WITHOUT_GST") {
-            // Logic: Displayed Rate (which is Rate+GST) * Qty -> then apply Discount
             const subtotal = displayedRate * qty;
             rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
             rowNet = subtotal - rowDisc;
-            
             rowGross = subtotal; 
-            // Calculate hidden GST for background reporting
             const baseValue = subtotal / (1 + gPerc/100);
             rowGst = subtotal - baseValue;
         } else {
-            // Standard Tax Flow
             const subtotal = displayedRate * qty;
             rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
             const taxable = subtotal - rowDisc;
@@ -284,7 +280,6 @@ window.saveSale = async function(shouldPrint = false) {
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const name = row.querySelector('.i-name').value;
         if(name) {
-            // Always calculate real tax values for the Report database
             const mode = document.getElementById('taxMode').value;
             const dispRate = parseFloat(row.querySelector('.rate').value) || 0;
             const qty = parseFloat(row.querySelector('.qty').value) || 0;
@@ -300,7 +295,7 @@ window.saveSale = async function(shouldPrint = false) {
             }
 
             billItems.push({
-                group: row.querySelector('.i-group').value,
+                group: row.querySelector('.i-group').value, // Correct group saved here
                 name: name,
                 qty: qty,
                 rate: dispRate,
