@@ -122,7 +122,7 @@
 
 <script type="module">
 import { db } from './firebase-config.js';
-import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 let customers = [];
 let items = [];
@@ -211,21 +211,17 @@ window.calculateFinal = function() {
         let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
 
         if (mode === "WITHOUT_GST") {
-            // Flow: Rate -> Apply GST -> Apply Discount
             const amountWithGst = (rate * qty) * (1 + gPerc/100);
             rowDisc = (amountWithGst * (dPerc/100)) + (schmAmt * qty);
             rowNet = amountWithGst - rowDisc;
-            
-            rowGross = amountWithGst; // Seeing amount after GST as Gross in this mode
+            rowGross = amountWithGst; 
             rowGst = (rate * qty) * (gPerc/100);
         } else {
-            // Standard Tax Flow
             const subtotal = rate * qty;
             rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
             const taxable = subtotal - rowDisc;
             rowGst = taxable * (gPerc/100);
             rowNet = taxable + rowGst;
-            
             rowGross = subtotal;
         }
 
@@ -255,15 +251,22 @@ window.saveSale = async function(shouldPrint = false) {
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const name = row.querySelector('.i-name').value;
         if(name) {
+            // Internal Logic for GST Calculation per row to be saved in Tax Invoice
+            const rRate = parseFloat(row.querySelector('.rate').value) || 0;
+            const rQty = parseFloat(row.querySelector('.qty').value) || 0;
+            const rGstPerc = parseFloat(row.querySelector('.gst').value) || 0;
+            const rGstAmt = (rRate * rQty) * (rGstPerc / 100);
+
             billItems.push({
                 group: row.querySelector('.i-group').value,
                 name: name,
                 qty: row.querySelector('.qty').value,
                 rate: row.querySelector('.rate').value,
                 mrp: row.querySelector('.mrp').value,
-                disc: row.querySelector('.disc').value, // Saved for Bill/Report
-                schm: row.querySelector('.schm').value, // Saved for Bill/Report
+                disc: row.querySelector('.disc').value,
+                schm: row.querySelector('.schm').value,
                 gst: row.querySelector('.gst').value,
+                gstAmt: rGstAmt.toFixed(2), // Added specifically for CA reports
                 net: row.querySelector('.net').value
             });
         }
@@ -274,6 +277,7 @@ window.saveSale = async function(shouldPrint = false) {
         customerName: partyName,
         taxMode: document.getElementById('taxMode').value,
         custMeta: document.getElementById('partyMeta').value,
+        gstNo: document.getElementById('partyMeta').value.split('|')[0].trim(), // Extracting GST for CA
         date: document.getElementById('saleDate').value,
         items: billItems,
         summary: {
@@ -286,12 +290,18 @@ window.saveSale = async function(shouldPrint = false) {
     };
 
     try {
-        await addDoc(collection(db, "sales"), saleData);
+        // 1. Save to original 'sales' collection (Existing Logic)
+        const docRef = await addDoc(collection(db, "sales"), saleData);
+        
+        // 2. Save to new 'tax_invoices' collection (For CA Reports)
+        // We use setDoc with the same ID so both records are linked
+        await setDoc(doc(db, "tax_invoices", docRef.id), saleData);
+
         if (shouldPrint) {
             localStorage.setItem("lastBill", JSON.stringify(saleData));
             window.open('print.html', '_blank');
         } else {
-            alert("Saved Successfully!");
+            alert("Saved to Tax Register Successfully!");
         }
         location.reload();
     } catch (e) { alert("Error: " + e.message); }
