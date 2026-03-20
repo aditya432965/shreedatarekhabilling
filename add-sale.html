@@ -211,12 +211,18 @@ window.calculateFinal = function() {
         let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
 
         if (mode === "WITHOUT_GST") {
-            const amountWithGst = (rate * qty) * (1 + gPerc/100);
-            rowDisc = (amountWithGst * (dPerc/100)) + (schmAmt * qty);
-            rowNet = amountWithGst - rowDisc;
-            rowGross = amountWithGst; 
-            rowGst = (rate * qty) * (gPerc/100);
+            // NEW LOGIC: GST applied to rate first -> then Qty -> then Discount
+            const rateWithGst = rate * (1 + gPerc/100);
+            const totalBeforeDisc = rateWithGst * qty;
+            
+            rowDisc = (totalBeforeDisc * (dPerc/100)) + (schmAmt * qty);
+            rowNet = totalBeforeDisc - rowDisc;
+            
+            rowGross = totalBeforeDisc; 
+            // We calculate GST for the report database, but we will hide it from the UI summary below
+            rowGst = (rate * qty) * (gPerc/100); 
         } else {
+            // Standard Tax Invoice Flow
             const subtotal = rate * qty;
             rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
             const taxable = subtotal - rowDisc;
@@ -234,7 +240,9 @@ window.calculateFinal = function() {
 
     document.getElementById('sumTotalSale').innerText = tGross.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
-    document.getElementById('sumGST').innerText = tGst.toFixed(2);
+    
+    // VISIBILITY LOGIC: Show 0.00 for GST in Cash Memo mode as requested
+    document.getElementById('sumGST').innerText = (mode === "WITHOUT_GST") ? "0.00" : tGst.toFixed(2);
     
     const finalRounded = Math.round(tNet);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
@@ -251,7 +259,6 @@ window.saveSale = async function(shouldPrint = false) {
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const name = row.querySelector('.i-name').value;
         if(name) {
-            // Internal Logic for GST Calculation per row to be saved in Tax Invoice
             const rRate = parseFloat(row.querySelector('.rate').value) || 0;
             const rQty = parseFloat(row.querySelector('.qty').value) || 0;
             const rGstPerc = parseFloat(row.querySelector('.gst').value) || 0;
@@ -266,7 +273,7 @@ window.saveSale = async function(shouldPrint = false) {
                 disc: row.querySelector('.disc').value,
                 schm: row.querySelector('.schm').value,
                 gst: row.querySelector('.gst').value,
-                gstAmt: rGstAmt.toFixed(2), // Added specifically for CA reports
+                gstAmt: rGstAmt.toFixed(2), 
                 net: row.querySelector('.net').value
             });
         }
@@ -277,24 +284,21 @@ window.saveSale = async function(shouldPrint = false) {
         customerName: partyName,
         taxMode: document.getElementById('taxMode').value,
         custMeta: document.getElementById('partyMeta').value,
-        gstNo: document.getElementById('partyMeta').value.split('|')[0].trim(), // Extracting GST for CA
+        gstNo: document.getElementById('partyMeta').value.split('|')[0].trim(),
         date: document.getElementById('saleDate').value,
         items: billItems,
         summary: {
             gross: document.getElementById('sumTotalSale').innerText,
             disc: document.getElementById('sumTotalDisc').innerText,
-            gst: document.getElementById('sumGST').innerText,
+            // We save the ACTUAL GST to the database for your reports, even if hidden in UI
+            gst: (document.querySelectorAll('#tableBody tr').length > 0) ? calculateTotalGstInternal() : "0.00",
             net: document.getElementById('sumNet').innerText
         },
         createdAt: serverTimestamp()
     };
 
     try {
-        // 1. Save to original 'sales' collection (Existing Logic)
         const docRef = await addDoc(collection(db, "sales"), saleData);
-        
-        // 2. Save to new 'tax_invoices' collection (For CA Reports)
-        // We use setDoc with the same ID so both records are linked
         await setDoc(doc(db, "tax_invoices", docRef.id), saleData);
 
         if (shouldPrint) {
@@ -306,6 +310,18 @@ window.saveSale = async function(shouldPrint = false) {
         location.reload();
     } catch (e) { alert("Error: " + e.message); }
 };
+
+// Helper to get total GST for the database record
+function calculateTotalGstInternal() {
+    let total = 0;
+    document.querySelectorAll('#tableBody tr').forEach(row => {
+        const rate = parseFloat(row.querySelector('.rate').value) || 0;
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const gPerc = parseFloat(row.querySelector('.gst').value) || 0;
+        total += (rate * qty) * (gPerc / 100);
+    });
+    return total.toFixed(2);
+}
 
 init();
 </script>
