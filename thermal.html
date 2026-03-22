@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermal Receipt | Shree Datarekha Enterprises</title>
+    <style>
+        /* CSS specifically optimized for 80mm Thermal Printers */
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+        body {
+            font-family: 'Courier Prime', monospace; /* Monospace is best for thermal */
+            margin: 0;
+            padding: 0;
+            background: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            color: #000;
+        }
+
+        .receipt {
+            width: 80mm; /* Standard thermal printer width */
+            background: #fff;
+            padding: 4mm;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 20px 0;
+        }
+
+        /* Print-specific rules */
+        @media print {
+            body { background: #fff; display: block; margin: 0; }
+            .receipt { box-shadow: none; margin: 0; padding: 2mm; width: 100%; max-width: 80mm; }
+            @page { margin: 0; }
+        }
+
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .bold { font-weight: bold; }
+
+        .shop-name {
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0 0 5px 0;
+            border: 1px solid #000;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .address { font-size: 10px; margin-bottom: 5px; }
+        
+        .divider { border-top: 1px dashed #000; margin: 6px 0; }
+        .divider-solid { border-top: 1px solid #000; margin: 6px 0; }
+
+        .info-row { display: flex; justify-content: space-between; font-size: 11px; }
+
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
+        th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; text-align: left; }
+        td { padding: 3px 0; vertical-align: top; }
+        
+        .item-name { display: block; font-weight: bold; font-size: 11px; margin-top: 3px; }
+
+        .totals-table { width: 100%; font-size: 12px; }
+        .totals-table td { padding: 2px 0; }
+        .totals-table .net-row { font-size: 14px; font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 5px 0; }
+
+        .declaration { font-size: 9px; margin: 8px 0; text-align: justify; }
+
+        .qr-container { margin: 10px 0; display: flex; justify-content: center; }
+        .qr-container img { width: 100px; height: 100px; }
+
+        .footer-msg { font-size: 13px; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="receipt">
+    <div class="text-center">
+        <div class="shop-name">Shree Dattarekha<br>Enterprises</div>
+    </div>
+
+    <div class="text-center address">
+        Gunwadi Rd, Baramati<br>
+        Mob: 9503984711 / 9075621737<br>
+        GST: 27AEOPL5652H1Z4
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="info-row bold">
+        <span>Bill No: <span id="r-billNo"></span></span>
+        <span id="r-dateTime"></span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="font-size: 11px;">
+        <div>Customer: <span id="r-custName" class="bold"></span></div>
+        <div id="r-custMeta" style="font-size: 10px; margin-top: 2px;"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th width="15%">Qty</th>
+                <th width="35%">Rate</th>
+                <th width="50%" class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody id="r-itemsBody">
+            </tbody>
+    </table>
+
+    <table class="totals-table">
+        <tr>
+            <td>Gross Total</td>
+            <td class="text-right" id="r-gross">0.00</td>
+        </tr>
+        <tr>
+            <td>Discount</td>
+            <td class="text-right" id="r-disc">0.00</td>
+        </tr>
+        <tr id="r-gstRow" style="display: none;">
+            <td>GST Amount</td>
+            <td class="text-right" id="r-gst">0.00</td>
+        </tr>
+        <tr>
+            <td class="net-row">Net Amount</td>
+            <td class="net-row text-right" id="r-net">0.00</td>
+        </tr>
+    </table>
+
+    <div class="declaration">
+        <strong>Declaration:</strong> Certified that the particulars given above are true and correct.
+    </div>
+
+    <div class="divider-solid"></div>
+
+    <div class="text-center" style="font-size: 10px; margin-top: 5px;">Scan to Pay via UPI</div>
+    <div class="qr-container">
+        <img id="r-qrCode" src="" alt="UPI QR Code" onload="window.qrLoaded = true;">
+    </div>
+
+    <div class="text-center footer-msg">
+        Thank You!<br>Visit Again!!
+    </div>
+</div>
+
+<script>
+    window.qrLoaded = false;
+
+    window.onload = function() {
+        // Retrieve data saved by add-sale.html
+        const data = JSON.parse(localStorage.getItem("lastBill"));
+        
+        if(!data) {
+            document.body.innerHTML = "<h3 style='padding:20px'>No bill data found in memory. Please print from the Add Sale page.</h3>";
+            return;
+        }
+
+        // Populate Bill No
+        document.getElementById('r-billNo').innerText = data.billNo;
+
+        // Populate Date and Current Time
+        const rawDate = new Date(data.date);
+        const printTime = new Date();
+        
+        const dd = String(rawDate.getDate()).padStart(2, '0');
+        const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+        const yy = String(rawDate.getFullYear()).slice(-2);
+        
+        const timeStr = printTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        document.getElementById('r-dateTime').innerText = `${dd}/${mm}/${yy} | ${timeStr}`;
+
+        // Populate Customer
+        document.getElementById('r-custName').innerText = data.customerName;
+        document.getElementById('r-custMeta').innerText = data.custMeta || '';
+
+        // Populate Items (Thermal style: Name on top, Qty x Rate = Amt on bottom)
+        let rows = "";
+        data.items.forEach(item => {
+            rows += `
+                <tr>
+                    <td colspan="3"><span class="item-name">${item.name}</span></td>
+                </tr>
+                <tr>
+                    <td>${item.qty}</td>
+                    <td>${item.rate}</td>
+                    <td class="text-right">${parseFloat(item.net).toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        document.getElementById('r-itemsBody').innerHTML = rows;
+
+        // Populate Summary
+        document.getElementById('r-gross').innerText = data.summary.gross;
+        document.getElementById('r-disc').innerText = data.summary.disc;
+        
+        if((data.taxMode || "").trim().toUpperCase() === "WITH_GST") {
+            document.getElementById('r-gstRow').style.display = "table-row";
+            document.getElementById('r-gst').innerText = data.summary.gst;
+        }
+        
+        const netAmt = Math.round(parseFloat(data.summary.net)).toFixed(2);
+        document.getElementById('r-net').innerText = netAmt;
+
+        // Generate dynamic QR Code containing the Net Amount
+        const upiId = "9503984711@ybl";
+        const payeeName = encodeURIComponent("SHREE DATTAREKHA ENTERPRISES");
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=${upiId}&pn=${payeeName}&am=${netAmt}&cu=INR`;
+        
+        document.getElementById('r-qrCode').src = qrUrl;
+
+        // Trigger print automatically once the image finishes loading, with a fallback timeout
+        const printReceipt = () => {
+            setTimeout(() => { window.print(); }, 200); 
+        };
+
+        const checkQR = setInterval(() => {
+            if (window.qrLoaded) {
+                clearInterval(checkQR);
+                printReceipt();
+            }
+        }, 100);
+
+        // Fallback if QR API takes too long (timeout after 2 seconds)
+        setTimeout(() => {
+            clearInterval(checkQR);
+            if (!window.qrLoaded) printReceipt();
+        }, 2000);
+    };
+</script>
+
+</body>
+</html>
