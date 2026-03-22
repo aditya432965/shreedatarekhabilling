@@ -261,9 +261,16 @@ window.calculateFinal = function() {
         const displayedRate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const dPerc = parseFloat(row.querySelector('.disc').value) || 0;
-        const schmAmt = parseFloat(row.querySelector('.schm').value) || 0;
+        const schmAmt = parseFloat(row.querySelector('.schm').value) || 0; // The fixed "Schme" amount
         const gPerc = parseFloat(row.querySelector('.gst').value) || 0;
+        
         let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
+
+        // Formula Logic:
+        // 1. Calculate Gross (Rate * Qty)
+        // 2. Calculate Discount (Gross * Disc%)
+        // 3. Subtract Schme (Fixed amount per qty)
+        
         if (mode === "WITHOUT_GST") {
             const subtotal = displayedRate * qty;
             rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
@@ -273,18 +280,23 @@ window.calculateFinal = function() {
             rowGst = subtotal - baseValue;
         } else {
             const subtotal = displayedRate * qty;
-            rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
-            const taxable = subtotal - rowDisc;
+            rowDisc = (subtotal * (dPerc/100)); // Percentage discount
+            const afterDisc = subtotal - rowDisc;
+            const taxable = afterDisc - (schmAmt * qty); // Subtract Scheme after discount
             rowGst = taxable * (gPerc/100);
             rowNet = taxable + rowGst;
             rowGross = subtotal;
+            // Total discount for summary includes Scheme
+            rowDisc += (schmAmt * qty); 
         }
+
         row.querySelector('.net').value = rowNet.toFixed(2);
         tGross += rowGross;
         tDisc += rowDisc;
         tGst += rowGst;
         tNet += rowNet;
     });
+
     document.getElementById('sumTotalSale').innerText = tGross.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
     document.getElementById('sumGST').innerText = (mode === "WITHOUT_GST") ? "0.00" : tGst.toFixed(2);
@@ -316,7 +328,8 @@ window.saveSale = async function(shouldPrint = false) {
                 reportGstAmt = total - (total / (1 + gstP/100));
             } else {
                 const disc = (dispRate * qty) * (parseFloat(row.querySelector('.disc').value)/100);
-                reportGstAmt = (dispRate * qty - disc) * (gstP/100);
+                const schm = parseFloat(row.querySelector('.schm').value) || 0;
+                reportGstAmt = (dispRate * qty - disc - (schm * qty)) * (gstP/100);
             }
             billItems.push({
                 group: row.querySelector('.i-group').value,
@@ -355,7 +368,6 @@ window.saveSale = async function(shouldPrint = false) {
 
         if (shouldPrint) {
             localStorage.setItem("lastBill", JSON.stringify(saleData));
-            // OPEN MODAL INSTEAD OF DIRECT PRINT
             document.getElementById('printModal').style.display = 'flex';
         } else {
             alert("Success! Saved for Tax Reports.");
@@ -371,13 +383,14 @@ function calculateTotalGstInternal() {
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const gP = parseFloat(row.querySelector('.gst').value) || 0;
+        const schm = parseFloat(row.querySelector('.schm').value) || 0;
         if(mode === "WITHOUT_GST") {
             const rowVal = rate * qty;
             total += (rowVal - (rowVal / (1 + gP/100)));
         } else {
             const sub = rate * qty;
             const disc = sub * (parseFloat(row.querySelector('.disc').value)/100);
-            total += (sub - disc) * (gP/100);
+            total += (sub - disc - (schm * qty)) * (gP/100);
         }
     });
     return total.toFixed(2);
@@ -387,4 +400,3 @@ init();
 </script>
 </body>
 </html>
-
