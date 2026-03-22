@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermal Receipt | Shree Datarekha Enterprises</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: 'Courier Prime', monospace;
-            margin: 0;
-            padding: 0;
             background: #e2e8f0;
             display: flex;
             justify-content: center;
@@ -22,149 +22,131 @@
         }
 
         .receipt {
-            width: 80mm; /* Standard 80mm thermal width */
+            width: 80mm;
             background: #fff;
-            padding: 4mm;
+            padding: 2mm;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            font-size: 11px;
-            line-height: 1.3;
-            margin: 20px 0;
+            font-size: 10px;
+            line-height: 1.2;
         }
 
         @media print {
-            body { background: #fff; display: block; margin: 0; }
-            .receipt { box-shadow: none; margin: 0; padding: 2mm; width: 100%; max-width: 80mm; }
-            @page { margin: 0; }
+            body { background: #fff; display: block; }
+            .receipt { 
+                box-shadow: none; 
+                width: 80mm; 
+                margin: 0; 
+                padding: 0;
+            }
+            @page { 
+                size: 80mm auto; /* Critical for Thermal Printer detection */
+                margin: 0; 
+            }
         }
 
         .text-center { text-align: center; }
-        .text-left { text-align: left; }
-        .text-right { text-align: right; }
         .bold { font-weight: bold; }
-        
-        .divider { border-top: 1px dashed #000; margin: 5px 0; }
-        .divider-solid { border-top: 1px solid #000; margin: 5px 0; }
+        .divider { border-top: 1px dashed #000; margin: 4px 0; }
+        .divider-solid { border-top: 1px solid #000; margin: 4px 0; }
 
-        .header h1 {
-            font-size: 16px;
-            font-weight: bold;
-            margin: 0 0 5px 0;
-            text-transform: uppercase;
-        }
-        .header p { margin: 2px 0; font-size: 10px; }
+        .header h1 { font-size: 15px; margin-bottom: 2px; text-transform: uppercase; }
+        .header p { font-size: 9px; }
 
         .meta-info {
             display: flex;
             justify-content: space-between;
-            font-size: 10px;
+            font-size: 9px;
             margin: 2px 0;
         }
 
-        table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; font-weight: bold; }
-        td { padding: 2px 0; vertical-align: top; }
+        /* Single Row Item Table */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th { border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; font-size: 9px; }
+        td { padding: 3px 0; font-size: 9px; overflow: hidden; white-space: nowrap; }
 
-        /* Item layout matching the image */
-        .items-table th:nth-child(1) { text-align: left; width: 45%; }
-        .items-table th:nth-child(2) { text-align: center; width: 15%; }
-        .items-table th:nth-child(3) { text-align: right; width: 20%; }
-        .items-table th:nth-child(4) { text-align: right; width: 20%; }
+        .col-name { width: 35%; text-align: left; }
+        .col-qty  { width: 12%; text-align: center; }
+        .col-rate { width: 18%; text-align: right; }
+        .col-disc { width: 12%; text-align: right; }
+        .col-total{ width: 23%; text-align: right; }
 
-        .items-table td:nth-child(1) { text-align: left; }
-        .items-table td:nth-child(2) { text-align: center; }
-        .items-table td:nth-child(3) { text-align: right; }
-        .items-table td:nth-child(4) { text-align: right; }
-
-        .summary-block {
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 5px;
-        }
-        .summary-table { width: 60%; }
+        .summary-table { width: 70%; margin-left: auto; }
         .summary-table td { padding: 1px 0; }
-        
-        .net-row { font-size: 13px; font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0 !important; }
+        .net-row { font-size: 12px; font-weight: bold; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
 
-        .tax-table { width: 100%; margin: 5px 0; text-align: right; }
-        .tax-table th { border-bottom: none; border-top: 1px dashed #000; text-align: right;}
-        .tax-table th:first-child, .tax-table td:first-child { text-align: left; }
-        
-        .declaration { font-size: 9px; margin-top: 5px; }
-        .declaration p { margin: 2px 0; }
+        .tax-table { width: 100%; margin: 5px 0; }
+        .tax-table th, .tax-table td { text-align: right; font-size: 8px; }
+        .tax-table .text-left { text-align: left; }
+
+        .declaration { font-size: 8px; margin-top: 5px; line-height: 1.1; }
     </style>
 </head>
 <body>
 
 <div class="receipt">
     <div class="header text-center">
-        <h1>Shree Datarekha<br>Enterprises</h1>
-        <p>Gunwadi Rd, Baramati, -413102<br>
-        Mob: 9503984711 / 9075621737<br>
-        GSTIN: 27AEOPL5652H1Z4</p>
-        <p class="bold" style="font-size: 12px; margin-top: 4px;" id="r-type">CASH INVOICE</p>
-        <p class="bold" style="font-size: 12px;">Bill No. : <span id="r-billNo"></span></p>
+        <h1>Shree Datarekha</h1>
+        <h1>Enterprises</h1>
+        <p>Gunwadi Rd, Baramati, -413102</p>
+        <p>Mob: 9503984711 / 9075621737</p>
+        <p>GSTIN: 27AEOPL5652H1Z4</p>
+        <div class="divider"></div>
+        <p class="bold" style="font-size: 11px;" id="r-type">CASH INVOICE</p>
+        <p class="bold">Bill No: <span id="r-billNo"></span></p>
     </div>
-
-    <div class="divider"></div>
 
     <div class="meta-info">
         <span>Date: <span id="r-date"></span></span>
         <span>Time: <span id="r-time"></span></span>
     </div>
-    <div class="meta-info text-left" style="display: block;">
-        <div>Name: <span id="r-custName" class="bold"></span></div>
-        <div id="r-custMeta" style="font-size: 9px; margin-top: 2px;"></div>
-    </div>
+    <div class="bold" style="font-size: 10px;">Customer: <span id="r-custName"></span></div>
+    <div id="r-custMeta" style="font-size: 8px; margin-bottom: 5px;"></div>
 
-    <table class="items-table" style="margin-top: 5px;">
+    <table>
         <thead>
             <tr>
-                <th>ITEM<br>GROUP</th>
-                <th>GST%<br>---</th>
-                <th>RATE<br>DISC%</th>
-                <th>QTY<br>TOTAL</th>
+                <th class="col-name">ITEM</th>
+                <th class="col-qty">QTY</th>
+                <th class="col-rate">RATE</th>
+                <th class="col-disc">D%</th>
+                <th class="col-total">TOTAL</th>
             </tr>
         </thead>
         <tbody id="r-itemsBody">
             </tbody>
     </table>
-    
-    <div class="divider" style="margin-top: 0;"></div>
 
-    <div style="display: flex; justify-content: space-between; font-size: 10px;">
-        <div>
-            Items / Qty : <span id="r-totalItems"></span> / <span id="r-totalQty"></span>
-        </div>
+    <div class="divider"></div>
+
+    <div style="display: flex; justify-content: space-between; font-size: 9px;">
+        <div style="padding-top: 5px;">Items/Qty: <span id="r-totalItems"></span>/<span id="r-totalQty"></span></div>
         <table class="summary-table">
             <tr>
-                <td>Total</td>
-                <td class="text-right" id="r-gross">0.00</td>
+                <td>Gross Total</td>
+                <td style="text-align: right;" id="r-gross">0.00</td>
             </tr>
             <tr>
-                <td>Disc</td>
-                <td class="text-right" id="r-disc">0.00</td>
+                <td>Discount</td>
+                <td style="text-align: right;" id="r-disc">0.00</td>
             </tr>
-            <tr>
-                <td class="net-row">Net</td>
-                <td class="net-row text-right" id="r-net">0.00</td>
-            </tr>
-            <tr id="r-savingRow">
-                <td colspan="2" class="text-right bold" style="padding-top: 4px;">
-                    Your Saving: <span id="r-saving">0.00</span>
-                </td>
+            <tr class="net-row">
+                <td>NET AMOUNT</td>
+                <td style="text-align: right;" id="r-net">0.00</td>
             </tr>
         </table>
+    </div>
+
+    <div id="r-savingRow" class="text-right bold" style="font-size: 9px; margin-top: 2px;">
+        Your Saving: <span id="r-saving">0.00</span>
     </div>
 
     <div class="divider"></div>
 
     <div id="r-taxSection" style="display: none;">
-        <div style="font-size: 10px;">The invoice includes following taxes.</div>
         <table class="tax-table">
             <thead>
                 <tr>
-                    <th>GST</th>
+                    <th class="text-left">GST%</th>
                     <th>Taxable</th>
                     <th>SGST</th>
                     <th>CGST</th>
@@ -172,7 +154,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td id="r-taxPerc">@5.00%</td>
+                    <td class="text-left" id="r-taxPerc">@0%</td>
                     <td id="r-taxable">0.00</td>
                     <td id="r-sgst">0.00</td>
                     <td id="r-cgst">0.00</td>
@@ -183,117 +165,75 @@
     </div>
 
     <div class="declaration">
-        <p>Declaration :</p>
-        <p>We declare that this invoice shows the actual price of the Goods described & that all particulars are true & correct.</p>
-        <br>
-        <p>Terms : * No Refund</p>
-        <p>* Goods Once Sold Will Not be taken back.</p>
+        <p class="bold">Declaration:</p>
+        <p>Actual price shown. All particulars are correct.</p>
+        <p>Terms: * No Refund * Goods Once Sold Not Taken Back.</p>
         <p>* Subject to Baramati Jurisdiction.</p>
     </div>
 
-    <div class="divider-solid" style="margin-top: 10px;"></div>
-
-    <div class="text-center bold" style="font-size: 12px; margin-top: 5px;">
-        Thank You.. Visit Again..!!
-    </div>
-    <div class="text-center" style="font-size: 8px; margin-top: 3px;">
-        Generated by Shree Datarekha POS
-    </div>
+    <div class="divider-solid"></div>
+    <p class="text-center bold" style="font-size: 11px;">Thank You! Visit Again!</p>
+    <p class="text-center" style="font-size: 7px;">Software by Retailware</p>
 </div>
 
 <script>
     window.onload = function() {
         const data = JSON.parse(localStorage.getItem("lastBill"));
-        if(!data) {
-            document.body.innerHTML = "<h3 style='padding:20px'>No bill data found. Print from Sale Entry.</h3>";
-            return;
-        }
+        if(!data) return;
 
-        const taxMode = (data.taxMode || "").trim().toUpperCase();
+        const taxMode = (data.taxMode || "").toUpperCase();
         document.getElementById('r-type').innerText = taxMode === "WITH_GST" ? "TAX INVOICE" : "CASH MEMO";
         document.getElementById('r-billNo').innerText = data.billNo;
-
-        // Date & Time formatting
+        
         const rawDate = new Date(data.date);
-        const printTime = new Date();
-        const dd = String(rawDate.getDate()).padStart(2, '0');
-        const mm = rawDate.toLocaleString('default', { month: 'short' });
-        const yy = rawDate.getFullYear();
-        document.getElementById('r-date').innerText = `${dd}-${mm}-${yy}`;
-        document.getElementById('r-time').innerText = printTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+        document.getElementById('r-date').innerText = rawDate.toLocaleDateString('en-GB');
+        document.getElementById('r-time').innerText = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
 
-        // Customer Info
         document.getElementById('r-custName').innerText = data.customerName;
         document.getElementById('r-custMeta').innerText = data.custMeta || '';
 
-        // Items Generation (Two-line format exactly like image)
         let rows = "";
         let totalQty = 0;
 
         data.items.forEach((item) => {
             const qty = parseFloat(item.qty) || 0;
             totalQty += qty;
-
-            const nameSafe = item.name.substring(0, 14);
-            const groupSafe = (item.group || "").substring(0, 12);
-            
-            // Line 1: Name | GST | Rate | Qty
-            // Line 2: Group | -- | Disc% | Net Amount
             rows += `
                 <tr>
-                    <td>${nameSafe}</td>
-                    <td>${item.gst}%</td>
-                    <td>${parseFloat(item.rate).toFixed(2)}</td>
-                    <td>${qty.toFixed(2)}</td>
-                </tr>
-                <tr style="border-bottom: 1px dashed #eee;">
-                    <td style="color:#444;">${groupSafe}</td>
-                    <td></td>
-                    <td style="color:#444;">${parseFloat(item.disc || 0).toFixed(2)}%</td>
-                    <td class="bold">${parseFloat(item.net).toFixed(2)}</td>
+                    <td class="col-name">${item.name.substring(0, 15)}</td>
+                    <td class="col-qty">${qty}</td>
+                    <td class="col-rate">${parseFloat(item.rate).toFixed(2)}</td>
+                    <td class="col-disc">${parseFloat(item.disc || 0).toFixed(0)}%</td>
+                    <td class="col-total bold">${parseFloat(item.net).toFixed(2)}</td>
                 </tr>
             `;
         });
         document.getElementById('r-itemsBody').innerHTML = rows;
 
-        // Summaries
         document.getElementById('r-totalItems').innerText = data.items.length;
-        document.getElementById('r-totalQty').innerText = totalQty.toFixed(2);
-        
+        document.getElementById('r-totalQty').innerText = totalQty;
         document.getElementById('r-gross').innerText = data.summary.gross;
         document.getElementById('r-disc').innerText = data.summary.disc;
-        document.getElementById('r-net').innerText = parseFloat(data.summary.net).toFixed(2);
-        
-        const savings = parseFloat(data.summary.disc);
-        if (savings > 0) {
-            document.getElementById('r-saving').innerText = savings.toFixed(2);
-        } else {
-            document.getElementById('r-savingRow').style.display = 'none';
-        }
+        document.getElementById('r-net').innerText = data.summary.net;
+        document.getElementById('r-saving').innerText = data.summary.disc;
 
-        // Tax Block formatting
         if(taxMode === "WITH_GST") {
             document.getElementById('r-taxSection').style.display = "block";
-            
             const totalGst = parseFloat(data.summary.gst) || 0;
-            const netAmt = parseFloat(data.summary.net) || 0;
-            const taxable = netAmt - totalGst;
-            
-            const halfGst = (totalGst / 2).toFixed(2);
-            
-            // Just picking the first item's GST % for display label, or generic if mixed
-            const avgGstPerc = data.items.length > 0 ? data.items[0].gst : 0;
-
-            document.getElementById('r-taxPerc').innerText = `@${avgGstPerc}%`;
+            const net = parseFloat(data.summary.net) || 0;
+            const taxable = net - totalGst;
+            document.getElementById('r-taxPerc').innerText = `@${data.items[0]?.gst || 0}%`;
             document.getElementById('r-taxable').innerText = taxable.toFixed(2);
-            document.getElementById('r-cgst').innerText = halfGst;
-            document.getElementById('r-sgst').innerText = halfGst;
+            document.getElementById('r-sgst').innerText = (totalGst/2).toFixed(2);
+            document.getElementById('r-cgst').innerText = (totalGst/2).toFixed(2);
         }
 
-        // Auto print
-        setTimeout(() => { window.print(); }, 500);
+        // Trigger Print
+        setTimeout(() => { 
+            window.print();
+            // Optional: window.close(); 
+        }, 500);
     };
 </script>
-
 </body>
 </html>
