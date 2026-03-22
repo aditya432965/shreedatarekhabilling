@@ -10,6 +10,7 @@
         --secondary: #001f3f;
         --accent: #10b981;
         --bg: #0b0f19;
+        --thermal: #7c3aed;
     }
     * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
     body { background: var(--bg); color: white; padding: 15px; }
@@ -27,80 +28,62 @@
         margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; 
     }
     input { 
-        padding: 10px; border-radius: 6px; border: 1px solid #334155; 
+        padding: 10px; border-radius: 8px; border: 1px solid #334155; 
         background: #0b0f19; color: white; outline: none; flex: 1; min-width: 180px;
     }
 
     /* Table & Mobile Responsive Layout */
     .table-container { background: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { background: #334155; padding: 15px; color: #a0d8ef; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    th { background: #334155; padding: 15px; color: #a0d8ef; font-size: 13px; text-transform: uppercase; }
     td { padding: 12px 15px; border-bottom: 1px solid #334155; font-size: 14px; }
     tr:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
 
-    /* Mobile "Card" View */
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .badge-gst { background: var(--accent); color: white; }
+    .badge-cash { background: #f59e0b; color: white; }
+
+    /* Mobile View */
     @media (max-width: 768px) {
         thead { display: none; }
-        tr { 
-            display: block; border-bottom: 8px solid #0b0f19; 
-            padding: 10px; background: #1e293b;
-        }
-        td { 
-            display: flex; justify-content: space-between; padding: 8px 5px; 
-            border: none; text-align: right; font-size: 13px;
-        }
-        td::before { 
-            content: attr(data-label); font-weight: bold; color: #a0d8ef; 
-            text-align: left; flex: 1;
-        }
+        tr { display: block; border-bottom: 8px solid #0b0f19; padding: 10px; background: #1e293b; }
+        td { display: flex; justify-content: space-between; padding: 8px 5px; border: none; text-align: right; }
+        td::before { content: attr(data-label); font-weight: bold; color: #a0d8ef; text-align: left; flex: 1; }
         .header-section { flex-direction: column; gap: 10px; text-align: center; }
-        .filter-bar { flex-direction: column; align-items: stretch; }
-        .btn-header-group { display: flex; gap: 5px; width: 100%; }
-        .btn-header-group .btn { flex: 1; }
     }
 
     /* Modal - Invoice Style */
     .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); padding: 10px; overflow-y: auto; align-items: center; justify-content: center; }
-    .modal-content { background: white; color: black; max-width: 700px; width: 100%; margin: auto; padding: 25px; border-radius: 12px; }
-    .modal-header { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+    .modal-content { background: white; color: black; max-width: 600px; width: 100%; margin: auto; padding: 20px; border-radius: 12px; }
     
-    .customer-info-box { background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid var(--primary); margin-bottom: 15px; }
+    .customer-info-box { background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid var(--primary); margin: 15px 0; }
 
     /* Buttons */
-    .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; font-size: 13px; border-bottom: 2px solid rgba(0,0,0,0.1); }
+    .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; font-size: 12px; text-align: center; }
     .btn-back { background: #334155; color: white; }
-    .btn-print { background: var(--primary); color: white; }
-    .btn-gst { background: #10b981; color: white; }
-    .btn-modify { background: #f59e0b; color: white; }
-    .btn-close { background: #ef4444; color: white; width: 100%; margin-top: 15px; }
+    .btn-thermal { background: var(--thermal); color: white; }
+    .btn-normal { background: var(--primary); color: white; }
+    .btn-close { background: #ef4444; color: white; }
 
-    @media print {
-        body * { visibility: hidden; }
-        .modal-content, .modal-content * { visibility: visible; }
-        .modal-content { position: absolute; left: 0; top: 0; width: 100%; border: none; }
-        .btn, .btn-close { display: none !important; }
-    }
+    .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
 </style>
 </head>
 <body>
 
 <div class="header-section">
     <div>
-        <h2 style="color: #a0d8ef;">Sales Ledger</h2>
-        <p style="font-size: 11px; opacity: 0.7;">Shree Datarekha Enterprises</p>
+        <h2 style="color: #a0d8ef;">Sales Records</h2>
+        <p style="font-size: 11px; opacity: 0.7;">View and Print Invoices</p>
     </div>
-    <div class="btn-header-group">
-        <a href="sale-entry.html" class="btn btn-gst">+ Add Sale</a>
-        <a href="sale-entry.html" class="btn btn-back">← Back</a>
+    <div style="display: flex; gap: 10px;">
+        <a href="add-sale.html" class="btn btn-normal">+ New Sale</a>
+        <a href="add-sale.html" class="btn btn-back">Back</a>
     </div>
 </div>
 
 <div class="filter-bar">
-    <input type="text" id="searchBar" placeholder="🔍 Search Customer or Bill..." oninput="filterSales()">
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <label style="font-size: 12px; color: #a0d8ef;">Date:</label>
-        <input type="date" id="dateFilter" onchange="filterSales()">
-    </div>
+    <input type="text" id="searchBar" placeholder="🔍 Search Customer or Bill No..." oninput="filterSales()">
+    <input type="date" id="dateFilter" onchange="filterSales()">
 </div>
 
 <div class="table-container">
@@ -108,10 +91,10 @@
         <thead>
             <tr>
                 <th>Bill No</th>
+                <th>Type</th>
                 <th>Date</th>
                 <th>Customer Name</th>
-                <th>Total</th>
-                <th>Paid</th>
+                <th>Net Total</th>
                 <th>Balance</th>
                 <th>Action</th>
             </tr>
@@ -122,46 +105,41 @@
 
 <div id="invoiceModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
-                <h1 style="color: #007ea7; margin:0; font-size: 24px;">INVOICE</h1>
-                <p style="margin:0; font-size: 12px; color: #666;">Tax / Cash Bill</p>
+                <h2 id="invTypeLabel" style="margin:0; color: #007ea7;">INVOICE</h2>
+                <p id="invBillNo" style="font-weight: bold; font-size: 18px;"></p>
             </div>
             <div style="text-align: right;">
-                <h3 id="invBillNo" style="margin:0; color: #333;"></h3>
-                <p id="invDate" style="margin:0; font-size: 13px; font-weight: bold;"></p>
+                <p id="invDate" style="color: #666;"></p>
             </div>
         </div>
 
         <div class="customer-info-box">
-            <p id="invCustName" style="font-weight: 800; font-size: 1.1em; color: #000; margin-bottom: 3px;"></p>
-            <p id="invCustMeta" style="font-size: 13px; color: #555;"></p>
+            <p id="invCustName" style="font-weight: 800; font-size: 1.1em; color: #000;"></p>
+            <p id="invCustMeta" style="font-size: 12px; color: #555; margin-top: 5px;"></p>
         </div>
 
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; color: black;">
-                <thead>
-                    <tr style="background: #f1f5f9; border-bottom: 2px solid #ddd;">
-                        <th style="padding: 8px; font-size: 12px; color: #333;">Item</th>
-                        <th style="padding: 8px; font-size: 12px; text-align:center; color: #333;">Qty</th>
-                        <th style="padding: 8px; font-size: 12px; text-align:right; color: #333;">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="invItems"></tbody>
-            </table>
+        <table style="width: 100%; border-collapse: collapse; color: black; font-size: 13px;">
+            <thead>
+                <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                    <th style="padding: 8px 0;">Item</th>
+                    <th style="padding: 8px 0; text-align:center;">Qty</th>
+                    <th style="padding: 8px 0; text-align:right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="invItems"></tbody>
+        </table>
+
+        <div style="text-align: right; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+            <p style="font-size: 14px;">Net Total: <strong id="invNet" style="font-size: 18px; color: #10b981;">0.00</strong></p>
+            <p style="font-size: 12px; color: #ef4444;">Balance Due: <span id="invBalance">0.00</span></p>
         </div>
 
-        <div style="text-align: right; line-height: 1.8; border-top: 1px dashed #ccc; padding-top: 10px;">
-            <p>Net Amount: <strong id="invNet">0.00</strong></p>
-            <p>Paid: <span id="invPaid" style="color: #10b981;">0.00</span></p>
-            <p>Remaining: <strong id="invBalance" style="color: #ef4444; font-size: 1.1em;">0.00</strong></p>
-        </div>
-
-        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button class="btn btn-gst" onclick="reprintBill('WITH_GST')">Print GST</button>
-            <button class="btn btn-print" onclick="reprintBill('WITHOUT_GST')">Print Cash</button>
-            <button class="btn btn-modify" onclick="openModifier()">Edit Bill</button>
-            <button class="btn btn-back" onclick="closeModal()">Close View</button>
+        <div class="print-grid">
+            <button class="btn btn-thermal" onclick="reprint('thermal.html')">Print Thermal</button>
+            <button class="btn btn-normal" onclick="reprint('print.html')">Print A4/A5</button>
+            <button class="btn btn-back" style="grid-column: span 2;" onclick="closeModal()">Close View</button>
         </div>
     </div>
 </div>
@@ -173,12 +151,9 @@ import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/fir
 let allSales = [];
 let selectedSale = null;
 
-// Auth Check
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
-
 async function fetchSales() {
     const log = document.getElementById('salesLog');
-    log.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px;">⚡ Connecting to Cloud Database...</td></tr>`;
+    log.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading Sales...</td></tr>`;
 
     try {
         const q = query(collection(db, "sales"), orderBy("createdAt", "desc"));
@@ -187,31 +162,37 @@ async function fetchSales() {
         allSales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         render(allSales);
     } catch (e) {
-        log.innerHTML = `<tr><td colspan="7" style="color: #ff4d4d;">❌ Error Loading: ${e.message}</td></tr>`;
+        log.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center;">Error: ${e.message}</td></tr>`;
     }
 }
 
 function render(data) {
     const log = document.getElementById('salesLog');
-    log.innerHTML = data.length === 0 ? `<tr><td colspan="7" style="text-align:center; padding:20px;">No sales records found.</td></tr>` : "";
+    log.innerHTML = "";
 
     data.forEach(sale => {
-        const net = parseFloat(sale.netTotal || 0);
+        // Match the data structure from add-sale.html
+        const net = parseFloat(sale.summary?.net || sale.netTotal || 0);
         const paid = parseFloat(sale.paid || 0);
         const bal = net - paid;
+        const isGST = sale.taxMode === "WITH_GST";
 
         const row = document.createElement('tr');
         row.onclick = () => showInvoice(sale.id);
         row.innerHTML = `
             <td data-label="Bill No"><strong>${sale.billNo}</strong></td>
+            <td data-label="Type">
+                <span class="badge ${isGST ? 'badge-gst' : 'badge-cash'}">${isGST ? 'GST' : 'CASH'}</span>
+            </td>
             <td data-label="Date">${sale.date}</td>
             <td data-label="Customer">${sale.customerName}</td>
             <td data-label="Total">₹${net.toFixed(2)}</td>
-            <td data-label="Paid">₹${paid.toFixed(2)}</td>
-            <td data-label="Balance" style="color: ${bal > 1 ? '#ef4444' : '#10b981'}; font-weight: bold;">
+            <td data-label="Balance" style="color: ${bal > 0 ? '#ef4444' : '#10b981'}; font-weight: bold;">
                 ₹${bal.toFixed(2)}
             </td>
-            <td data-label="Action"><button class="btn btn-print" style="padding: 4px 10px; font-size: 11px;">Details</button></td>
+            <td data-label="Action">
+                <button class="btn btn-normal" style="padding: 5px 10px; font-size: 10px;">View</button>
+            </td>
         `;
         log.appendChild(row);
     });
@@ -222,7 +203,7 @@ window.filterSales = function() {
     const date = document.getElementById('dateFilter').value;
 
     const filtered = allSales.filter(s => {
-        const matchText = s.customerName.toLowerCase().includes(text) || s.billNo.toLowerCase().includes(text);
+        const matchText = s.customerName.toLowerCase().includes(text) || s.billNo.toString().includes(text);
         const matchDate = date ? s.date === date : true;
         return matchText && matchDate;
     });
@@ -233,52 +214,43 @@ window.showInvoice = function(id) {
     selectedSale = allSales.find(s => s.id === id);
     if (!selectedSale) return;
 
-    const net = parseFloat(selectedSale.netTotal || 0);
+    const net = parseFloat(selectedSale.summary?.net || selectedSale.netTotal || 0);
     const paid = parseFloat(selectedSale.paid || 0);
 
-    document.getElementById('invBillNo').innerText = "Bill: " + selectedSale.billNo;
-    document.getElementById('invDate').innerText = selectedSale.date;
-    document.getElementById('invCustName').innerText = selectedSale.customerName || "Walking Customer";
-    document.getElementById('invCustMeta').innerText = selectedSale.custMeta || "Contact details N/A";
+    document.getElementById('invTypeLabel').innerText = selectedSale.taxMode === "WITH_GST" ? "TAX INVOICE" : "CASH MEMO";
+    document.getElementById('invBillNo').innerText = "Bill #" + selectedSale.billNo;
+    document.getElementById('invDate').innerText = "Date: " + selectedSale.date;
+    document.getElementById('invCustName').innerText = selectedSale.customerName;
+    document.getElementById('invCustMeta').innerText = selectedSale.custMeta || "";
 
-    const itemHtml = (selectedSale.items || []).map(i => `
-        <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 10px;">${i.name}</td>
-            <td style="padding: 10px; text-align:center;">${i.qty}</td>
-            <td style="padding: 10px; text-align:right;">₹${parseFloat(i.net || 0).toFixed(2)}</td>
+    const items = selectedSale.items || [];
+    document.getElementById('invItems').innerHTML = items.map(i => `
+        <tr style="border-bottom: 1px solid #f1f1f1;">
+            <td style="padding: 8px 0;">${i.name}</td>
+            <td style="padding: 8px 0; text-align:center;">${i.qty}</td>
+            <td style="padding: 8px 0; text-align:right;">₹${parseFloat(i.net || 0).toFixed(2)}</td>
         </tr>
     `).join('');
 
-    document.getElementById('invItems').innerHTML = itemHtml;
     document.getElementById('invNet').innerText = "₹" + net.toFixed(2);
-    document.getElementById('invPaid').innerText = "₹" + paid.toFixed(2);
     document.getElementById('invBalance').innerText = "₹" + (net - paid).toFixed(2);
 
     document.getElementById('invoiceModal').style.display = "flex";
 };
 
-window.reprintBill = function(mode) {
+window.reprint = function(page) {
     if(!selectedSale) return;
-    const data = {
-        taxMode: mode,
-        billNo: selectedSale.billNo,
-        date: selectedSale.date,
-        custName: selectedSale.customerName,
-        custMeta: selectedSale.custMeta || "",
-        items: selectedSale.items,
-        summary: { net: selectedSale.netTotal, paid: selectedSale.paid }
-    };
-    localStorage.setItem("lastBill", JSON.stringify(data));
-    window.open('print.html', '_blank');
-};
-
-window.openModifier = function() {
-    if(!selectedSale) return;
-    localStorage.setItem("editBillNo", selectedSale.billNo);
-    window.location.href = 'modify-sale.html';
+    // Prepare data in the same format add-sale.html uses for printing
+    localStorage.setItem("lastBill", JSON.stringify(selectedSale));
+    window.open(page, '_blank');
 };
 
 window.closeModal = () => document.getElementById('invoiceModal').style.display = "none";
+
+// Close modal when clicking outside
+window.onclick = (e) => {
+    if (e.target.className === 'modal') closeModal();
+};
 
 fetchSales();
 </script>
