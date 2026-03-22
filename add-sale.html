@@ -40,12 +40,46 @@
         .btn-new { background: #007ea7; color: white; }
         .btn-print { background: #f59e0b; color: white; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0,126,167,0.3);
+        }
+        .modal-btns { display: flex; gap: 15px; margin-top: 20px; }
+        .btn-thermal { background: #7c3aed; color: white; }
+        .btn-normal { background: #007ea7; color: white; }
     </style>
 </head>
 <body>
 
 <datalist id="customerList"></datalist>
 <datalist id="itemList"></datalist>
+
+<div id="printModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Select Print Format</h3>
+        <p style="margin: 10px 0; color: #94a3b8;">Choose how you want to print the bill</p>
+        <div class="modal-btns">
+            <button class="btn-thermal" onclick="window.finalPrint('thermal.html')">Thermal Bill</button>
+            <button class="btn-normal" onclick="window.finalPrint('print.html')">Normal Bill</button>
+        </div>
+    </div>
+</div>
 
 <div class="header-section">
     <div>
@@ -192,10 +226,7 @@ window.autoFillByName = function(input) {
     if(item) {
         const baseRate = item.sale || 0;
         const gstPerc = item.gst || 0;
-        
-        // FIX: Taking group name directly from the item data (from add-item.html)
         row.querySelector('.i-group').value = item.group || ''; 
-        
         row.querySelector('.mrp').value = item.mrp || 0;
         row.querySelector('.gst').value = gstPerc;
         row.querySelector('.rate').dataset.baseRate = baseRate;
@@ -205,7 +236,6 @@ window.autoFillByName = function(input) {
         } else {
             row.querySelector('.rate').value = baseRate;
         }
-        
         window.calculateFinal();
     }
 };
@@ -215,7 +245,6 @@ window.handleTaxModeChange = function() {
         const baseRate = parseFloat(row.querySelector('.rate').dataset.baseRate) || 0;
         const gstPerc = parseFloat(row.querySelector('.gst').value) || 0;
         const mode = document.getElementById('taxMode').value;
-        
         if(mode === "WITHOUT_GST") {
             row.querySelector('.rate').value = (baseRate * (1 + gstPerc/100)).toFixed(2);
         } else {
@@ -228,16 +257,13 @@ window.handleTaxModeChange = function() {
 window.calculateFinal = function() {
     let tGross = 0, tDisc = 0, tGst = 0, tNet = 0;
     const mode = document.getElementById('taxMode').value;
-
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const displayedRate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const dPerc = parseFloat(row.querySelector('.disc').value) || 0;
         const schmAmt = parseFloat(row.querySelector('.schm').value) || 0;
         const gPerc = parseFloat(row.querySelector('.gst').value) || 0;
-
         let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
-
         if (mode === "WITHOUT_GST") {
             const subtotal = displayedRate * qty;
             rowDisc = (subtotal * (dPerc/100)) + (schmAmt * qty);
@@ -253,29 +279,29 @@ window.calculateFinal = function() {
             rowNet = taxable + rowGst;
             rowGross = subtotal;
         }
-
         row.querySelector('.net').value = rowNet.toFixed(2);
         tGross += rowGross;
         tDisc += rowDisc;
         tGst += rowGst;
         tNet += rowNet;
     });
-
     document.getElementById('sumTotalSale').innerText = tGross.toFixed(2);
     document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
     document.getElementById('sumGST').innerText = (mode === "WITHOUT_GST") ? "0.00" : tGst.toFixed(2);
-    
     const finalRounded = Math.round(tNet);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
-    
     const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
     document.getElementById('sumBalance').innerText = (finalRounded - paid).toFixed(2);
 };
 
+window.finalPrint = function(page) {
+    window.open(page, '_blank');
+    location.reload();
+}
+
 window.saveSale = async function(shouldPrint = false) {
     const partyName = document.getElementById('partySearch').value;
     if(!partyName) return alert("Select a Customer!");
-
     const billItems = [];
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const name = row.querySelector('.i-name').value;
@@ -284,7 +310,6 @@ window.saveSale = async function(shouldPrint = false) {
             const dispRate = parseFloat(row.querySelector('.rate').value) || 0;
             const qty = parseFloat(row.querySelector('.qty').value) || 0;
             const gstP = parseFloat(row.querySelector('.gst').value) || 0;
-            
             let reportGstAmt = 0;
             if(mode === "WITHOUT_GST") {
                 const total = dispRate * qty;
@@ -293,9 +318,8 @@ window.saveSale = async function(shouldPrint = false) {
                 const disc = (dispRate * qty) * (parseFloat(row.querySelector('.disc').value)/100);
                 reportGstAmt = (dispRate * qty - disc) * (gstP/100);
             }
-
             billItems.push({
-                group: row.querySelector('.i-group').value, // Correct group saved here
+                group: row.querySelector('.i-group').value,
                 name: name,
                 qty: qty,
                 rate: dispRate,
@@ -331,11 +355,12 @@ window.saveSale = async function(shouldPrint = false) {
 
         if (shouldPrint) {
             localStorage.setItem("lastBill", JSON.stringify(saleData));
-            window.open('print.html', '_blank');
+            // OPEN MODAL INSTEAD OF DIRECT PRINT
+            document.getElementById('printModal').style.display = 'flex';
         } else {
             alert("Success! Saved for Tax Reports.");
+            location.reload();
         }
-        location.reload();
     } catch (e) { alert("Error: " + e.message); }
 };
 
@@ -362,3 +387,4 @@ init();
 </script>
 </body>
 </html>
+
