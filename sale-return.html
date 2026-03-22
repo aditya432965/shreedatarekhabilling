@@ -3,172 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sale Return Entry | Shree Datarekha Enterprises</title>
+    <title>Sale Return | Shree Datarekha Enterprises</title>
     <style>
         :root {
-            --primary: #ff2f92;
-            --primary-light: #ffb3d9;
-            --bg-dark: #1a0510;
-            --accent-green: #00ff88;
-            --accent-orange: #ff9800;
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --accent: #ff2f92;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-muted: #94a3b8;
+            --success: #10b981;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
         body {
-            background: linear-gradient(135deg, #2b000f, #5c0a2e, #8e1446);
-            color: #fff;
+            background-color: var(--bg);
+            color: #f8fafc;
             padding: 20px;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: auto;
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 15px;
+        /* Header Section */
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; padding: 20px;
+            background: var(--card-bg); border-radius: 16px;
+            border-left: 6px solid var(--primary);
         }
 
-        .title { font-size: 24px; font-weight: 700; color: var(--primary-light); }
+        h2 { font-weight: 700; letter-spacing: -0.5px; }
 
-        /* SEARCH SECTION */
-        .search-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 12px;
+        /* Search Bar */
+        .search-section {
+            display: grid; grid-template-columns: 1.5fr 2fr 1fr; gap: 20px;
+            background: var(--card-bg); padding: 25px;
+            border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
-        .input-group label { font-size: 12px; color: var(--primary-light); font-weight: bold; }
-
-        input, select {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px;
-            border-radius: 8px;
-            color: white;
-            outline: none;
-        }
-        input:focus { border-color: var(--primary); }
-
-        /* TABLE SECTION */
-        .table-container {
-            overflow-x: auto;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
-        th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 14px; }
-        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
+        .input-box label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; }
         
-        .row-qty { width: 80px; text-align: center; font-weight: bold; background: rgba(255,47,146,0.1); }
-        .row-reason { width: 150px; background: #000; border: 1px solid #444; }
+        input, select {
+            width: 100%; padding: 12px; border-radius: 8px;
+            background: #0f172a; border: 1px solid #334155;
+            color: white; font-size: 14px; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.2); }
+        .read-only { opacity: 0.7; cursor: not-allowed; background: #1e293b; }
 
-        /* STOCK INSIGHT BOX */
-        .insight-box {
-            background: #1a0510;
-            border: 1px solid var(--primary);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
+        /* Main Table */
+        .table-container {
+            background: var(--card-bg); border-radius: 16px; overflow: hidden;
+            margin-bottom: 25px; border: 1px solid #334155;
         }
 
-        /* HISTORY BOX (New Section) */
-        .history-box {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #444;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 30px;
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #334155; padding: 15px; text-align: left; font-size: 13px; color: var(--primary); }
+        td { padding: 15px; border-bottom: 1px solid #334155; font-size: 14px; }
+        
+        .row-qty-input { width: 70px; text-align: center; border-color: var(--accent); }
+        .row-refund-input { width: 100px; color: var(--success); font-weight: bold; }
+
+        /* Summary Bar */
+        .summary-bar {
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 30px; background: #000; padding: 20px;
+            border-radius: 12px; margin-bottom: 20px;
         }
+        .total-box span { color: var(--text-muted); font-size: 14px; margin-right: 10px; }
+        .total-box strong { font-size: 24px; color: var(--success); }
 
-        .history-card {
-            background: rgba(255,255,255,0.05);
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* Stock Preview */
+        .preview-title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .stock-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stock-preview-card { background: #111827; padding: 15px; border-radius: 12px; border: 1px solid #334155; }
+        .stock-preview-card h4 { font-size: 13px; margin-bottom: 8px; }
+        .stock-preview-card .diff { color: var(--success); font-weight: bold; }
 
-        .insight-title {
-            color: var(--primary-light);
-            font-size: 18px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* Buttons */
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; width: 100%; justify-content: center; font-size: 16px; }
+        .btn-back { background: transparent; border: 1px solid #334155; color: white; text-decoration: none; font-size: 13px; }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
 
-        .stock-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .stock-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-        }
-
-        .stock-card h4 { color: var(--accent-orange); margin-bottom: 8px; font-size: 14px; }
-        .qty-row { display: flex; justify-content: space-between; margin-top: 5px; font-size: 13px; }
-        .final-qty { color: var(--accent-green); font-weight: bold; font-size: 16px; }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .btn-save { background: var(--accent-green); color: #000; width: 100%; margin-top: 20px; font-size: 16px; }
-        .btn-back { background: #555; color: white; text-decoration: none; font-size: 14px; }
-        .btn:hover { opacity: 0.9; transform: scale(1.01); }
-
+        /* History Table */
+        .history-section { background: var(--card-bg); border-radius: 16px; padding: 20px; margin-top: 40px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <div class="title">🔄 Sale Return Entry</div>
-        <a href="sale-entry.html" class="btn btn-back">⬅ Back</a>
-    </div>
+    <header class="page-header">
+        <div>
+            <h2>Sale Return Management</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Process customer returns and restore inventory</p>
+        </div>
+        <a href="sale-entry.html" class="btn btn-back">← Back to Sales</a>
+    </header>
 
-    <div class="search-grid">
-        <div class="input-group">
+    <div class="search-section">
+        <div class="input-box">
             <label>Bill Number</label>
-            <input type="text" id="billNoInput" placeholder="Enter Bill No..." onchange="fetchBillDetails()">
+            <input type="text" id="billNoSearch" placeholder="Ex: 1001" onchange="lookupBill()">
         </div>
-        <div class="input-group">
-            <label>Customer Name</label>
-            <input type="text" id="customerName" readonly placeholder="Auto-fetched">
+        <div class="input-box">
+            <label>Customer Identity</label>
+            <input type="text" id="custName" class="read-only" readonly>
         </div>
-        <div class="input-group">
-            <label>Original Date</label>
-            <input type="text" id="billDate" readonly>
+        <div class="input-box">
+            <label>Sale Date</label>
+            <input type="text" id="saleDate" class="read-only" readonly>
         </div>
     </div>
 
@@ -176,230 +126,255 @@
         <table>
             <thead>
                 <tr>
-                    <th>Item Name</th>
+                    <th>Item Description</th>
                     <th>Sold Qty</th>
-                    <th>Unit</th>
-                    <th>Rate</th>
+                    <th>Sold Rate</th>
                     <th>Return Qty</th>
+                    <th>Refund Rate (Adj)</th>
                     <th>Reason</th>
-                    <th>Total Refund</th>
+                    <th style="text-align:right;">Line Total</th>
                 </tr>
             </thead>
-            <tbody id="returnTableBody">
-                <tr><td colspan="7" style="text-align:center; padding:30px; color:#888;">Enter Bill Number to load items...</td></tr>
+            <tbody id="returnList">
+                <tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-muted);">Please enter a valid Bill Number to begin.</td></tr>
             </tbody>
         </table>
     </div>
 
-    <div class="insight-box" id="stockInsightBox" style="display: none;">
-        <div class="insight-title">📊 Live Stock Update Preview</div>
-        <div class="stock-grid" id="stockGrid"></div>
-    </div>
-
-    <button class="btn btn-save" onclick="saveReturnEntry()">💾 Save Sale Return & Update Stock</button>
-
-    <div class="history-box">
-        <div class="insight-title">📜 Recent Returns History</div>
-        <div id="historyList">
-            <p style="color:#888; text-align:center;">Loading history...</p>
+    <div class="summary-bar">
+        <div class="total-box">
+            <span>Refundable Grand Total:</span>
+            <strong id="grandRefundDisplay">₹ 0.00</strong>
         </div>
     </div>
+
+    <div id="stockInsightContainer" style="display:none;">
+        <div class="preview-title">⚡ Inventory Impact Preview</div>
+        <div class="stock-preview-grid" id="stockPreview"></div>
+    </div>
+
+    <button class="btn btn-primary" onclick="processReturn()">Confirm & Finalize Return</button>
+
+    <section class="history-section">
+        <div class="preview-title">📅 Recent Return Transactions</div>
+        <div class="table-container" style="margin-bottom:0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Bill #</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </section>
 </div>
 
 <script type="module">
     import { db } from './firebase-config.js';
     import { 
-        collection, getDocs, query, where, addDoc, serverTimestamp, orderBy, limit 
+        collection, getDocs, query, where, addDoc, serverTimestamp, orderBy, limit, doc, getDoc, updateDoc, increment 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    let activeBillItems = [];
-    let currentStockData = {};
+    let activeBillData = null;
+    let masterStock = {};
 
-    /* LOAD HISTORY ON START */
-    window.addEventListener('load', fetchReturnsHistory);
-
-    /* 1. FETCH BILL DETAILS */
-    window.fetchBillDetails = async function() {
-        const billNo = document.getElementById("billNoInput").value;
-        const tbody = document.getElementById("returnTableBody");
+    // 1. Find the Bill
+    window.lookupBill = async function() {
+        const billNo = document.getElementById('billNoSearch').value;
+        const tbody = document.getElementById('returnList');
         if(!billNo) return;
 
-        tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Searching Bill...</td></tr>";
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">🔍 Searching database...</td></tr>`;
 
         try {
             const q = query(collection(db, "sales"), where("billNo", "==", billNo));
             const snap = await getDocs(q);
 
             if(snap.empty) {
-                alert("Bill not found!");
-                tbody.innerHTML = "";
+                alert("Transaction not found in records.");
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Bill not found</td></tr>`;
                 return;
             }
 
-            const data = snap.docs[0].data();
-            document.getElementById("customerName").value = data.customerName || "N/A";
-            document.getElementById("billDate").value = data.date || "N/A";
+            activeBillData = snap.docs[0].data();
+            activeBillData.id = snap.docs[0].id;
+
+            document.getElementById('custName').value = activeBillData.customerName;
+            document.getElementById('saleDate').value = activeBillData.date;
             
-            activeBillItems = data.items;
-            renderReturnTable();
-            loadCurrentStock(); 
-        } catch (e) {
+            renderItems(activeBillData.items);
+            fetchLiveStock(activeBillData.items);
+
+        } catch (e) { console.error(e); }
+    };
+
+    // 2. Render Items for Return
+    function renderItems(items) {
+        const tbody = document.getElementById('returnList');
+        tbody.innerHTML = "";
+
+        items.forEach((item, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${item.name}</strong></td>
+                <td>${item.qty}</td>
+                <td>₹ ${item.rate}</td>
+                <td>
+                    <input type="number" class="row-qty-input" value="0" min="0" max="${item.qty}" 
+                    oninput="calculateTotals()" id="qty-${idx}">
+                </td>
+                <td>
+                    <input type="number" class="row-refund-input" value="${item.rate}" 
+                    oninput="calculateTotals()" id="rate-${idx}">
+                </td>
+                <td>
+                    <select id="reason-${idx}">
+                        <option value="Damaged">Damaged</option>
+                        <option value="Customer Dissatisfied">Customer Dissatisfied</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Incorrect Item">Incorrect Item</option>
+                    </select>
+                </td>
+                <td style="text-align:right; font-weight:bold; color:var(--success);">
+                    ₹ <span id="line-${idx}">0.00</span>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // 3. Calculation Engine
+    window.calculateTotals = function() {
+        let grand = 0;
+        const preview = document.getElementById('stockPreview');
+        preview.innerHTML = "";
+        document.getElementById('stockInsightContainer').style.display = "block";
+
+        activeBillData.items.forEach((item, idx) => {
+            const rQty = parseFloat(document.getElementById(`qty-${idx}`).value) || 0;
+            const rRate = parseFloat(document.getElementById(`rate-${idx}`).value) || 0;
+            const lineTotal = rQty * rRate;
+            
+            document.getElementById(`line-${idx}`).innerText = lineTotal.toFixed(2);
+            grand += lineTotal;
+
+            // Update Stock Preview
+            const cur = masterStock[item.name] || 0;
+            preview.innerHTML += `
+                <div class="stock-preview-card">
+                    <h4>${item.name}</h4>
+                    <div style="font-size:12px; display:flex; justify-content:space-between;">
+                        <span>Current: ${cur}</span>
+                        <span class="diff">+${rQty}</span>
+                    </div>
+                    <div style="font-size:14px; margin-top:5px; border-top:1px solid #334155; padding-top:5px;">
+                        New Stock: <strong>${cur + rQty}</strong>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('grandRefundDisplay').innerText = `₹ ${grand.toFixed(2)}`;
+    };
+
+    // 4. Fetch Master Stock for the Items
+    async function fetchLiveStock(items) {
+        for(let item of items) {
+            const q = query(collection(db, "items"), where("name", "==", item.name));
+            const snap = await getDocs(q);
+            if(!snap.empty) {
+                masterStock[item.name] = parseFloat(snap.docs[0].data().stock || 0);
+            }
+        }
+        calculateTotals();
+    }
+
+    // 5. Process Return
+    window.processReturn = async function() {
+        if(!activeBillData) return alert("No active bill selected.");
+        
+        const returnEntries = [];
+        let grandTotal = 0;
+
+        activeBillData.items.forEach((item, idx) => {
+            const rQty = parseFloat(document.getElementById(`qty-${idx}`).value) || 0;
+            const rRate = parseFloat(document.getElementById(`rate-${idx}`).value) || 0;
+            
+            if(rQty > 0) {
+                returnEntries.push({
+                    name: item.name,
+                    qty: rQty,
+                    refundRate: rRate,
+                    reason: document.getElementById(`reason-${idx}`).value
+                });
+                grandTotal += (rQty * rRate);
+            }
+        });
+
+        if(returnEntries.length === 0) return alert("Please specify return quantities.");
+
+        if(!confirm(`Confirm Refund of ₹${grandTotal.toFixed(2)}? Stock will be adjusted automatically.`)) return;
+
+        try {
+            // A. Save Return Record
+            await addDoc(collection(db, "saleReturns"), {
+                billNo: activeBillData.billNo,
+                customerName: activeBillData.customerName,
+                items: returnEntries,
+                totalRefund: grandTotal,
+                timestamp: serverTimestamp()
+            });
+
+            // B. Update Master Inventory (The Proper Logic)
+            for(let retItem of returnEntries) {
+                const q = query(collection(db, "items"), where("name", "==", retItem.name));
+                const snap = await getDocs(q);
+                if(!snap.empty) {
+                    const itemDocRef = doc(db, "items", snap.docs[0].id);
+                    await updateDoc(itemDocRef, {
+                        stock: increment(retItem.qty)
+                    });
+                }
+            }
+
+            alert("Return processed successfully. Stock updated.");
+            location.reload();
+
+        } catch (e) { 
             console.error(e);
-            alert("Error fetching bill data");
+            alert("Error: " + e.message);
         }
     };
 
-    /* 2. RENDER TABLE */
-    function renderReturnTable() {
-        const tbody = document.getElementById("returnTableBody");
-        tbody.innerHTML = "";
-
-        activeBillItems.forEach((item, index) => {
-            tbody.innerHTML += `
+    // 6. History Loader
+    async function loadHistory() {
+        const historyBody = document.getElementById('historyBody');
+        const q = query(collection(db, "saleReturns"), orderBy("timestamp", "desc"), limit(5));
+        const snap = await getDocs(q);
+        
+        historyBody.innerHTML = "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            const dateStr = d.timestamp ? d.timestamp.toDate().toLocaleDateString() : '...';
+            historyBody.innerHTML += `
                 <tr>
-                    <td>${item.name}</td>
-                    <td>${item.qty}</td>
-                    <td>${item.unit || 'PCS'}</td>
-                    <td>₹ ${item.rate}</td>
-                    <td>
-                        <input type="number" class="row-qty" value="0" min="0" max="${item.qty}" 
-                        oninput="updateInsight(${index}, this.value)" id="ret-qty-${index}">
-                    </td>
-                    <td>
-                        <select class="row-reason">
-                            <option value="Expired">Expired</option>
-                            <option value="Damaged">Damaged</option>
-                            <option value="Extra">Extra</option>
-                        </select>
-                    </td>
-                    <td style="color:var(--accent-green); font-weight:bold;">₹ <span id="refund-${index}">0.00</span></td>
+                    <td>${dateStr}</td>
+                    <td>#${d.billNo}</td>
+                    <td>${d.customerName}</td>
+                    <td>${d.items.length} Items</td>
+                    <td style="color:var(--success); font-weight:bold;">₹ ${d.totalRefund.toFixed(2)}</td>
                 </tr>
             `;
         });
     }
 
-    /* 3. STOCK LOGIC */
-    async function loadCurrentStock() {
-        const grid = document.getElementById("stockGrid");
-        grid.innerHTML = "Loading Stock Data...";
-        document.getElementById("stockInsightBox").style.display = "block";
-
-        try {
-            for (let item of activeBillItems) {
-                const q = query(collection(db, "items"), where("name", "==", item.name));
-                const snap = await getDocs(q);
-                currentStockData[item.name] = !snap.empty ? parseFloat(snap.docs[0].data().stock || 0) : 0;
-            }
-            updateInsight();
-        } catch (e) { console.error(e); }
-    }
-
-    window.updateInsight = function(index, value) {
-        if(index !== undefined) {
-            const rate = activeBillItems[index].rate;
-            document.getElementById(`refund-${index}`).innerText = (parseFloat(value) * rate).toFixed(2);
-        }
-
-        const grid = document.getElementById("stockGrid");
-        grid.innerHTML = "";
-
-        activeBillItems.forEach((item, i) => {
-            const retQty = parseFloat(document.getElementById(`ret-qty-${i}`).value) || 0;
-            const currentStock = currentStockData[item.name] || 0;
-            const finalQty = currentStock + retQty;
-
-            grid.innerHTML += `
-                <div class="stock-card">
-                    <h4>📦 ${item.name}</h4>
-                    <div class="qty-row"><span>Current Stock:</span> <span>${currentStock}</span></div>
-                    <div class="qty-row"><span>Return Add:</span> <span style="color:var(--primary);">+ ${retQty}</span></div>
-                    <div class="qty-row" style="border-top:1px solid #444; margin-top:10px; padding-top:5px;">
-                        <span>Final Predicted:</span> <span class="final-qty">${finalQty}</span>
-                    </div>
-                </div>
-            `;
-        });
-    };
-
-    /* 4. SAVE DATA */
-    window.saveReturnEntry = async function() {
-        const billNo = document.getElementById("billNoInput").value;
-        if(!billNo) return alert("Select a Bill!");
-
-        const returnDetails = {
-            billNo: billNo,
-            customerName: document.getElementById("customerName").value,
-            returnDate: serverTimestamp(),
-            returnedItems: [],
-            totalRefundAmount: 0
-        };
-
-        activeBillItems.forEach((item, i) => {
-            const qty = parseFloat(document.getElementById(`ret-qty-${i}`).value) || 0;
-            if(qty > 0) {
-                returnDetails.returnedItems.push({
-                    name: item.name,
-                    qty: qty,
-                    rate: item.rate,
-                    reason: document.querySelectorAll(".row-reason")[i].value
-                });
-                returnDetails.totalRefundAmount += (qty * item.rate);
-            }
-        });
-
-        if(returnDetails.returnedItems.length === 0) return alert("Enter return quantity!");
-
-        try {
-            await addDoc(collection(db, "saleReturns"), returnDetails);
-            alert("Return Saved Successfully! ✅");
-            location.reload();
-        } catch (e) {
-            alert("Error: " + e.message);
-        }
-    }
-
-    /* 5. FETCH HISTORY (BOX BELOW) */
-    async function fetchReturnsHistory() {
-        const container = document.getElementById("historyList");
-        try {
-            const q = query(collection(db, "saleReturns"), orderBy("returnDate", "desc"), limit(10));
-            const snap = await getDocs(q);
-
-            if(snap.empty) {
-                container.innerHTML = "<p style='text-align:center; color:#888;'>No returns found.</p>";
-                return;
-            }
-
-            container.innerHTML = "";
-            snap.forEach(doc => {
-                const data = doc.data();
-                const date = data.returnDate ? data.returnDate.toDate().toLocaleDateString() : 'Just now';
-                
-                let itemSummary = data.returnedItems.map(i => `${i.name} (${i.qty})`).join(', ');
-
-                container.innerHTML += `
-                    <div class="history-card">
-                        <div>
-                            <span style="color:var(--primary-light); font-weight:bold;">Bill #${data.billNo}</span> - 
-                            <span>${data.customerName}</span><br>
-                            <small style="color:#aaa;">Items: ${itemSummary}</small>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="color:var(--accent-green); font-weight:bold;">₹${data.totalRefundAmount.toFixed(2)}</span><br>
-                            <small style="color:#888;">${date}</small>
-                        </div>
-                    </div>
-                `;
-            });
-        } catch (e) {
-            console.error(e);
-            container.innerHTML = "<p style='color:red;'>Failed to load history.</p>";
-        }
-    }
+    loadHistory();
 
 </script>
 </body>
 </html>
-
-
-
