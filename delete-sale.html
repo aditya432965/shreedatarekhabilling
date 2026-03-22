@@ -1,86 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Delete Sale Record | Shree Datarekha Enterprises</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    :root {
-        --primary: #007ea7;
-        --danger: #ef4444;
-        --bg: #0b0f19;
-        --card: #1e293b;
-    }
-    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
-    body { background: var(--bg); color: white; padding: 20px; }
+    <meta charset="UTF-8">
+    <title>Delete Sale Record | Shree Datarekha Enterprises</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #007ea7;
+            --danger: #ef4444;
+            --bg: #0b0f19;
+            --card: #1e293b;
+            --text-dim: #94a3b8;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: white; padding: 15px; }
 
-    .container { max-width: 800px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--danger); padding-bottom: 10px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        /* Mobile Header */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            padding: 10px 0;
+        }
+        .header h2 { font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
 
-    .search-box { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 10px; }
-    input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0b0f19; color: white; outline: none; }
-    
-    .bill-preview { display: none; background: var(--card); padding: 25px; border-radius: 12px; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Search Section */
+        .search-card { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 16px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .search-group { display: flex; gap: 8px; }
+        input { 
+            flex: 1; 
+            padding: 14px; 
+            border-radius: 10px; 
+            border: 1px solid #334155; 
+            background: #0b0f19; 
+            color: white; 
+            font-size: 16px; /* Prevents iOS zoom on focus */
+            outline: none; 
+        }
+        input:focus { border-color: var(--primary); }
 
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-    .label { color: #a0d8ef; font-size: 12px; display: block; }
-    .val { font-size: 18px; font-weight: bold; }
+        /* Preview Card */
+        .bill-preview { 
+            display: none; 
+            background: var(--card); 
+            border-radius: 16px; 
+            overflow: hidden;
+            animation: slideUp 0.3s ease-out;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .warning-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+        .preview-header { 
+            background: rgba(239, 68, 68, 0.1); 
+            padding: 15px; 
+            text-align: center;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .info-row { 
+            padding: 15px; 
+            border-bottom: 1px solid #334155; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .info-row:last-of-type { border-bottom: none; }
+        
+        .label { color: var(--text-dim); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .val { font-size: 16px; font-weight: 600; text-align: right; }
 
-    .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; }
-    .btn-search { background: var(--primary); color: white; }
-    .btn-delete { background: var(--danger); color: white; width: 100%; margin-top: 10px; }
-    .btn-cancel { background: #444; color: white; }
+        /* Buttons */
+        .btn { 
+            padding: 14px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 14px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .btn-search { background: var(--primary); color: white; min-width: 80px; }
+        .btn-back { background: #334155; color: white; padding: 8px 15px; font-size: 12px; }
+        
+        .delete-container { padding: 15px; background: rgba(0,0,0,0.2); }
+        .btn-delete { 
+            background: var(--danger); 
+            color: white; 
+            width: 100%; 
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .btn-delete:active { transform: scale(0.98); }
 
-    /* Checkbox styling */
-    .resequence-opt { margin: 15px 0; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
-</style>
+        .btn-confirming { background: #991b1b !important; }
+
+    </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2>🗑️ Delete Sale Record</h2>
-        <a href="add-sale.html" class="btn-cancel btn" style="font-size: 12px;">Back</a>
+        <h2>🗑️ Delete Sale</h2>
+        <a href="add-sale.html" class="btn btn-back">Back</a>
     </div>
 
-    <div class="search-box">
-        <input type="text" id="deleteKey" placeholder="Enter Exact Bill No (e.g. S-1001)">
-        <button class="btn btn-search" onclick="searchForDeletion()">Find Bill</button>
+    <div class="search-card">
+        <div class="search-group">
+            <input type="text" id="deleteKey" placeholder="Bill No (e.g. 1)" inputmode="numeric">
+            <button class="btn btn-search" onclick="searchForDeletion()">Find</button>
+        </div>
     </div>
 
     <div id="deletePreview" class="bill-preview">
-        <div class="warning-box">
-            <strong>Warning:</strong> Deleting a record is permanent. This will remove the sale from your history and update your totals.
+        <div class="preview-header">
+            <span style="color: var(--danger); font-size: 14px; font-weight: bold;">Record Found</span>
         </div>
 
-        <div class="info-grid">
-            <div>
-                <span class="label">Bill No</span>
-                <span class="val" id="dispBillNo">--</span>
-            </div>
-            <div>
-                <span class="label">Date</span>
-                <span class="val" id="dispDate">--</span>
-            </div>
-            <div>
-                <span class="label">Customer</span>
-                <span class="val" id="dispCust">--</span>
-            </div>
-            <div>
-                <span class="label">Net Amount</span>
-                <span class="val" id="dispTotal" style="color: #10b981;">₹0.00</span>
-            </div>
+        <div class="info-row">
+            <span class="label">Bill Number</span>
+            <span class="val" id="dispBillNo">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Date</span>
+            <span class="val" id="dispDate">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Customer</span>
+            <span class="val" id="dispCust">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Total Amount</span>
+            <span class="val" id="dispTotal" style="color: #10b981;">₹0.00</span>
         </div>
 
-        <label class="resequence-opt">
-            <input type="checkbox" id="resequenceCheck" checked> 
-            Automatically re-sequence remaining Bill Numbers
-        </label>
-
-        <button class="btn btn-delete" onclick="executeDeletion()">Permanently Delete Bill</button>
+        <div class="delete-container">
+            <button id="deleteBtn" class="btn btn-delete" onclick="handleDeleteClick()">
+                Delete This Bill
+            </button>
+        </div>
     </div>
 </div>
 
@@ -96,77 +165,89 @@ import {
     limit 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-/* 🔐 LOGIN CHECK */
-if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
-
-/* 📦 STATE */
 let targetDocId = null;
+let isConfirming = false;
 
-/* 🔍 SEARCH FOR DELETION */
+// Search Logic
 window.searchForDeletion = async function() {
     const key = document.getElementById('deleteKey').value.trim();
-    if(!key) return alert("Please enter a Bill Number");
+    if(!key) return;
+
+    // Reset delete button state if searching again
+    resetDeleteBtn();
 
     try {
         const salesRef = collection(db, "sales");
-        // Search for the specific Bill Number
         const q = query(salesRef, where("billNo", "==", key), limit(1));
         const querySnapshot = await getDocs(q);
 
         if(!querySnapshot.empty) {
             const saleDoc = querySnapshot.docs[0];
             const sale = saleDoc.data();
-            targetDocId = saleDoc.id; // Store Firebase ID
+            targetDocId = saleDoc.id;
 
-            // Display Preview
-            document.getElementById('dispBillNo').innerText = sale.billNo;
+            document.getElementById('dispBillNo').innerText = "#" + sale.billNo;
             document.getElementById('dispDate').innerText = sale.date;
             document.getElementById('dispCust').innerText = sale.customerName;
-            document.getElementById('dispTotal').innerText = "₹" + (sale.summary?.total || sale.netTotal);
+            
+            // Handle different net total naming conventions
+            const amt = sale.summary?.net || sale.netTotal || "0.00";
+            document.getElementById('dispTotal').innerText = "₹" + amt;
             
             document.getElementById('deletePreview').style.display = 'block';
         } else {
             document.getElementById('deletePreview').style.display = 'none';
-            targetDocId = null;
-            alert("Bill not found in Cloud records.");
+            alert("Bill #" + key + " not found.");
         }
     } catch (err) {
-        console.error("Search Error:", err);
-        alert("Error searching Cloud database.");
+        alert("Error: " + err.message);
     }
 };
 
-/* 🗑️ EXECUTE DELETION */
-window.executeDeletion = async function() {
+// Mobile Friendly Double-Click Deletion
+window.handleDeleteClick = async function() {
+    const btn = document.getElementById('deleteBtn');
+
+    if (!isConfirming) {
+        // First click
+        isConfirming = true;
+        btn.innerText = "Are you sure? Tap again";
+        btn.classList.add('btn-confirming');
+        
+        // Auto-reset after 3 seconds if not clicked again
+        setTimeout(resetDeleteBtn, 3000);
+    } else {
+        // Second click (Confirmed)
+        executeDeletion();
+    }
+};
+
+function resetDeleteBtn() {
+    const btn = document.getElementById('deleteBtn');
+    isConfirming = false;
+    if(btn) {
+        btn.innerText = "Delete This Bill";
+        btn.classList.remove('btn-confirming');
+    }
+}
+
+async function executeDeletion() {
     if(!targetDocId) return;
 
-    // Double Confirmation
-    const confirm1 = confirm("Are you ABSOLUTELY sure? This will permanently remove the record from the Cloud.");
-    if(!confirm1) return;
-
-    const confirm2 = prompt("To confirm, please type 'DELETE' below:");
-    if(confirm2 !== "DELETE") {
-        alert("Deletion cancelled. Typing 'DELETE' is required.");
-        return;
-    }
-
     try {
-        // Delete from Firebase
+        const btn = document.getElementById('deleteBtn');
+        btn.innerText = "Deleting...";
+        btn.disabled = true;
+
         await deleteDoc(doc(db, "sales", targetDocId));
         
-        alert("Bill has been successfully deleted from Cloud ✅");
-        
-        // Note: Resequencing is skipped in Cloud versions to maintain 
-        // data integrity across multiple users/devices.
-        
+        alert("Bill deleted successfully.");
         location.reload();
     } catch (err) {
-        console.error("Delete Error:", err);
-        alert("Failed to delete: " + err.message);
+        alert("Delete failed: " + err.message);
+        resetDeleteBtn();
     }
-};
-
-window.goBack = () => window.location.href = "billing.html";
+}
 </script>
 </body>
 </html>
