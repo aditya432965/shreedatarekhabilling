@@ -5,8 +5,22 @@
     <title>Print Invoice</title>
     <style>
         body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
-        /* Changed width to 148mm for A4 Half (A5) size */
-        .p-container { border: 1px solid black; background: white; width: 148mm; margin: auto; padding: 2mm; }
+        
+        /* Default size: A5 (148mm) */
+        .p-container { 
+            border: 1px solid black; 
+            background: white; 
+            width: 148mm; 
+            margin: auto; 
+            padding: 2mm; 
+            transition: width 0.3s ease;
+        }
+
+        /* Class to trigger full A4 width if items don't fit */
+        .full-a4 {
+            width: 210mm !important;
+        }
+
         .p-top-bar { font-size: 10px; border-bottom: 1px solid black; padding: 2px 5px; display: flex; justify-content: space-between;}
         .p-header { display: flex; border-bottom: 1px solid black; }
         .p-comp-info { width: 60%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
@@ -35,10 +49,15 @@
         .tax-col, .tax-row { display: none; }
         body.show-gst .tax-col { display: table-cell; }
         body.show-gst .tax-row { display: table-row; }
+
+        @media print {
+            @page { margin: 0; }
+            body { margin: 0.5cm; }
+        }
     </style>
 </head>
 <body>
-    <div class="p-container">
+    <div class="p-container" id="printable-area">
         <div class="p-top-bar">
             <span>SUBJECT TO BARAMATI JURISDICTION</span>
             <span style="font-weight: bold;" id="p-invoice-type">TAX INVOICE</span>
@@ -163,6 +182,12 @@
             const data = JSON.parse(localStorage.getItem("lastBill"));
             if(!data) return;
 
+            // AUTO-SCALE LOGIC:
+            // If more than 12 items, switch to full A4 width
+            if (data.items.length > 12) {
+                document.getElementById('printable-area').classList.add('full-a4');
+            }
+
             const taxMode = (data.taxMode || "").trim().toUpperCase();
             if(taxMode === "WITH_GST") {
                 document.body.classList.add('show-gst');
@@ -174,7 +199,6 @@
 
             document.getElementById('p-billno').innerText = data.billNo;
             
-            // Format Date to DD/MM/YY
             const rawDate = new Date(data.date);
             if(!isNaN(rawDate)) {
                 const dd = String(rawDate.getDate()).padStart(2, '0');
@@ -237,4 +261,3 @@
     </script>
 </body>
 </html>
-
