@@ -25,7 +25,7 @@ body {
   color: white;
 }
 
-/* ===== DASHBOARD PANEL (Hidden during Print) ===== */
+/* ===== DASHBOARD PANEL ===== */
 .panel {
   width: 100%;
   max-width: 480px;
@@ -81,20 +81,20 @@ body {
 
 .back-btn:hover { border-color: #9ca3af; color: white; background: rgba(255,255,255,0.05); }
 
-/* ===== REPORT ALIGNMENT FIXES (ONE LINE DATE/GST) ===== */
+/* ===== REPORT ALIGNMENT ===== */
 .report-header-row {
     display: flex;
-    justify-content: space-between; /* Pushes Date to left and GST to right */
+    justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #000;
     padding: 8px 0;
     width: 100%;
-    color: black; /* For print visibility */
+    color: black;
 }
 
 .gst-group {
     display: flex;
-    gap: 15px; /* Spacing between slabs */
+    gap: 15px;
     font-size: 12px;
     font-weight: bold;
 }
@@ -110,44 +110,53 @@ body {
     border: 1px solid #ddd;
     padding: 6px;
     text-align: left;
-    font-size: 11px;
+    font-size: 11px; /* Screen size */
 }
 
-/* ===== PRINT SETTINGS (A4 & AUTO-PAGE BREAK) ===== */
+/* ===== PRINT / PDF SETTINGS ===== */
 @media print {
     @page {
         size: A4;
-        margin: 1.5cm;
+        margin: 1cm;
     }
     
     body {
         background: white !important;
         color: black !important;
-        display: block; /* Remove flex centering for print */
+        display: block;
     }
     
     .panel, .back-btn {
-        display: none; /* Hide UI when printing */
+        display: none;
     }
 
-    /* Ensure data moves to next page if it doesn't fit */
-    .report-container {
-        display: block;
-        width: 100%;
+    /* Make Font Little Larger and Little Bolder for PDF */
+    .data-table th, 
+    .data-table td {
+        font-size: 13px !important; 
+        font-weight: 500 !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+    }
+
+    .report-header-row strong,
+    .gst-group span {
+        font-size: 14px !important;
+        font-weight: 700 !important;
     }
 
     table {
         width: 100%;
-        page-break-inside: auto; /* Standard table breaking */
+        page-break-inside: auto;
     }
 
     tr {
-        page-break-inside: avoid; /* Prevents a single row from splitting across pages */
+        page-break-inside: avoid;
         page-break-after: auto;
     }
 
     thead {
-        display: table-header-group; /* Repeats table headers on every page */
+        display: table-header-group;
     }
 }
 
