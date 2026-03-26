@@ -6,39 +6,33 @@
     <style>
         body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
         
-        /* Base Container - Default A5 */
+        /* Main Border for the full bill */
         .p-container { 
             border: 1px solid black; 
             background: white; 
             width: 148mm; 
             margin: auto; 
-            padding: 2mm; 
+            padding: 0; /* Changed to 0 so internal borders touch the outer border perfectly */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
         }
 
-        /* Logic for A4 expansion */
-        .full-a4 {
-            width: 210mm !important;
-        }
+        .full-a4 { width: 210mm !important; }
 
+        /* Your specific alignment kept exactly as is */
         .p-top-bar { 
-    font-size: 9px; 
-    border-bottom: 1px solid black; 
-    padding: 2px 5px; 
-    display: flex; 
-    align-items: center;
-}
+            font-size: 9px; 
+            border-bottom: 1px solid black; 
+            padding: 2px 5px; 
+            display: flex; 
+            align-items: center;
+        }
+        .p-top-bar span { flex: 1; }
+        .p-top-bar .left { text-align: left; }
+        .p-top-bar .center { text-align: center; font-weight: bold; }
+        .p-top-bar .right { text-align: right; }
 
-/* This targets the three spans inside the bar */
-.p-top-bar span {
-    flex: 1; /* Gives each item equal width (33.33%) */
-}
-
-.p-top-bar .left { text-align: left; }
-.p-top-bar .center { text-align: center; font-weight: bold; }
-.p-top-bar .right { text-align: right; }
         .p-header { display: flex; border-bottom: 1px solid black; }
         .p-comp-info { width: 60%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
         .p-logo-print { width: 60px; height: 60px; border-radius: 50%; }
@@ -46,33 +40,40 @@
         
         /* FIXED ITEM SECTION */
         .item-section {
-            /* This ensures the table area is fixed for A5 (approx 12 items) */
             min-height: 280px; 
             border-bottom: 1px solid black;
         }
-        
-        /* Expand item section height if A4 */
-        .full-a4 .item-section {
-            min-height: 600px;
-        }
+        .full-a4 .item-section { min-height: 600px; }
 
+        /* Table styling - Removed default grid for empty rows */
         .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th, .p-table td { border: 1px solid #d1d1d1; padding: 3px; text-align: center; font-size: 9px; height: 20px; }
-        
-        .p-footer { display: flex; }
-        .p-foot-left { width: 35%; padding: 5px; } 
-        .p-foot-mid { width: 25%; padding: 5px; text-align: center; } 
-        .p-qr-img { width: 70px; height: 70px; object-fit: contain;left;padding-left: 40px; }
+        .p-table th { border: 1px solid black; padding: 1px; text-align: center; font-size: 9px; height: 20px; background: #eee; }
+        /* Only cells with content will show borders via the JS logic below */
+        .p-table td { padding: 3px; text-align: center; font-size: 9px; height: 20px; border: none; }
+        .has-border td { border: 1px solid #d1d1d1; }
+
+        .p-footer { display: flex; border-bottom:px solid black; }
+        .p-foot-left { width: 35%; padding: 5px; border-right: 1px solid black; } 
+        .p-foot-mid { width: 25%; padding: 5px; text-align: center; border-right: px solid black; } 
+        .p-qr-img { width: 70px; height: 70px; object-fit: contain; padding-left: 50px; }
         .p-foot-right { width: 40%; }
         
         .p-bank { border: 1px solid black; padding: 3px; font-size: 9px; margin-bottom: 3px; }
-        
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
         .p-totals-tbl td { border: 1px solid black; padding: 4px; text-align: right; font-size: 10px; }
         
-        .p-words { font-size: 9px; text-transform: uppercase; border-top: px solid black; padding: 20px;text-align: left;padding-left: 400px;margin-bottom: -15px;margin-top: 0px;}
+        /* Your specific alignment for words kept exactly as is */
+        .p-words { 
+            font-size: 9px; 
+            text-transform: uppercase; 
+  
+            padding: 20px;
+            text-align: left;
+            padding-left: 400px;
+            margin-bottom: -15px;
+            margin-top: 0px;
+        }
         
-        /* GST Logic */
         .tax-col, .tax-row { display: none; }
         body.show-gst .tax-col { display: table-cell; }
         body.show-gst .tax-row { display: table-row; }
@@ -85,11 +86,13 @@
     </style>
 </head>
 <body>
-   <div class="p-top-bar">
-    <span class="left">SUBJECT TO BARAMATI JURISDICTION</span>
-    <span class="center" id="p-invoice-type">TAX INVOICE</span>
-    <span class="right"> ORIGINAL</span>
-</div>
+    <div class="p-container" id="printable-area">
+        <div class="p-top-bar">
+            <span class="left">SUBJECT TO BARAMATI JURISDICTION</span>
+            <span class="center" id="p-invoice-type">TAX INVOICE</span>
+            <span class="right">ORIGINAL</span>
+        </div>
+
         <div class="p-header">
             <div class="p-comp-info">
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
@@ -135,8 +138,6 @@
                 <tbody id="p-items-body"></tbody>
             </table>
         </div>
-        
-        
 
         <div class="p-footer">
             <div class="p-foot-left">
@@ -160,10 +161,12 @@
                 </table>
             </div>
         </div>
-<div class="p-words">
+
+        <div class="p-words">
             Amount in words: <strong id="p-amount-words"></strong>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding: 0 10px 10px 10px;">
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; padding: 0 10px 10px 10px; ">
             <div style="font-size: 10px; text-align: left;"><strong>Customer Signatory</strong></div>
             <div style="font-size: 10px; text-align: right;"><strong>Authorized Signatory</strong></div>
         </div>    
@@ -216,7 +219,6 @@
             const itemCount = data.items.length;
             const container = document.getElementById('printable-area');
 
-            // Automatic size change
             if (itemCount > 12) {
                 container.classList.add('full-a4');
             }
@@ -231,7 +233,6 @@
             }
 
             document.getElementById('p-billno').innerText = data.billNo;
-            
             const rawDate = new Date(data.date);
             if(!isNaN(rawDate)) {
                 const dd = String(rawDate.getDate()).padStart(2, '0');
@@ -265,7 +266,8 @@
                 }
                 totalGstCalculated += gstAmt;
 
-                rows += `<tr>
+                // Added class "has-border" only to rows that have actual item data
+                rows += `<tr class="has-border">
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
                     <td>${item.hsn || '9109'}</td>
@@ -280,7 +282,7 @@
                 </tr>`;
             });
 
-            // ADD EMPTY ROWS to fix the table size if less than 12
+            // Empty rows are added without the "has-border" class so they appear white/clean
             if(itemCount < 12) {
                 for(let k = itemCount; k < 12; k++) {
                     rows += `<tr>
