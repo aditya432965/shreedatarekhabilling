@@ -22,6 +22,24 @@
             width: 210mm !important;
         }
 
+        /* FIX: Alignment for Reports (CA/GST Sale Register) */
+        .report-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            border-bottom: 1px solid #000;
+            padding: 2px 0;
+            margin-bottom: 5px;
+        }
+
+        .report-gst-line {
+            display: flex;
+            gap: 15px; /* Spacing between 5%, 9%, 18% */
+            white-space: nowrap;
+            font-size: 10px;
+        }
+
         .p-top-bar { font-size: 10px; border-bottom: 1px solid black; padding: 2px 5px; display: flex; justify-content: space-between;}
         .p-header { display: flex; border-bottom: 1px solid black; }
         .p-comp-info { width: 60%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
@@ -50,9 +68,9 @@
         body.show-gst .tax-row { display: table-row; }
 
         @media print {
-            @page { margin: 0; }
+            @page { size: auto; margin: 0; }
             body { margin: 0.5cm; }
-            .p-container { border: 1px solid black; }
+            .p-container { border: 1px solid black; page-break-after: always; }
         }
     </style>
 </head>
@@ -183,7 +201,7 @@
             const data = JSON.parse(localStorage.getItem("lastBill"));
             if(!data) return;
 
-            // FIX: Auto-switch from A5 to A4 if more than 12 items
+            // Auto-switch from A5 to A4 if more than 12 items
             if (data.items.length > 12) {
                 document.getElementById('printable-area').classList.add('full-a4');
             }
