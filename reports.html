@@ -25,7 +25,7 @@ body {
   color: white;
 }
 
-/* ===== DASHBOARD PANEL ===== */
+/* ===== DASHBOARD PANEL (Hidden during Print) ===== */
 .panel {
   width: 100%;
   max-width: 480px;
@@ -81,64 +81,73 @@ body {
 
 .back-btn:hover { border-color: #9ca3af; color: white; background: rgba(255,255,255,0.05); }
 
-/* ===== REPORT DATA ALIGNMENT (CA/GST) ===== */
-/* These styles apply when the specific report pages are rendered */
-.report-row {
+/* ===== REPORT ALIGNMENT FIXES (ONE LINE DATE/GST) ===== */
+.report-header-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Pushes Date to left and GST to right */
     align-items: center;
-    border-bottom: 1px solid #ccc;
-    padding: 5px 0;
+    border-bottom: 1px solid #000;
+    padding: 8px 0;
+    width: 100%;
+    color: black; /* For print visibility */
 }
 
-.gst-summary-line {
+.gst-group {
     display: flex;
-    gap: 20px; /* Distance between GST slabs */
+    gap: 15px; /* Spacing between slabs */
     font-size: 12px;
-    white-space: nowrap;
+    font-weight: bold;
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* Ensures data stays under headings */
+    margin-top: 10px;
+    color: black;
 }
 
-.data-table td {
-    padding: 8px;
+.data-table th, .data-table td {
+    border: 1px solid #ddd;
+    padding: 6px;
     text-align: left;
-    vertical-align: top;
-    word-wrap: break-word;
+    font-size: 11px;
 }
 
-/* ===== PRINT SETTINGS (A4) ===== */
+/* ===== PRINT SETTINGS (A4 & AUTO-PAGE BREAK) ===== */
 @media print {
     @page {
         size: A4;
-        margin: 1cm;
+        margin: 1.5cm;
     }
     
     body {
         background: white !important;
         color: black !important;
+        display: block; /* Remove flex centering for print */
     }
     
     .panel, .back-btn {
         display: none; /* Hide UI when printing */
     }
 
-    .print-section {
-        display: block !important;
-        page-break-after: auto;
+    /* Ensure data moves to next page if it doesn't fit */
+    .report-container {
+        display: block;
+        width: 100%;
     }
 
     table {
-        page-break-inside: auto;
+        width: 100%;
+        page-break-inside: auto; /* Standard table breaking */
     }
 
     tr {
-        page-break-inside: avoid;
+        page-break-inside: avoid; /* Prevents a single row from splitting across pages */
         page-break-after: auto;
+    }
+
+    thead {
+        display: table-header-group; /* Repeats table headers on every page */
     }
 }
 
@@ -189,16 +198,6 @@ function nav(url) {
 function goBack() {
   window.location.href = "main.html";
 }
-
-/** * Note for logic in sale-register-details.html:
- * To use the alignment fixes, ensure your dynamic HTML looks like this:
- * * <div class="report-row">
- * <span>Date: 25/03/2026</span>
- * <div class="gst-summary-line">
- * <span>5%: 0.00</span> | <span>9%: 0.00</span> | <span>18%: 0.00</span>
- * </div>
- * </div>
- */
 </script>
 
 </body>
