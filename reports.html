@@ -92,11 +92,14 @@ body {
     color: black;
 }
 
+/* FIX: Ensure GST summaries stay in ONE LINE */
 .gst-group {
     display: flex;
     gap: 15px;
     font-size: 12px;
     font-weight: bold;
+    white-space: nowrap; /* Forces one line */
+    flex-wrap: nowrap;
 }
 
 .data-table {
@@ -104,13 +107,21 @@ body {
     border-collapse: collapse;
     margin-top: 10px;
     color: black;
+    table-layout: auto;
 }
 
 .data-table th, .data-table td {
     border: 1px solid #ddd;
     padding: 6px;
     text-align: left;
-    font-size: 11px; /* Screen size */
+    font-size: 11px;
+}
+
+/* FIX: Specifically ensure GST No. column is visible and not hidden */
+.gst-no-cell {
+    min-width: 100px;
+    display: table-cell !important;
+    visibility: visible !important;
 }
 
 /* ===== PRINT / PDF SETTINGS ===== */
@@ -130,13 +141,13 @@ body {
         display: none;
     }
 
-    /* Make Font Little Larger and Little Bolder for PDF */
     .data-table th, 
     .data-table td {
         font-size: 13px !important; 
         font-weight: 500 !important;
         color: #000 !important;
         border: 1px solid #000 !important;
+        word-break: normal; /* Prevents text from disappearing */
     }
 
     .report-header-row strong,
@@ -207,6 +218,11 @@ function nav(url) {
 function goBack() {
   window.location.href = "main.html";
 }
+
+/** * Note for GST visibility: 
+ * Ensure your dynamic table cells for GST numbers use class="gst-no-cell" 
+ * and your GST summaries use the class="gst-group" structure.
+ */
 </script>
 
 </body>
