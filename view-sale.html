@@ -58,6 +58,20 @@
     
     .customer-info-box { background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid var(--primary); margin: 15px 0; }
 
+    /* Print Option Styling */
+    .print-options {
+        background: #f1f5f9;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 15px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 13px;
+        font-weight: bold;
+    }
+    .print-options input { min-width: auto; flex: none; cursor: pointer; }
+
     /* Buttons */
     .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; font-size: 12px; text-align: center; }
     .btn-back { background: #334155; color: white; }
@@ -65,7 +79,7 @@
     .btn-normal { background: var(--primary); color: white; }
     .btn-close { background: #ef4444; color: white; }
 
-    .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+    .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
 </style>
 </head>
 <body>
@@ -77,7 +91,7 @@
     </div>
     <div style="display: flex; gap: 10px;">
         <a href="add-sale.html" class="btn btn-normal">+ New Sale</a>
-        <a href="add-sale.html" class="btn btn-back">Back</a>
+        <a href="main.html" class="btn btn-back">Back</a>
     </div>
 </div>
 
@@ -136,6 +150,11 @@
             <p style="font-size: 12px; color: #ef4444;">Balance Due: <span id="invBalance">0.00</span></p>
         </div>
 
+        <div class="print-options">
+            <label><input type="radio" name="gstOption" value="WITH_GST" checked> Print With GST</label>
+            <label><input type="radio" name="gstOption" value="WITHOUT_GST"> Print Without GST</label>
+        </div>
+
         <div class="print-grid">
             <button class="btn btn-thermal" onclick="reprint('thermal.html')">Print Thermal</button>
             <button class="btn btn-normal" onclick="reprint('print.html')">Print A4/A5</button>
@@ -171,7 +190,6 @@ function render(data) {
     log.innerHTML = "";
 
     data.forEach(sale => {
-        // Match the data structure from add-sale.html
         const net = parseFloat(sale.summary?.net || sale.netTotal || 0);
         const paid = parseFloat(sale.paid || 0);
         const bal = net - paid;
@@ -235,19 +253,33 @@ window.showInvoice = function(id) {
     document.getElementById('invNet').innerText = "₹" + net.toFixed(2);
     document.getElementById('invBalance').innerText = "₹" + (net - paid).toFixed(2);
 
+    // Default the print option to the sale's actual mode
+    const options = document.getElementsByName('gstOption');
+    options.forEach(opt => {
+        if(opt.value === selectedSale.taxMode) opt.checked = true;
+    });
+
     document.getElementById('invoiceModal').style.display = "flex";
 };
 
 window.reprint = function(page) {
     if(!selectedSale) return;
-    // Prepare data in the same format add-sale.html uses for printing
-    localStorage.setItem("lastBill", JSON.stringify(selectedSale));
+    
+    // Create a clone to avoid permanently changing the fetched record in memory
+    const saleToPrint = JSON.parse(JSON.stringify(selectedSale));
+    
+    // Get the user's print choice
+    const selectedMode = document.querySelector('input[name="gstOption"]:checked').value;
+    
+    // Force the mode for the print page logic
+    saleToPrint.taxMode = selectedMode;
+
+    localStorage.setItem("lastBill", JSON.stringify(saleToPrint));
     window.open(page, '_blank');
 };
 
 window.closeModal = () => document.getElementById('invoiceModal').style.display = "none";
 
-// Close modal when clicking outside
 window.onclick = (e) => {
     if (e.target.className === 'modal') closeModal();
 };
