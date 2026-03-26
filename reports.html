@@ -81,7 +81,7 @@ body {
 
 .back-btn:hover { border-color: #9ca3af; color: white; background: rgba(255,255,255,0.05); }
 
-/* ===== REPORT ALIGNMENT ===== */
+/* ===== REPORT ALIGNMENT (DATE & GST ON ONE LINE) ===== */
 .report-header-row {
     display: flex;
     justify-content: space-between;
@@ -92,14 +92,14 @@ body {
     color: black;
 }
 
-/* FIX: Ensure GST summaries stay in ONE LINE */
-.gst-group {
-    display: flex;
-    gap: 15px;
-    font-size: 12px;
-    font-weight: bold;
-    white-space: nowrap; /* Forces one line */
-    flex-wrap: nowrap;
+/* Forces specific GST slabs to show in a horizontal line without empty space */
+.gst-group { 
+    display: flex; 
+    gap: 12px; 
+    font-size: 12px; 
+    font-weight: bold; 
+    white-space: nowrap; 
+    flex-wrap: nowrap; 
 }
 
 .data-table {
@@ -117,14 +117,13 @@ body {
     font-size: 11px;
 }
 
-/* FIX: Specifically ensure GST No. column is visible and not hidden */
 .gst-no-cell {
-    min-width: 100px;
+    min-width: 110px;
     display: table-cell !important;
     visibility: visible !important;
 }
 
-/* ===== PRINT / PDF SETTINGS ===== */
+/* ===== PRINT / PDF SETTINGS (A4 Optimized) ===== */
 @media print {
     @page {
         size: A4;
@@ -141,13 +140,14 @@ body {
         display: none;
     }
 
+    /* PDF Font: Little Larger and Bolder */
     .data-table th, 
     .data-table td {
         font-size: 13px !important; 
-        font-weight: 500 !important;
+        font-weight: 600 !important;
         color: #000 !important;
         border: 1px solid #000 !important;
-        word-break: normal; /* Prevents text from disappearing */
+        word-break: normal;
     }
 
     .report-header-row strong,
@@ -219,10 +219,12 @@ function goBack() {
   window.location.href = "main.html";
 }
 
-/** * Note for GST visibility: 
- * Ensure your dynamic table cells for GST numbers use class="gst-no-cell" 
- * and your GST summaries use the class="gst-group" structure.
- */
+/* Note for Logic: 
+   To show only the relevant GST (e.g. 5%), your Javascript should generate 
+   the .gst-group div containing ONLY that span. 
+   Example: <div class="gst-group"><span>5%: 150.00</span></div> 
+   Because of 'display: flex', it will automatically stay on the same line as the date.
+*/
 </script>
 
 </body>
