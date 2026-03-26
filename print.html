@@ -4,15 +4,21 @@
     <meta charset="UTF-8">
     <title>Print Invoice</title>
     <style>
+        /* --- ADJUSTABLE DIMENSIONS --- */
+        :root {
+            --bill-width: 195mm; /* Change this value to adjust horizontal width */
+            --item-row-height: 10px;
+        }
+
         body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
         
-        /* Main Border for the full bill */
+        /* Main Container - Width is now variable and height is reduced for 10 items */
         .p-container { 
             border: 1px solid black; 
             background: white; 
-            width: 148mm; 
+            width: var(--bill-width); 
             margin: auto; 
-            padding: 0; /* Changed to 0 so internal borders touch the outer border perfectly */
+            padding: 0; 
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -34,27 +40,26 @@
         .p-top-bar .right { text-align: right; }
 
         .p-header { display: flex; border-bottom: 1px solid black; }
-        .p-comp-info { width: 60%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
+        .p-comp-info { width: 75%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
         .p-logo-print { width: 60px; height: 60px; border-radius: 50%; }
         .p-cust-info { width: 40%; padding: 5px; }
         
-        /* FIXED ITEM SECTION */
+        /* FIXED ITEM SECTION - Reduced min-height to fit exactly 10 rows */
         .item-section {
-            min-height: 280px; 
+            min-height: 200px; 
             border-bottom: 1px solid black;
         }
         .full-a4 .item-section { min-height: 600px; }
 
-        /* Table styling - Removed default grid for empty rows */
+        /* Table styling */
         .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th { border: 1px solid black; padding: 1px; text-align: center; font-size: 9px; height: 20px; background: #eee; }
-        /* Only cells with content will show borders via the JS logic below */
-        .p-table td { padding: 3px; text-align: center; font-size: 9px; height: 20px; border: none; }
+        .p-table th { border: 1px solid black; padding: 1px; text-align: center; font-size: 9px; height: var(--item-row-height); background: #eee; }
+        .p-table td { padding: 3px; text-align: center; font-size: 9px; height: var(--item-row-height); border: none; }
         .has-border td { border: 1px solid #d1d1d1; }
 
-        .p-footer { display: flex; border-bottom:px solid black; }
+        .p-footer { display: flex; border-bottom: 1px solid black; }
         .p-foot-left { width: 35%; padding: 5px; border-right: 1px solid black; } 
-        .p-foot-mid { width: 25%; padding: 5px; text-align: center; border-right: px solid black; } 
+        .p-foot-mid { width: 25%; padding: 5px; text-align: center; border-right: 1px solid black; } 
         .p-qr-img { width: 70px; height: 70px; object-fit: contain; padding-left: 50px; }
         .p-foot-right { width: 40%; }
         
@@ -66,7 +71,6 @@
         .p-words { 
             font-size: 9px; 
             text-transform: uppercase; 
-  
             padding: 20px;
             text-align: left;
             padding-left: 200px;
@@ -96,8 +100,8 @@
         <div class="p-header">
             <div class="p-comp-info">
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
-                <div>
-                    <h2 style="margin: 0; font-size: 14px;">SHREE DATTAREKHA ENTERPRISES</h2>
+                <div style="  padding-left: 70px;">
+                    <h2 style="margin: 0; font-size: 19px;">SHREE DATTAREKHA ENTERPRISES</h2>
                     <p style="font-size: 10px; margin-top: 4px; line-height: 1.2;">
                         Gunwadi Rd, Baramati<br>
                         Mob No: 9503984711 / 9075621737<br>
@@ -123,15 +127,15 @@
                 <thead>
                     <tr>
                         <th width="5">Sr.</th>
-                        <th width="200">Item Name </th>
+                        <th width="180">Item Name </th>
                         <th width="50">HSN</th>
                         <th width="5">Qty</th>
                         <th width="5">Free</th>
                         <th width="40">MRP</th>
                         <th width="40">Rate</th>
                         <th width="30">Disc</th> 
-                        <th class="tax-col" width="40">GST%</th>
-                        <th class="tax-col" width="50">GST Amt</th>
+                        <th class="tax-col" width="30">GST%</th>
+                        <th class="tax-col" width="40">GST Amt</th>
                         <th width="50">Amount</th>
                     </tr>
                 </thead>
@@ -219,7 +223,8 @@
             const itemCount = data.items.length;
             const container = document.getElementById('printable-area');
 
-            if (itemCount > 12) {
+            // Threshold set to 10 items
+            if (itemCount > 10) {
                 container.classList.add('full-a4');
             }
 
@@ -266,7 +271,6 @@
                 }
                 totalGstCalculated += gstAmt;
 
-                // Added class "has-border" only to rows that have actual item data
                 rows += `<tr class="has-border">
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
@@ -282,9 +286,9 @@
                 </tr>`;
             });
 
-            // Empty rows are added without the "has-border" class so they appear white/clean
-            if(itemCount < 12) {
-                for(let k = itemCount; k < 12; k++) {
+            // Adjusted loop to fill up to exactly 10 rows
+            if(itemCount < 10) {
+                for(let k = itemCount; k < 10; k++) {
                     rows += `<tr>
                         <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                         <td class="tax-col"></td><td class="tax-col"></td><td></td>
