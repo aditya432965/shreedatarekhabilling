@@ -51,16 +51,18 @@
         }
 
         .report-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
-        .info-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .info-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; font-weight: bold; }
 
         .report-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        .report-table th { border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 6px; text-align: left; font-weight: bold; }
-        .report-table td { padding: 4px 6px; vertical-align: top; border-bottom: 0.5px solid #eee; }
+        .report-table th { border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 6px; text-align: left; font-weight: bold; color: #000; }
+        /* Made table text slightly bolder globally for HTML view */
+        .report-table td { padding: 4px 6px; vertical-align: top; border-bottom: 0.5px solid #ccc; font-weight: 600; color: #000; }
         
-        .subtotal-row { border-top: 1px solid #000; border-bottom: 1px solid #000; font-weight: bold; background-color: #f8fafc; }
+        .subtotal-row { border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; font-weight: bold; background-color: #f8fafc; }
         .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; padding: 10px 5px !important; }
-        .party-name-row { font-weight: bold; font-size: 13px; background-color: #f1f5f9; }
-        .total-footer { border-top: 2px double #000; border-bottom: 2px double #000; font-weight: bold; font-size: 14px; background-color: #e2e8f0; }
+        /* Emphasized party row for CA layout */
+        .party-name-row { font-weight: bold; font-size: 13px; background-color: #e2e8f0; border-top: 1.5px solid #000; }
+        .total-footer { border-top: 2px double #000; border-bottom: 2px double #000; font-weight: bold; font-size: 14px; background-color: #cbd5e1; }
 
         @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; padding: 0; } }
     </style>
@@ -91,12 +93,12 @@
     <div class="report-header">
         <div class="info-line">
             <span id="pPrintDate"></span>
-            <strong style="font-size: 18px;">SHREE DATAREKHA ENTERPRISES</strong>
+            <strong style="font-size: 18px; font-weight: 900;">SHREE DATAREKHA ENTERPRISES</strong>
             <span id="pPageCount">Page 1 of 1</span>
         </div>
-        <p id="reportTitle" style="font-size: 15px; font-weight: bold; text-transform: uppercase; margin-top: 5px;">GST Sale Register</p>
+        <p id="reportTitle" style="font-size: 15px; font-weight: 900; text-transform: uppercase; margin-top: 5px;">GST Sale Register</p>
         <div class="info-line">
-            <span id="pDateRange" style="font-weight: bold;"></span>
+            <span id="pDateRange"></span>
         </div>
     </div>
 
@@ -159,15 +161,16 @@
 
         if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
+            // Cleaned up headers for the CA Layout
             head.innerHTML = `<tr>
-                <th style="width: 8%">Bill No</th>
-                <th style="width: 10%">Date</th>
-                <th style="width: 20%">Party Name</th>
-                <th style="width: 15%">GST No</th>
-                <th style="text-align: right; width: 12%">Taxable Amt</th>
-                <th style="text-align: center; width: 8%">GST %</th>
-                <th style="text-align: right; width: 12%">GST Amt</th>
-                <th style="text-align: right; width: 15%">Net Amount</th>
+                <th style="width: 12%">Date</th>
+                <th style="width: 10%">Bill No</th>
+                <th style="width: 25%">Party Name</th>
+                <th style="width: 15%">GSTIN</th>
+                <th style="text-align: right; width: 12%">Taxable Value</th>
+                <th style="text-align: center; width: 8%">GST Rate</th>
+                <th style="text-align: right; width: 10%">Tax Amt</th>
+                <th style="text-align: right; width: 12%">Net Amt</th>
             </tr>`;
 
             let grandTaxable = 0, grandGst = 0, grandNet = 0;
@@ -175,10 +178,10 @@
             fetchedSales.forEach(sale => {
                 let gst5 = 0, gst9 = 0, gst18 = 0, totalTaxable = 0, totalGst = 0;
 
-                // Dedicated row for Bill Information (Much cleaner for CAs)
+                // Restructured Top Line for each Bill (Date, Bill, Name, GSTIN on one bold line)
                 body.innerHTML += `<tr class="party-name-row">
-                    <td>${sale.billNo}</td>
                     <td>${formatDate(sale.date)}</td>
+                    <td>${sale.billNo}</td>
                     <td>${sale.customerName}</td>
                     <td>${sale.gstNo || 'URD'}</td>
                     <td colspan="4"></td>
@@ -196,7 +199,6 @@
                     if(gstRate === 9) gst9 += gstAmt;
                     if(gstRate === 18) gst18 += gstAmt;
 
-                    // Item rows with right-aligned financials
                     body.innerHTML += `<tr>
                         <td colspan="4"></td>
                         <td style="text-align: right">${taxable.toFixed(2)}</td>
@@ -210,10 +212,10 @@
                 grandGst += totalGst;
                 grandNet += Number(sale.summary.net);
 
-                // Summary rows for this specific bill
+                // Clear Bill Summary Line
                 body.innerHTML += `
                 <tr class="subtotal-row">
-                    <td colspan="4" align="right">BILL SUMMARY (No: ${sale.billNo}) ===></td>
+                    <td colspan="4" align="right">Bill Total (No: ${sale.billNo}) ===></td>
                     <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
                     <td colspan="2" style="text-align: right; font-size: 11px; line-height: 1.4;">
                         <b>Total GST: ${totalGst.toFixed(2)}</b><br>
@@ -221,10 +223,9 @@
                     </td>
                     <td style="text-align: right"><b>${Number(sale.summary.net).toFixed(2)}</b></td>
                 </tr>
-                <tr><td colspan="8" style="border-bottom: 1px dashed #94a3b8; height: 5px; padding:0;"></td></tr>`;
+                <tr><td colspan="8" style="height: 3px; padding:0;"></td></tr>`;
             });
 
-            // Grand Total for the CA (Crucial for accounting)
             body.innerHTML += `
             <tr class="total-footer">
                 <td colspan="4" align="right">GRAND TOTAL FOR PERIOD ===></td>
@@ -283,7 +284,9 @@
     window.downloadPDF = function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-        doc.setFont("courier", "bold");
+        
+        // Changed to Helvetica and forced 'bold' for a dark, readable print
+        doc.setFont("helvetica", "bold");
         doc.text("SHREE DATAREKHA ENTERPRISES", 105, 15, { align: "center" });
         doc.setFontSize(10);
         doc.text(document.getElementById('reportTitle').innerText, 105, 20, { align: "center" });
@@ -292,12 +295,26 @@
         doc.autoTable({
             html: '#dataTable',
             startY: 30,
-            theme: 'plain',
-            styles: { font: 'courier', fontSize: 7, cellPadding: 1, textColor: 0 },
-            headStyles: { borderBottom: 1, borderTop: 1, fontStyle: 'bold' },
+            theme: 'grid', // Switched to grid for stronger lines
+            styles: { 
+                font: 'helvetica', 
+                fontSize: 8, 
+                cellPadding: 1.5, 
+                textColor: [0, 0, 0], // Pure black text
+                fontStyle: 'bold',    // Forces everything to be dark and bold
+                lineColor: [0, 0, 0], // Pure black borders
+                lineWidth: 0.1
+            },
+            headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
             didParseCell: function(data) {
-                if (data.section === 'body' && data.cell.raw.innerText && (data.cell.raw.innerHTML.includes('<b>') || data.cell.raw.parentElement.classList.contains('subtotal-row'))) {
-                    data.cell.styles.fontStyle = 'bold';
+                // Add light gray backgrounds to header/summary rows so they pop out
+                if (data.row.raw && data.row.raw.classList) {
+                    if (data.row.raw.classList.contains('party-name-row')) {
+                        data.cell.styles.fillColor = [240, 240, 240];
+                    }
+                    if (data.row.raw.classList.contains('subtotal-row') || data.row.raw.classList.contains('total-footer')) {
+                        data.cell.styles.fillColor = [230, 230, 230];
+                    }
                 }
             }
         });
@@ -312,8 +329,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
