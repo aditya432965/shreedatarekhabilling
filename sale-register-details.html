@@ -54,15 +54,16 @@
         .info-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; font-weight: bold; }
 
         .report-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        .report-table th { border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 6px; text-align: left; font-weight: bold; color: #000; }
-        /* Made table text slightly bolder globally for HTML view */
-        .report-table td { padding: 4px 6px; vertical-align: top; border-bottom: 0.5px solid #ccc; font-weight: 600; color: #000; }
+        .report-table th { border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; padding: 6px; font-weight: bold; color: #000; }
         
-        .subtotal-row { border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; font-weight: bold; background-color: #f8fafc; }
+        /* Removed background colors and excessive bottom borders for a clean ink-saving look */
+        .report-table td { padding: 4px 6px; vertical-align: top; border-bottom: none; font-weight: 600; color: #000; }
+        
+        .subtotal-row { font-weight: bold; border-bottom: 1px solid #000; }
+        .party-name-row { font-weight: bold; font-size: 13px; border-top: 1px solid #000; }
+        
         .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; padding: 10px 5px !important; }
-        /* Emphasized party row for CA layout */
-        .party-name-row { font-weight: bold; font-size: 13px; background-color: #e2e8f0; border-top: 1.5px solid #000; }
-        .total-footer { border-top: 2px double #000; border-bottom: 2px double #000; font-weight: bold; font-size: 14px; background-color: #cbd5e1; }
+        .total-footer { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 14px; }
 
         @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; padding: 0; } }
     </style>
@@ -161,16 +162,16 @@
 
         if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
-            // Cleaned up headers for the CA Layout
+            // Cleaned up headers with precise centering/alignments
             head.innerHTML = `<tr>
-                <th style="width: 12%">Date</th>
-                <th style="width: 10%">Bill No</th>
-                <th style="width: 25%">Party Name</th>
-                <th style="width: 15%">GSTIN</th>
-                <th style="text-align: right; width: 12%">Taxable Value</th>
-                <th style="text-align: center; width: 8%">GST Rate</th>
-                <th style="text-align: right; width: 10%">Tax Amt</th>
-                <th style="text-align: right; width: 12%">Net Amt</th>
+                <th style="width: 10%; text-align: center;">Date</th>
+                <th style="width: 10%; text-align: center;">Bill No</th>
+                <th style="width: 25%; text-align: left;">Party Name</th>
+                <th style="width: 15%; text-align: center;">GSTIN</th>
+                <th style="text-align: right; width: 12%;">Taxable Value</th>
+                <th style="text-align: center; width: 8%;">GST %</th>
+                <th style="text-align: right; width: 10%;">Tax Amt</th>
+                <th style="text-align: right; width: 10%;">Net Amt</th>
             </tr>`;
 
             let grandTaxable = 0, grandGst = 0, grandNet = 0;
@@ -178,12 +179,12 @@
             fetchedSales.forEach(sale => {
                 let gst5 = 0, gst9 = 0, gst18 = 0, totalTaxable = 0, totalGst = 0;
 
-                // Restructured Top Line for each Bill (Date, Bill, Name, GSTIN on one bold line)
+                // Line 1 for the customer: Top line applied via CSS class, clean alignment
                 body.innerHTML += `<tr class="party-name-row">
-                    <td>${formatDate(sale.date)}</td>
-                    <td>${sale.billNo}</td>
-                    <td>${sale.customerName}</td>
-                    <td>${sale.gstNo || 'URD'}</td>
+                    <td style="text-align: center;">${formatDate(sale.date)}</td>
+                    <td style="text-align: center;">${sale.billNo}</td>
+                    <td style="text-align: left;">${sale.customerName}</td>
+                    <td style="text-align: center;">${sale.gstNo || 'URD'}</td>
                     <td colspan="4"></td>
                 </tr>`;
 
@@ -212,23 +213,22 @@
                 grandGst += totalGst;
                 grandNet += Number(sale.summary.net);
 
-                // Clear Bill Summary Line
+                // Line 2 for the customer: Bottom line applied via CSS class
                 body.innerHTML += `
                 <tr class="subtotal-row">
-                    <td colspan="4" align="right">Bill Total (No: ${sale.billNo}) ===></td>
+                    <td colspan="4" style="text-align: right;">Bill Total (No: ${sale.billNo}) ===></td>
                     <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
                     <td colspan="2" style="text-align: right; font-size: 11px; line-height: 1.4;">
                         <b>Total GST: ${totalGst.toFixed(2)}</b><br>
                         (5%: ${gst5.toFixed(2)} | 9%: ${gst9.toFixed(2)} | 18%: ${gst18.toFixed(2)})
                     </td>
                     <td style="text-align: right"><b>${Number(sale.summary.net).toFixed(2)}</b></td>
-                </tr>
-                <tr><td colspan="8" style="height: 3px; padding:0;"></td></tr>`;
+                </tr>`;
             });
 
             body.innerHTML += `
             <tr class="total-footer">
-                <td colspan="4" align="right">GRAND TOTAL FOR PERIOD ===></td>
+                <td colspan="4" style="text-align: right;">GRAND TOTAL FOR PERIOD ===></td>
                 <td style="text-align: right"><b>${grandTaxable.toFixed(2)}</b></td>
                 <td colspan="2" style="text-align: right"><b>${grandGst.toFixed(2)}</b></td>
                 <td style="text-align: right"><b>${grandNet.toFixed(2)}</b></td>
@@ -236,11 +236,11 @@
         } 
         else if (activeReportType === 'DETAILS') {
             title.innerText = "GST Sale Register (Detailed Report)";
-            head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Disc</th><th>GST%</th><th>GST Amt</th><th>Net Amt</th></tr>`;
+            head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th style="text-align: left;">Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Disc</th><th>GST%</th><th>GST Amt</th><th>Net Amt</th></tr>`;
             fetchedSales.forEach(sale => {
-                body.innerHTML += `<tr class="party-name-row"><td colspan="10"><b>${sale.billNo} | ${sale.customerName}</b></td></tr>`;
+                body.innerHTML += `<tr class="party-name-row"><td colspan="10" style="text-align: left;"><b>${sale.billNo} | ${sale.customerName}</b></td></tr>`;
                 sale.items.forEach(item => {
-                    body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td>${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td><b>${item.net}</b></td></tr>`;
+                    body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td style="text-align: left;">${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td><b>${item.net}</b></td></tr>`;
                 });
                 body.innerHTML += `<tr class="subtotal-row"><td colspan="5" align="right">Bill Sub Total ===></td><td><b>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</b></td><td>${sale.summary.disc}</td><td></td><td>${sale.summary.gst}</td><td><b>${sale.summary.net}</b></td></tr>`;
             });
@@ -255,7 +255,7 @@
         }
         else if (activeReportType === 'BRAND_DETAILS') {
             title.innerText = "Company Brand Wise Sale Register";
-            head.innerHTML = `<tr><th>Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Free</th><th>Disc Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
+            head.innerHTML = `<tr><th style="text-align: left;">Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Free</th><th>Disc Amt</th><th>GST %</th><th>GST Amt</th><th>Net Amount</th></tr>`;
             const brandGroups = {};
             fetchedSales.forEach(sale => {
                 sale.items.forEach(item => {
@@ -270,9 +270,9 @@
             });
             let grandQ = 0, grandD = 0, grandG = 0, grandN = 0;
             for (const grp in brandGroups) {
-                body.innerHTML += `<tr><td colspan="9" class="brand-header">${grp}</td></tr>`;
+                body.innerHTML += `<tr class="party-name-row"><td colspan="9" class="brand-header" style="text-align: left;">${grp}</td></tr>`;
                 brandGroups[grp].items.forEach(item => {
-                    body.innerHTML += `<tr><td style="padding-left:20px">${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>0</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td></tr>`;
+                    body.innerHTML += `<tr><td style="text-align: left; padding-left:20px">${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>0</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td>${item.net}</td></tr>`;
                 });
                 body.innerHTML += `<tr class="subtotal-row"><td colspan="3" align="right"><b>${grp} TOTAL</b></td><td><b>${brandGroups[grp].q}</b></td><td>0</td><td>${brandGroups[grp].d.toFixed(2)}</td><td></td><td>${brandGroups[grp].g.toFixed(2)}</td><td><b>${brandGroups[grp].n.toFixed(2)}</b></td></tr>`;
                 grandQ += brandGroups[grp].q; grandD += brandGroups[grp].d; grandG += brandGroups[grp].g; grandN += brandGroups[grp].n;
@@ -285,7 +285,6 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        // Changed to Helvetica and forced 'bold' for a dark, readable print
         doc.setFont("helvetica", "bold");
         doc.text("SHREE DATAREKHA ENTERPRISES", 105, 15, { align: "center" });
         doc.setFontSize(10);
@@ -295,25 +294,35 @@
         doc.autoTable({
             html: '#dataTable',
             startY: 30,
-            theme: 'grid', // Switched to grid for stronger lines
+            theme: 'plain', // Switch to plain to remove all inner cell shading/ink
             styles: { 
                 font: 'helvetica', 
                 fontSize: 8, 
                 cellPadding: 1.5, 
-                textColor: [0, 0, 0], // Pure black text
-                fontStyle: 'bold',    // Forces everything to be dark and bold
-                lineColor: [0, 0, 0], // Pure black borders
-                lineWidth: 0.1
+                textColor: [0, 0, 0], // Pure black text everywhere
+                fontStyle: 'bold'     // Always bold
             },
-            headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
             didParseCell: function(data) {
-                // Add light gray backgrounds to header/summary rows so they pop out
+                // Dynamically build the exact lines we want to save ink but look organized
+                if (data.section === 'head') {
+                    data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
+                    data.cell.styles.lineColor = [0, 0, 0];
+                }
                 if (data.row.raw && data.row.raw.classList) {
                     if (data.row.raw.classList.contains('party-name-row')) {
-                        data.cell.styles.fillColor = [240, 240, 240];
+                        // Line above the bill
+                        data.cell.styles.lineWidth = { top: 0.5, bottom: 0, left: 0, right: 0 };
+                        data.cell.styles.lineColor = [0, 0, 0];
                     }
-                    if (data.row.raw.classList.contains('subtotal-row') || data.row.raw.classList.contains('total-footer')) {
-                        data.cell.styles.fillColor = [230, 230, 230];
+                    else if (data.row.raw.classList.contains('subtotal-row')) {
+                        // Line below the bill summary
+                        data.cell.styles.lineWidth = { top: 0, bottom: 0.5, left: 0, right: 0 };
+                        data.cell.styles.lineColor = [0, 0, 0];
+                    }
+                    else if (data.row.raw.classList.contains('total-footer')) {
+                        // Grand total line at the end
+                        data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
+                        data.cell.styles.lineColor = [0, 0, 0];
                     }
                 }
             }
@@ -329,3 +338,4 @@
 </script>
 </body>
 </html>
+
