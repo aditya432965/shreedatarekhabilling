@@ -178,6 +178,7 @@
 
             fetchedSales.forEach(sale => {
                 let totalTaxable = 0, totalGst = 0;
+                let gstBreakdown = {}; // Dynamically tracks used GST rates for this specific bill
 
                 // Line 1 for the customer: Top line applied via CSS class, clean alignment
                 // Expanded GST property check to catch different database naming formats
@@ -192,9 +193,14 @@
                 sale.items.forEach(item => {
                     const taxable = Number(item.net) - (Number(item.gstAmt) || 0);
                     const gstAmt = Number(item.gstAmt) || 0;
+                    const gstRate = parseFloat(item.gst) || 0;
 
                     totalTaxable += taxable;
                     totalGst += gstAmt;
+                    
+                    // Add amount to the correct percentage bucket
+                    if (!gstBreakdown[gstRate]) gstBreakdown[gstRate] = 0;
+                    gstBreakdown[gstRate] += gstAmt;
 
                     body.innerHTML += `<tr>
                         <td colspan="4"></td>
@@ -209,13 +215,23 @@
                 grandGst += totalGst;
                 grandNet += Number(sale.summary.net);
 
+                // Build the custom dynamic string for (X%: Y.YY)
+                let breakdownArr = [];
+                Object.keys(gstBreakdown).sort((a,b) => a - b).forEach(rate => {
+                    if (gstBreakdown[rate] > 0) {
+                        breakdownArr.push(`${rate}%: ${gstBreakdown[rate].toFixed(2)}`);
+                    }
+                });
+                
+                let breakdownStr = breakdownArr.length > 0 ? `<br>(${breakdownArr.join(' | ')})` : '';
+
                 // Line 2 for the customer: Bottom line applied via CSS class
                 body.innerHTML += `
                 <tr class="subtotal-row">
                     <td colspan="4" style="text-align: right;">Bill Total (No: ${sale.billNo}) ===></td>
                     <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
-                    <td colspan="2" style="text-align: right;">
-                        <b>Total GST: ${totalGst.toFixed(2)}</b>
+                    <td colspan="2" style="text-align: right; font-size: 11px; line-height: 1.4;">
+                        <b>Total GST: ${totalGst.toFixed(2)}</b>${breakdownStr}
                     </td>
                     <td style="text-align: right"><b>${Number(sale.summary.net).toFixed(2)}</b></td>
                 </tr>`;
