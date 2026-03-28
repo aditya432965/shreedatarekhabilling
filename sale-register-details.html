@@ -177,28 +177,24 @@
             let grandTaxable = 0, grandGst = 0, grandNet = 0;
 
             fetchedSales.forEach(sale => {
-                let gst5 = 0, gst9 = 0, gst18 = 0, totalTaxable = 0, totalGst = 0;
+                let totalTaxable = 0, totalGst = 0;
 
                 // Line 1 for the customer: Top line applied via CSS class, clean alignment
+                // Expanded GST property check to catch different database naming formats
                 body.innerHTML += `<tr class="party-name-row">
                     <td style="text-align: center;">${formatDate(sale.date)}</td>
                     <td style="text-align: center;">${sale.billNo}</td>
                     <td style="text-align: left;">${sale.customerName}</td>
-                    <td style="text-align: center;">${sale.gstNo || 'URD'}</td>
+                    <td style="text-align: center;">${sale.gstin || sale.gstNo || sale.customerGst || 'URD'}</td>
                     <td colspan="4"></td>
                 </tr>`;
 
                 sale.items.forEach(item => {
                     const taxable = Number(item.net) - (Number(item.gstAmt) || 0);
-                    const gstRate = parseFloat(item.gst);
                     const gstAmt = Number(item.gstAmt) || 0;
 
                     totalTaxable += taxable;
                     totalGst += gstAmt;
-                    
-                    if(gstRate === 5) gst5 += gstAmt;
-                    if(gstRate === 9) gst9 += gstAmt;
-                    if(gstRate === 18) gst18 += gstAmt;
 
                     body.innerHTML += `<tr>
                         <td colspan="4"></td>
@@ -218,9 +214,8 @@
                 <tr class="subtotal-row">
                     <td colspan="4" style="text-align: right;">Bill Total (No: ${sale.billNo}) ===></td>
                     <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
-                    <td colspan="2" style="text-align: right; font-size: 11px; line-height: 1.4;">
-                        <b>Total GST: ${totalGst.toFixed(2)}</b><br>
-                        (5%: ${gst5.toFixed(2)} | 9%: ${gst9.toFixed(2)} | 18%: ${gst18.toFixed(2)})
+                    <td colspan="2" style="text-align: right;">
+                        <b>Total GST: ${totalGst.toFixed(2)}</b>
                     </td>
                     <td style="text-align: right"><b>${Number(sale.summary.net).toFixed(2)}</b></td>
                 </tr>`;
@@ -303,6 +298,13 @@
                 fontStyle: 'bold'     // Always bold
             },
             didParseCell: function(data) {
+                // Dynamically pull alignment (left/right/center) straight from the HTML tags
+                if (data.cell.raw && data.cell.raw.style && data.cell.raw.style.textAlign) {
+                    data.cell.styles.halign = data.cell.raw.style.textAlign;
+                } else if (data.cell.raw && data.cell.raw.getAttribute && data.cell.raw.getAttribute('align')) {
+                    data.cell.styles.halign = data.cell.raw.getAttribute('align');
+                }
+
                 // Dynamically build the exact lines we want to save ink but look organized
                 if (data.section === 'head') {
                     data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
