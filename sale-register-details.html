@@ -39,33 +39,43 @@
         .btn-pdf { background: #059669 !important; color: white !important; display: none; }
         .btn-excel { background: #1d4ed8 !important; color: white !important; display: none; margin-left: 10px; }
 
+        /* Report Preview Styled to match PDF structure exactly */
         #reportPreview {
             background: white;
-            padding: 12mm;
+            padding: 15mm;
             width: 210mm;
             min-height: 297mm;
-            margin: auto;
-            border: 1px solid #ccc;
+            margin: 20px auto;
+            border: 1px solid #000;
             display: none;
             color: #000;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
         .report-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
         .info-line { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; font-weight: bold; }
 
         .report-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        .report-table th { border-top: 1.5px solid #000; border-bottom: 1.5px solid #000; padding: 6px; font-weight: bold; color: #000; }
         
-        /* Removed background colors and excessive bottom borders for a clean ink-saving look */
-        .report-table td { padding: 4px 6px; vertical-align: top; border-bottom: none; font-weight: 600; color: #000; }
+        /* Matching the PDF "Plain" theme with specific borders */
+        .report-table th { 
+            border-top: 1px solid #000; 
+            border-bottom: 1px solid #000; 
+            padding: 8px 4px; 
+            font-weight: bold; 
+            background: #fff;
+        }
         
-        .subtotal-row { font-weight: bold; border-bottom: 1px solid #000; }
-        .party-name-row { font-weight: bold; font-size: 13px; border-top: 1px solid #000; }
+        .report-table td { padding: 6px 4px; vertical-align: top; border: none; font-weight: bold; }
         
-        .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; padding: 10px 5px !important; }
-        .total-footer { border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 14px; }
+        /* The specific PDF layout borders applied to the screen view */
+        .party-name-row td { border-top: 1px solid #000 !important; padding-top: 8px; }
+        .subtotal-row td { border-bottom: 1px solid #000 !important; padding-bottom: 8px; }
+        .total-footer td { border-top: 1px solid #000 !important; border-bottom: 1px solid #000 !important; padding: 10px 4px; font-size: 14px; }
+        
+        .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; }
 
-        @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; padding: 0; } }
+        @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; padding: 0; margin: 0; } }
     </style>
 </head>
 <body>
@@ -162,7 +172,6 @@
 
         if (activeReportType === 'CA_DETAILS') {
             title.innerText = "CA GST Sale Register Details";
-            // Cleaned up headers with precise centering/alignments
             head.innerHTML = `<tr>
                 <th style="width: 10%; text-align: center;">Date</th>
                 <th style="width: 10%; text-align: center;">Bill No</th>
@@ -178,10 +187,8 @@
 
             fetchedSales.forEach(sale => {
                 let totalTaxable = 0, totalGst = 0;
-                let gstBreakdown = {}; // Dynamically tracks used GST rates for this specific bill
+                let gstBreakdown = {};
 
-                // Line 1 for the customer: Top line applied via CSS class, clean alignment
-                // Expanded GST property check to catch different database naming formats
                 body.innerHTML += `<tr class="party-name-row">
                     <td style="text-align: center;">${formatDate(sale.date)}</td>
                     <td style="text-align: center;">${sale.billNo}</td>
@@ -194,11 +201,8 @@
                     const taxable = Number(item.net) - (Number(item.gstAmt) || 0);
                     const gstAmt = Number(item.gstAmt) || 0;
                     const gstRate = parseFloat(item.gst) || 0;
-
                     totalTaxable += taxable;
                     totalGst += gstAmt;
-                    
-                    // Add amount to the correct percentage bucket
                     if (!gstBreakdown[gstRate]) gstBreakdown[gstRate] = 0;
                     gstBreakdown[gstRate] += gstAmt;
 
@@ -211,34 +215,25 @@
                     </tr>`;
                 });
 
-                grandTaxable += totalTaxable;
-                grandGst += totalGst;
-                grandNet += Number(sale.summary.net);
+                grandTaxable += totalTaxable; grandGst += totalGst; grandNet += Number(sale.summary.net);
 
-                // Build the custom dynamic string for (X%: Y.YY)
                 let breakdownArr = [];
                 Object.keys(gstBreakdown).sort((a,b) => a - b).forEach(rate => {
-                    if (gstBreakdown[rate] > 0) {
-                        breakdownArr.push(`${rate}%: ${gstBreakdown[rate].toFixed(2)}`);
-                    }
+                    if (gstBreakdown[rate] > 0) breakdownArr.push(`${rate}%: ${gstBreakdown[rate].toFixed(2)}`);
                 });
-                
-                let breakdownStr = breakdownArr.length > 0 ? `<br>(${breakdownArr.join(' | ')})` : '';
+                let breakdownStr = breakdownArr.length > 0 ? `<br><small>(${breakdownArr.join(' | ')})</small>` : '';
 
-                // Line 2 for the customer: Bottom line applied via CSS class
-                body.innerHTML += `
-                <tr class="subtotal-row">
+                body.innerHTML += `<tr class="subtotal-row">
                     <td colspan="4" style="text-align: right;">Bill Total (No: ${sale.billNo}) ===></td>
                     <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
-                    <td colspan="2" style="text-align: right; font-size: 11px; line-height: 1.4;">
+                    <td colspan="2" style="text-align: right; font-size: 11px;">
                         <b>Total GST: ${totalGst.toFixed(2)}</b>${breakdownStr}
                     </td>
                     <td style="text-align: right"><b>${Number(sale.summary.net).toFixed(2)}</b></td>
                 </tr>`;
             });
 
-            body.innerHTML += `
-            <tr class="total-footer">
+            body.innerHTML += `<tr class="total-footer">
                 <td colspan="4" style="text-align: right;">GRAND TOTAL FOR PERIOD ===></td>
                 <td style="text-align: right"><b>${grandTaxable.toFixed(2)}</b></td>
                 <td colspan="2" style="text-align: right"><b>${grandGst.toFixed(2)}</b></td>
@@ -295,7 +290,6 @@
     window.downloadPDF = function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-        
         doc.setFont("helvetica", "bold");
         doc.text("SHREE DATAREKHA ENTERPRISES", 105, 15, { align: "center" });
         doc.setFontSize(10);
@@ -305,40 +299,26 @@
         doc.autoTable({
             html: '#dataTable',
             startY: 30,
-            theme: 'plain', // Switch to plain to remove all inner cell shading/ink
-            styles: { 
-                font: 'helvetica', 
-                fontSize: 8, 
-                cellPadding: 1.5, 
-                textColor: [0, 0, 0], // Pure black text everywhere
-                fontStyle: 'bold'     // Always bold
-            },
+            theme: 'plain',
+            styles: { font: 'helvetica', fontSize: 8, cellPadding: 1.5, textColor: [0, 0, 0], fontStyle: 'bold' },
             didParseCell: function(data) {
-                // Dynamically pull alignment (left/right/center) straight from the HTML tags
                 if (data.cell.raw && data.cell.raw.style && data.cell.raw.style.textAlign) {
                     data.cell.styles.halign = data.cell.raw.style.textAlign;
-                } else if (data.cell.raw && data.cell.raw.getAttribute && data.cell.raw.getAttribute('align')) {
-                    data.cell.styles.halign = data.cell.raw.getAttribute('align');
                 }
-
-                // Dynamically build the exact lines we want to save ink but look organized
                 if (data.section === 'head') {
                     data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
                     data.cell.styles.lineColor = [0, 0, 0];
                 }
                 if (data.row.raw && data.row.raw.classList) {
                     if (data.row.raw.classList.contains('party-name-row')) {
-                        // Line above the bill
                         data.cell.styles.lineWidth = { top: 0.5, bottom: 0, left: 0, right: 0 };
                         data.cell.styles.lineColor = [0, 0, 0];
                     }
                     else if (data.row.raw.classList.contains('subtotal-row')) {
-                        // Line below the bill summary
                         data.cell.styles.lineWidth = { top: 0, bottom: 0.5, left: 0, right: 0 };
                         data.cell.styles.lineColor = [0, 0, 0];
                     }
                     else if (data.row.raw.classList.contains('total-footer')) {
-                        // Grand total line at the end
                         data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
                         data.cell.styles.lineColor = [0, 0, 0];
                     }
