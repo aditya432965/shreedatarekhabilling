@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modify Purchase Entry</title>
+<title>Delete Purchase Entry | Shree Datarekha Enterprises</title>
 
 <style>
+/* Keeping your exact original styling */
 *{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI}
 
 body{
@@ -43,6 +44,9 @@ padding:7px;
 border:none;
 border-radius:6px;
 width:100%;
+background: #eee;
+color: #000;
+margin-bottom: 5px;
 }
 
 .main{
@@ -55,7 +59,7 @@ gap:20px;
 background:rgba(0,0,0,.45);
 padding:10px;
 border-radius:15px;
-max-height:500px;
+max-height:550px;
 overflow:auto;
 }
 
@@ -74,7 +78,7 @@ text-align:center;
 th{background:#ff2f92}
 
 tr:hover{
-background:rgba(255,255,255,.1);
+background:rgba(255,47,146,0.3);
 cursor:pointer;
 }
 
@@ -104,10 +108,10 @@ color:white;
 font-weight:600;
 }
 
-.green{background:#4CAF50}
 .red{background:#e53935}
 .gray{background:#555}
-.blue{background:#2196F3}
+
+h3 { margin-bottom: 10px; color: #ffb3d9; font-size: 16px; border-left: 4px solid #ff2f92; padding-left: 10px; margin-top: 10px;}
 
 @media(max-width:900px){
 .main{grid-template-columns:1fr}
@@ -120,16 +124,14 @@ font-weight:600;
 
 <div class="title">Delete Purchase Entry</div>
 
-<!-- FILTER SECTION -->
 <div class="filters">
-<input type="text" id="searchBill" placeholder="Search Bill No" oninput="applyFilters()">
-<input type="date" id="fromDate" onchange="applyFilters()">
-<input type="date" id="toDate" onchange="applyFilters()">
+    <input type="text" id="searchBill" placeholder="Search Bill No or Supplier" oninput="applyFilters()">
+    <input type="date" id="fromDate" onchange="applyFilters()">
+    <input type="date" id="toDate" onchange="applyFilters()">
 </div>
 
 <div class="main">
 
-<!-- LEFT LIST -->
 <div class="list">
 <table>
 <thead>
@@ -140,32 +142,34 @@ font-weight:600;
 <th>Net</th>
 </tr>
 </thead>
-<tbody id="purchaseList"></tbody>
+<tbody id="purchaseList">
+    <tr><td colspan="4">Loading data...</td></tr>
+</tbody>
 </table>
 </div>
 
-<!-- RIGHT FULL EDIT -->
 <div class="form-section">
 
 <h3>Bill Information</h3>
-<input id="billNo" placeholder="Bill No"><br><br>
-<input id="billDate" placeholder="Bill Date"><br><br>
-<input id="supplier" placeholder="Supplier"><br><br>
-<input id="payment" placeholder="Payment Type"><br><br>
+<label style="font-size: 11px;">Bill No</label>
+<input id="billNo" readonly style="background:#ccc">
+<label style="font-size: 11px;">Bill Date</label>
+<input id="billDate" readonly style="background:#ccc">
+<label style="font-size: 11px;">Supplier</label>
+<input id="supplier" readonly style="background:#ccc">
+<label style="font-size: 11px;">Payment Type</label>
+<input id="payment" readonly style="background:#ccc">
 
 <h3>Item Details</h3>
 <div style="overflow-x:auto;">
 <table id="itemTable">
 <thead>
 <tr>
-<th>Item Code</th>
-<th>Name</th>
-<th>Rate</th>
-<th>Qty</th>
-<th>Amount</th>
-<th>CGST</th>
-<th>SGST</th>
-<th>Net</th>
+    <th>Group</th>
+    <th>Item Name</th>
+    <th>Rate</th>
+    <th>Qty</th>
+    <th>Net</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -173,13 +177,16 @@ font-weight:600;
 </div>
 
 <h3>Summary</h3>
-<input id="netAmt" placeholder="Net Amount"><br><br>
-<input id="paidAmt" placeholder="Paid Amount"><br><br>
-<input id="balanceAmt" placeholder="Balance"><br><br>
+<label style="font-size: 11px;">Net Amount</label>
+<input id="netAmt" readonly style="background:#ccc">
+<label style="font-size: 11px;">Paid Amount</label>
+<input id="paidAmt" readonly style="background:#ccc">
+<label style="font-size: 11px;">Balance</label>
+<input id="balanceAmt" readonly style="background:#ccc">
 
 <div class="buttons">
-<button class="red" onclick="deletePurchase()">Delete</button>
-<button class="gray" onclick="goBack()">Back</button>
+    <button class="red" onclick="deletePurchase()">Delete Permanently</button>
+    <button class="gray" onclick="goBack()">Back</button>
 </div>
 
 </div>
@@ -192,7 +199,6 @@ import {
     collection, 
     getDocs, 
     doc, 
-    updateDoc, 
     deleteDoc, 
     query, 
     orderBy 
@@ -201,9 +207,15 @@ import {
 /* 🔐 LOGIN CHECK */
 if(localStorage.getItem("loggedIn") !== "true") window.location.href = "index.html";
 
-/* 📦 DATA STATE */
 let purchases = [];
 let selectedDocId = null;
+
+// Helper for date filtering
+function parseDate(str) {
+    if(!str) return new Date(0);
+    const parts = str.split('-'); // DD-MM-YYYY
+    return new Date(parts[2], parts[1]-1, parts[0]);
+}
 
 /* ☁️ LOAD PURCHASES FROM CLOUD */
 async function loadPurchases() {
@@ -219,40 +231,40 @@ async function loadPurchases() {
         renderList(purchases);
     } catch (err) {
         console.error("Cloud Fetch Error:", err);
+        document.getElementById("purchaseList").innerHTML = "<tr><td colspan='4'>Error loading data.</td></tr>";
     }
 }
 
-/* 📊 RENDER LIST WITH STATUS COLOR */
+/* 📊 RENDER LIST */
 function renderList(list) {
     const tbody = document.getElementById("purchaseList");
     tbody.innerHTML = "";
     
     list.forEach(p => {
-        // Checking balance for paid/unpaid status
-        const balance = parseFloat(p.summary.unpaidAmt || p.summary.balanceAmt) || 0;
-        const statusClass = balance === 0 ? "paid" : "unpaid";
+        const balance = parseFloat(p.summary?.balance || 0);
+        const statusClass = balance <= 0 ? "paid" : "unpaid";
 
         tbody.innerHTML += `
-            <tr class="${statusClass}" onclick="selectPurchase('${p.id}')" style="cursor:pointer">
-                <td>${p.header.billNo}</td>
-                <td>${p.header.billDate}</td>
-                <td>${p.header.supplier}</td>
-                <td>${p.summary.total || p.summary.netAmt}</td>
+            <tr class="${statusClass}" onclick="selectPurchase('${p.id}')">
+                <td>${p.header?.billNo || 'N/A'}</td>
+                <td>${p.header?.date || 'N/A'}</td>
+                <td style="text-align:left">${p.header?.supplier || 'N/A'}</td>
+                <td>${p.summary?.grandTotal || 0}</td>
             </tr>`;
     });
 }
 
-/* 🔍 WINDOW BRIDGE: FILTER */
+/* 🔍 FILTER LOGIC */
 window.applyFilters = function() {
     let search = document.getElementById("searchBill").value.toLowerCase();
     let from = document.getElementById("fromDate").value;
     let to = document.getElementById("toDate").value;
 
     let filtered = purchases.filter(p => {
-        let matchBill = p.header.billNo.toLowerCase().includes(search) || 
-                        p.header.supplier.toLowerCase().includes(search);
+        let matchBill = (p.header?.billNo || "").toString().toLowerCase().includes(search) || 
+                        (p.header?.supplier || "").toLowerCase().includes(search);
 
-        let billDateObj = new Date(p.header.billDate);
+        let billDateObj = parseDate(p.header?.date);
         let matchFrom = !from || billDateObj >= new Date(from);
         let matchTo = !to || billDateObj <= new Date(to);
 
@@ -262,91 +274,48 @@ window.applyFilters = function() {
     renderList(filtered);
 };
 
-/* 🖱️ WINDOW BRIDGE: SELECT (Click to Box) */
+/* 🖱️ SELECT BILL */
 window.selectPurchase = function(id) {
     const p = purchases.find(item => item.id === id);
     if (!p) return;
 
     selectedDocId = id;
 
-    // Fill Header Info
-    document.getElementById("billNo").value = p.header.billNo;
-    document.getElementById("billDate").value = p.header.billDate;
-    document.getElementById("supplier").value = p.header.supplier || p.header.supplierName;
-    document.getElementById("payment").value = p.header.payment || p.header.paymentType;
+    // Fixed mappings based on your "Data how it should look" example
+    document.getElementById("billNo").value = p.header?.billNo || "";
+    document.getElementById("billDate").value = p.header?.date || "";
+    document.getElementById("supplier").value = p.header?.supplier || "";
+    document.getElementById("payment").value = p.header?.payment || "";
     
-    // Fill Summary Info
-    document.getElementById("netAmt").value = p.summary.total || p.summary.netAmt;
-    document.getElementById("paidAmt").value = p.summary.paid || p.summary.paidAmt;
-    document.getElementById("balanceAmt").value = p.summary.unpaid || p.summary.balanceAmt;
+    document.getElementById("netAmt").value = p.summary?.grandTotal || 0;
+    document.getElementById("paidAmt").value = p.summary?.paid || 0;
+    document.getElementById("balanceAmt").value = p.summary?.balance || 0;
 
-    /* LOAD ITEMS INTO TABLE */
+    /* LOAD ITEMS */
     let tbody = document.querySelector("#itemTable tbody");
     tbody.innerHTML = "";
 
-    p.items.forEach(item => {
+    (p.items || []).forEach(item => {
         tbody.innerHTML += `
             <tr>
-                <td><input value="${item.code || item.itemCode}"></td>
-                <td><input value="${item.name || item.itemName}"></td>
-                <td><input value="${item.rate || item.purchaseRate}"></td>
-                <td><input value="${item.qty}"></td>
-                <td><input value="${item.amount || (item.rate * item.qty)}"></td>
-                <td><input value="${item.cgstAmt || 0}"></td>
-                <td><input value="${item.sgstAmt || 0}"></td>
-                <td><input value="${item.net || item.netAmt}"></td>
+                <td>${item.group || ''}</td>
+                <td style="text-align:left">${item.name || ''}</td>
+                <td>${item.rate || 0}</td>
+                <td>${item.qty || 0}</td>
+                <td>${item.net || 0}</td>
             </tr>`;
     });
 };
 
-/* 🆙 WINDOW BRIDGE: UPDATE */
-window.updatePurchase = async function() {
-    if (!selectedDocId) return alert("Select a bill first");
-
-    let updatedItems = [];
-    document.querySelectorAll("#itemTable tbody tr").forEach(row => {
-        const inputs = row.querySelectorAll("input");
-        updatedItems.push({
-            code: inputs[0].value,
-            name: inputs[1].value,
-            rate: parseFloat(inputs[2].value),
-            qty: parseFloat(inputs[3].value),
-            net: parseFloat(inputs[7].value)
-        });
-    });
-
-    const updatedData = {
-        "header.billNo": document.getElementById("billNo").value,
-        "header.billDate": document.getElementById("billDate").value,
-        "header.supplier": document.getElementById("supplier").value,
-        "summary.total": document.getElementById("netAmt").value,
-        "summary.paid": document.getElementById("paidAmt").value,
-        "summary.unpaid": document.getElementById("balanceAmt").value,
-        items: updatedItems
-    };
-
-    try {
-        const docRef = doc(db, "purchases", selectedDocId);
-        await updateDoc(docRef, updatedData);
-        alert("Purchase Updated Successfully ✅");
-        await loadPurchases();
-    } catch (e) {
-        alert("Update Failed: " + e.message);
-    }
-};
-
-/* 🗑️ WINDOW BRIDGE: DELETE */
+/* 🗑️ DELETE FUNCTION */
 window.deletePurchase = async function() {
-    if (!selectedDocId) return alert("Select a bill first");
+    if (!selectedDocId) return alert("Please select a bill from the left list first");
 
-    if (confirm("Delete this bill permanently from Cloud?")) {
+    if (confirm("Are you sure? This bill will be deleted permanently from Cloud.")) {
         try {
             await deleteDoc(doc(db, "purchases", selectedDocId));
-            alert("Bill Deleted ❌");
-            selectedDocId = null;
-            await loadPurchases();
-            // Optional: Clear form
-            location.reload();
+            alert("Bill Deleted Successfully ❌");
+            location.reload(); // Refresh to update list
         } catch (e) {
             alert("Delete Failed: " + e.message);
         }
@@ -355,7 +324,7 @@ window.deletePurchase = async function() {
 
 window.goBack = () => location.href = "purchase-entry.html";
 
-/* 🚀 INITIALIZE */
+/* 🚀 START */
 loadPurchases();
 </script>
 </body>
