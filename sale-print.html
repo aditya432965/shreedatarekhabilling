@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sale Return Receipt | Shree Datarekha</title>
+    <style>
+        /* --- FIXED DIMENSIONS FOR YOUR PAPER --- */
+        :root {
+            --bill-width: 195mm; 
+            --item-row-height: 28px;
+        }
+
+        body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
+        
+        /* Main Container with Fixed Width */
+        .p-container { 
+            border: 1px solid black; 
+            background: white; 
+            width: var(--bill-width); 
+            margin: 10px auto; 
+            padding: 0; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .p-top-bar { 
+            font-size: 11px; 
+            border-bottom: 1px solid black; 
+            padding: 5px 12px; 
+            display: flex; 
+            justify-content: space-between;
+            background: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .p-header { display: flex; border-bottom: 1px solid black; }
+        .p-comp-info { width: 60%; padding: 12px; border-right: 1px solid black; display: flex; gap: 15px; align-items: center; }
+        .p-logo-print { width: 75px; height: 75px; border-radius: 50%; }
+        .p-cust-info { width: 40%; padding: 12px; background: #fafafa; }
+        
+        /* Fixed Height Item Section */
+        .item-section {
+            min-height: 280px; /* Adjusted for multiple items */
+            border-bottom: 1px solid black;
+        }
+
+        .p-table { width: 100%; border-collapse: collapse; }
+        .p-table th { border: 1px solid black; padding: 6px; text-align: center; font-size: 12px; background: #eee; }
+        .p-table td { padding: 8px 6px; text-align: center; font-size: 13px; border-bottom: 1px solid #f1f1f1; height: var(--item-row-height); }
+        .text-left { text-align: left !important; padding-left: 10px !important; }
+
+        .p-footer { display: flex; border-top: 1px solid black; }
+        .p-foot-left { width: 60%; padding: 12px; border-right: 1px solid black; font-size: 11px; line-height: 1.5; } 
+        .p-foot-right { width: 40%; }
+        
+        .p-totals-tbl { width: 100%; border-collapse: collapse; }
+        .p-totals-tbl td { border-bottom: 1px solid black; padding: 12px; text-align: right; font-size: 13px; }
+        
+        .p-words { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            padding: 12px;
+            border-bottom: 1px solid black;
+            background: #fdfdfd;
+        }
+        
+        .sig-section {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            padding: 40px 20px 15px 20px;
+        }
+
+        @media print {
+            @page { size: auto; margin: 0; }
+            body { margin: 5mm; }
+            .p-container { border: 1px solid black; margin: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="p-container" id="printable-area">
+        <div class="p-top-bar">
+            <span>SALE RETURN VOUCHER (CREDIT NOTE)</span>
+            <span>CUSTOMER COPY</span>
+        </div>
+
+        <div class="p-header">
+            <div class="p-comp-info">
+                <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; color: #8e1446;">SHREE DATTAREKHA ENTERPRISES</h2>
+                    <p style="font-size: 11px; margin-top: 5px; line-height: 1.4;">
+                        Gunwadi Rd, Baramati, Dist - Pune<br>
+                        Mob: 9503984711 / 9075621737<br>
+                        GSTIN: 27AEOPL5652H1Z4
+                    </p>
+                </div>
+            </div>
+            <div class="p-cust-info">
+                <p style="font-size: 12px; margin: 0;"><strong>Date:</strong> <span id="p-date"></span></p>
+                <p style="font-size: 12px; margin: 6px 0;"><strong>Return ID:</strong> <span id="p-return-id">#SRN-AUTO</span></p>
+                <p style="font-size: 12px; margin: 6px 0;"><strong>Ref Bill:</strong> <span id="p-ref-bill"></span></p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 8px 0;">
+                <p style="font-size: 11px; margin: 0; color: #555;">Customer Details:</p>
+                <p style="font-size: 14px; margin: 3px 0;"><strong id="p-customer"></strong></p>
+            </div>
+        </div>
+
+        <div class="item-section">
+            <table class="p-table">
+                <thead>
+                    <tr>
+                        <th width="8%">Sr.</th>
+                        <th width="47%">Product Description</th>
+                        <th width="15%">Qty</th>
+                        <th width="15%">Rate</th>
+                        <th width="15%">Refund</th>
+                    </tr>
+                </thead>
+                <tbody id="p-items-body">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="p-words">
+            Amount in words: <strong id="p-amount-words"></strong>
+        </div>
+
+        <div class="p-footer">
+            <div class="p-foot-left">
+                <strong>Notes & Terms:</strong><br>
+                1. This is a Credit Note issued against returned items.<br>
+                2. Amount will be adjusted in next purchase or refunded.<br>
+                3. Quality check verified by warehouse team.<br>
+                4. Computer generated receipt - No signature required.
+            </div>
+            <div class="p-foot-right">
+                <table class="p-totals-tbl">
+                    <tr style="font-weight:bold; background:#f4f4f4;">
+                        <td style="text-align: left;">NET REFUND AMOUNT</td>
+                        <td id="p-sum-net" style="font-size: 16px;">₹0.00</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="sig-section">
+            <div style="font-size: 12px; text-align: center; border-top: 1px solid black; width: 160px; padding-top: 6px;">Customer Signature</div>
+            <div style="font-size: 12px; text-align: center; border-top: 1px solid black; width: 160px; padding-top: 6px;">Authorized Signatory</div>
+        </div>    
+    </div>
+
+    <script>
+        function amountToWords(amount) {
+            if (amount == 0) return "Zero Rupees Only";
+            var a = ['','One ','Two ','Three ','Four ','Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+            var b = ['', '', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+            
+            function inWords (num) {
+                if ((num = num.toString()).length > 9) return 'overflow';
+                var n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+                if (!n) return; var str = '';
+                str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+                str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+                str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+                str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+                str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Rupees Only' : '';
+                return str;
+            }
+            return inWords(Math.floor(amount));
+        }
+
+        window.onload = function() {
+            // Get data from the correct localStorage key set in sale-return.html
+            const data = JSON.parse(localStorage.getItem("lastReturnPrint"));
+            
+            if(!data) {
+                alert("Printing Data Missing!");
+                window.close();
+                return;
+            }
+
+            // Fill Header Details
+            document.getElementById('p-date').innerText = data.date || new Date().toLocaleDateString();
+            document.getElementById('p-ref-bill').innerText = "#" + data.billNo;
+            document.getElementById('p-customer').innerText = data.customerName;
+
+            // Fill Table Rows
+            const tbody = document.getElementById('p-items-body');
+            tbody.innerHTML = "";
+            
+            data.items.forEach((item, index) => {
+                const rowTotal = item.qty * item.rate;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td class="text-left"><strong>${item.name}</strong><br><small style="color:gray">${item.reason || ''}</small></td>
+                        <td>${item.qty}</td>
+                        <td>₹${item.rate}</td>
+                        <td style="font-weight:bold;">₹${rowTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            // Fill empty rows to maintain fixed height/look
+            const emptyRows = 6 - data.items.length;
+            for(let i=0; i < (emptyRows > 0 ? emptyRows : 1); i++) {
+                tbody.innerHTML += `<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>`;
+            }
+
+            // Totals and Words
+            const total = parseFloat(data.totalRefund);
+            document.getElementById('p-sum-net').innerText = "₹ " + total.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            document.getElementById('p-amount-words').innerText = amountToWords(total);
+
+            // Trigger Print and return to previous page after print dialog closes
+            setTimeout(() => { 
+                window.print(); 
+            }, 500);
+        };
+    </script>
+</body>
+</html>
