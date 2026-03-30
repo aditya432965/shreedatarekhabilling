@@ -36,6 +36,10 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(0,0,0,0.2); }
         th { background: var(--brand-pink); padding: 12px; font-size: 12px; }
         td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 14px; }
+
+        /* New Reprint Style */
+        .btn-reprint { background: #4a5568; color: white; padding: 5px 12px; border-radius: 5px; font-size: 12px; text-decoration: none; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-reprint:hover { background: #2d3748; }
     </style>
 </head>
 <body>
@@ -107,8 +111,9 @@
                     <th>Supplier</th>
                     <th>Bill No</th>
                     <th>Product</th>
-                    <th>Qty Returned</th>
+                    <th>Qty</th>
                     <th>Refund</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="returnLogs"></tbody>
@@ -206,7 +211,6 @@
         document.getElementById("refundAmt").value = "₹" + (rQty * rate).toFixed(2);
     };
 
-    // MODIFIED: Process Return and Redirect to Print
     window.processReturn = async function() {
         const rQty = parseFloat(document.getElementById("returnQty").value);
         const pQty = parseFloat(selectedItemData.qty);
@@ -227,16 +231,14 @@
                 productName: selectedItemData.name,
                 returnQty: rQty,
                 refundAmt: document.getElementById("refundAmt").value,
-                date: new Date().toLocaleDateString() // Using string for easy print display
+                date: new Date().toLocaleDateString()
             };
 
-            // 1. Save Return Transaction to Firebase
             await addDoc(collection(db, "purchase_returns"), {
                 ...returnData,
                 date: serverTimestamp() 
             });
 
-            // 2. Reduce Master Stock
             if(masterStockId) {
                 const itemRef = doc(db, "items", masterStockId);
                 const q = query(collection(db, "items"), where("name", "==", selectedItemData.name));
@@ -248,10 +250,7 @@
                 });
             }
 
-            // 3. Prepare for Print: Store in localStorage
             localStorage.setItem("lastReturn", JSON.stringify(returnData));
-
-            // 4. Redirect to Print Page
             window.location.href = "purchase-print.html";
 
         } catch (e) {
@@ -260,6 +259,13 @@
             btn.innerHTML = "<span>🖨️</span> Confirm, Save & Print Receipt";
         }
     };
+
+    // Helper for reprinting from logs
+    window.reprintReturn = function(dataStr) {
+        const data = JSON.parse(decodeURIComponent(dataStr));
+        localStorage.setItem("lastReturn", JSON.stringify(data));
+        window.location.href = "purchase-print.html";
+    }
 
     async function loadReturnHistory() {
         const q = query(collection(db, "purchase_returns"), orderBy("date", "desc"), limit(10));
@@ -270,6 +276,17 @@
         snap.forEach(d => {
             const data = d.data();
             const date = data.date ? data.date.toDate().toLocaleDateString() : 'Just now';
+            
+            // Clean up data for the reprint button function
+            const printData = JSON.stringify({
+                supplier: data.supplier,
+                billNo: data.billNo,
+                productName: data.productName,
+                returnQty: data.returnQty,
+                refundAmt: data.refundAmt,
+                date: date
+            });
+
             tbody.innerHTML += `
                 <tr>
                     <td>${date}</td>
@@ -278,6 +295,9 @@
                     <td>${data.productName}</td>
                     <td>${data.returnQty}</td>
                     <td style="color:#00ff88">${data.refundAmt}</td>
+                    <td>
+                        <button class="btn-reprint" onclick="reprintReturn('${encodeURIComponent(printData)}')">🖨️ Print</button>
+                    </td>
                 </tr>
             `;
         });
