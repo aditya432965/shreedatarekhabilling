@@ -25,14 +25,13 @@
         input:read-only { background: rgba(255,255,255,0.02); color: #aaa; }
 
         .btn-row { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-save { background: var(--brand-pink); color: white; width: 100%; font-size: 16px; }
         .btn-back { background: #4a5568; color: white; text-decoration: none; padding: 10px 20px; }
         .btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
         .stock-info { background: rgba(255, 47, 146, 0.1); padding: 15px; border-radius: 10px; border: 1px dashed var(--brand-pink); margin-top: 10px; }
         
-        /* Table for Returns */
         .log-section { margin-top: 40px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: rgba(0,0,0,0.2); }
         th { background: var(--brand-pink); padding: 12px; font-size: 12px; }
@@ -94,7 +93,9 @@
             Fetching current master stock...
         </div>
 
-        <button class="btn btn-save" onclick="processReturn()">Confirm & Process Return</button>
+        <button class="btn btn-save" id="savePrintBtn" onclick="processReturn()">
+            <span>🖨️</span> Confirm, Save & Print Receipt
+        </button>
     </div>
 
     <div class="log-section">
@@ -126,9 +127,7 @@
     let selectedItemData = null;
     let masterStockId = null;
 
-    // Initialize: Load Suppliers and Return Logs
     async function init() {
-        // 1. Load Suppliers from your purchases collection
         const q = query(collection(db, "purchases"));
         const snap = await getDocs(q);
         allPurchases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -145,7 +144,6 @@
         loadReturnHistory();
     }
 
-    // Load Bills for selected supplier
     window.loadSupplierBills = function() {
         const supp = document.getElementById("supplierSelect").value;
         const billSelect = document.getElementById("billSelect");
@@ -159,7 +157,6 @@
         });
     };
 
-    // Load Products from selected bill
     window.loadBillProducts = function() {
         const purchaseId = document.getElementById("billSelect").value;
         const productSelect = document.getElementById("productSelect");
@@ -176,7 +173,6 @@
         }
     };
 
-    // Show Details and check Master Stock
     window.showProductDetails = async function() {
         const purchaseId = document.getElementById("billSelect").value;
         const itemIndex = document.getElementById("productSelect").value;
@@ -191,7 +187,6 @@
         document.getElementById("purchasedQty").value = selectedItemData.qty;
         document.getElementById("purRate").value = selectedItemData.rate || (selectedItemData.net / selectedItemData.qty).toFixed(2);
         
-        // Check current stock in 'items' collection
         const q = query(collection(db, "items"), where("name", "==", selectedItemData.name));
         const stockSnap = await getDocs(q);
         
@@ -211,7 +206,7 @@
         document.getElementById("refundAmt").value = "₹" + (rQty * rate).toFixed(2);
     };
 
-    // Process Return Logic
+    // MODIFIED: Process Return and Redirect to Print
     window.processReturn = async function() {
         const rQty = parseFloat(document.getElementById("returnQty").value);
         const pQty = parseFloat(selectedItemData.qty);
@@ -219,16 +214,26 @@
         if(!rQty || rQty <= 0) return alert("Enter valid return quantity");
         if(rQty > pQty) return alert("Return quantity cannot be more than purchased quantity");
 
+        const btn = document.getElementById("savePrintBtn");
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
         try {
-            // 1. Save Return Transaction
             const bill = allPurchases.find(p => p.id === document.getElementById("billSelect").value);
-            await addDoc(collection(db, "purchase_returns"), {
+            
+            const returnData = {
                 supplier: bill.header.supplier,
                 billNo: bill.header.billNo,
                 productName: selectedItemData.name,
                 returnQty: rQty,
                 refundAmt: document.getElementById("refundAmt").value,
-                date: serverTimestamp()
+                date: new Date().toLocaleDateString() // Using string for easy print display
+            };
+
+            // 1. Save Return Transaction to Firebase
+            await addDoc(collection(db, "purchase_returns"), {
+                ...returnData,
+                date: serverTimestamp() 
             });
 
             // 2. Reduce Master Stock
@@ -243,10 +248,16 @@
                 });
             }
 
-            alert("Purchase Return Processed & Stock Updated! ✅");
-            location.reload();
+            // 3. Prepare for Print: Store in localStorage
+            localStorage.setItem("lastReturn", JSON.stringify(returnData));
+
+            // 4. Redirect to Print Page
+            window.location.href = "purchase-print.html";
+
         } catch (e) {
             alert("Error: " + e.message);
+            btn.disabled = false;
+            btn.innerHTML = "<span>🖨️</span> Confirm, Save & Print Receipt";
         }
     };
 
