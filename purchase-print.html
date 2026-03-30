@@ -4,100 +4,149 @@
     <meta charset="UTF-8">
     <title>Purchase Return Receipt</title>
     <style>
-        /* --- ADJUSTABLE DIMENSIONS --- */
         :root {
-            --bill-width: 195mm; 
-            --item-row-height: 10px;
+            --bill-width: 195mm;
+            --accent-color: #f8f9fa;
         }
 
-        body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 0; margin: 0; background: #fff; color: #000; }
         
         .p-container { 
-            border: 1px solid black; 
-            background: white; 
+            border: 2px solid #000; 
             width: var(--bill-width); 
-            margin: auto; 
+            margin: 20px auto; 
             padding: 0; 
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
+        /* Top Bar */
         .p-top-bar { 
-            font-size: 9px; 
-            border-bottom: 1px solid black; 
-            padding: 2px 5px; 
+            font-size: 10px; 
+            border-bottom: 1px solid #000; 
+            padding: 4px 10px; 
             display: flex; 
-            align-items: center;
+            justify-content: space-between;
+            background: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .p-top-bar span { flex: 1; }
-        .p-top-bar .left { text-align: left; }
-        .p-top-bar .center { text-align: center; font-weight: bold; }
-        .p-top-bar .right { text-align: right; }
 
-        .p-header { display: flex; border-bottom: 1px solid black; }
-        .p-comp-info { width: 60%; padding: 5px; border-right: 1px solid black; display: flex; gap: 8px; align-items: center; }
-        .p-logo-print { width: 80px; height: 80px; border-radius: 50%; border: 1px solid #eee; }
-        .p-cust-info { width: 40%; padding: 5px; }
+        /* Header Section */
+        .p-header { display: flex; border-bottom: 1px solid #000; }
         
-        .item-section {
-            min-height: 150px; 
-            border-bottom: 1px solid black;
+        .p-comp-info { 
+            width: 60%; 
+            padding: 15px; 
+            border-right: 1px solid #000; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        
+        .p-logo-print { 
+            width: 70px; 
+            height: 70px; 
+            object-fit: contain;
         }
 
-        .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th { border: 1px solid black; padding: 4px; text-align: center; font-size: 10px; background: #eee; }
-        .p-table td { padding: 8px 4px; text-align: center; font-size: 11px; border-bottom: 1px solid #eee; }
+        .p-cust-info { width: 40%; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        .bill-meta { font-size: 11px; margin-bottom: 10px; }
+        .bill-meta div { display: flex; justify-content: space-between; margin-bottom: 3px; }
 
-        .p-footer { display: flex; border-top: 1px solid black; }
-        .p-foot-left { width: 60%; padding: 10px; border-right: 1px solid black;} 
+        /* Table Section */
+        .item-section { min-height: 250px; }
+        .p-table { width: 100%; border-collapse: collapse; }
+        .p-table th { 
+            border-bottom: 1px solid #000; 
+            border-top: 1px solid #000;
+            padding: 8px; 
+            text-align: center; 
+            font-size: 11px; 
+            background: var(--accent-color);
+            text-transform: uppercase;
+        }
+        .p-table td { padding: 12px 8px; text-align: center; font-size: 12px; border-bottom: 1px dotted #ccc; }
+
+        /* Footer & Totals */
+        .p-footer { display: flex; border-top: 1px solid #000; }
+        .p-foot-left { width: 60%; padding: 15px; border-right: 1px solid #000; } 
         .p-foot-right { width: 40%; }
         
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
-        .p-totals-tbl td { border-bottom: 1px solid black; padding: 10px; text-align: right; font-size: 12px; }
-        
-        .p-words { 
-            font-size: 10px; 
-            text-transform: uppercase; 
-            padding: 10px;
-            border-bottom: 1px solid black;
+        .p-totals-tbl td { 
+            padding: 12px 15px; 
+            text-align: right; 
+            font-size: 14px; 
         }
-        
+        .total-row { font-weight: bold; background: var(--accent-color); font-size: 16px !important; }
+
+        .p-words { 
+            font-size: 11px; 
+            font-style: italic;
+            padding: 10px 15px;
+            border-top: 1px solid #000;
+        }
+
+        /* Signatures */
+        .sign-section { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 50px; 
+            padding: 0 30px 20px 30px; 
+        }
+        .sign-box { 
+            text-align: center; 
+            width: 200px; 
+            font-size: 12px; 
+            border-top: 1px solid #000; 
+            padding-top: 5px; 
+        }
+
         @media print {
-            @page { margin: 0; }
-            body { margin: 0.5cm; }
-            .p-container { border: 1px solid black; }
+            body { margin: 0; }
+            .p-container { margin: 0 auto; border: 2px solid #000; }
+            .no-print { display: none; }
         }
     </style>
 </head>
 <body>
+
+    <div style="text-align: center; padding: 10px;" class="no-print">
+        <button onclick="window.location.href='purchase-return.html'" style="padding: 8px 20px; cursor: pointer;">← Back to Entry</button>
+    </div>
+
     <div class="p-container" id="printable-area">
         <div class="p-top-bar">
-            <span class="left">SUBJECT TO BARAMATI JURISDICTION</span>
-            <span class="center">PURCHASE RETURN (DEBIT NOTE)</span>
-            <span class="right">ORIGINAL</span>
+            <span>Subject to Baramati Jurisdiction</span>
+            <span style="font-weight: bold;">Purchase Return / Debit Note</span>
+            <span>Original Copy</span>
         </div>
 
         <div class="p-header">
             <div class="p-comp-info">
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
                 <div>
-                    <h2 style="margin: 0; font-size: 18px;">SHREE DATTAREKHA ENTERPRISES</h2>
-                    <p style="font-size: 10px; margin-top: 4px; line-height: 1.2;">
-                        Gunwadi Rd, Baramati<br>
-                        Mob No: 9503984711 / 9075621737<br>
-                        GST NO: 27AEOPL5652H1Z4
+                    <h1 style="margin: 0; font-size: 22px; color: #000;">SHREE DATTAREKHA ENTERPRISES</h1>
+                    <p style="font-size: 11px; margin-top: 5px; line-height: 1.4;">
+                        Gunwadi Road, Baramati, Dist. Pune<br>
+                        <strong>Contact:</strong> 9503984711 / 9075621737<br>
+                        <strong>GSTIN:</strong> 27AEOPL5652H1Z4
                     </p>
                 </div>
             </div>
             <div class="p-cust-info">
-                <div style="border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 5px;">
-                    <p style="font-size: 10px; margin: 2px 0;">Return Date: <strong id="p-date"></strong></p>
-                    <p style="font-size: 10px; margin: 2px 0;">Ref Bill No: <strong id="p-ref-bill"></strong></p>
+                <div class="bill-meta">
+                    <div><span>Date:</span> <strong id="p-date"></strong></div>
+                    <div><span>Ref Bill No:</span> <strong id="p-ref-bill"></strong></div>
                 </div>
-                <p style="font-size: 10px; margin: 0;">Supplier:<br>
-                   <strong id="p-suppname" style="font-size: 12px;"></strong>
-                </p>
+                <div style="border-top: 1px solid #eee; padding-top: 10px;">
+                    <span style="font-size: 10px; color: #666; text-transform: uppercase;">Supplier Details:</span><br>
+                    <strong id="p-suppname" style="font-size: 14px;"></strong>
+                </div>
             </div>
         </div>
 
@@ -105,10 +154,10 @@
             <table class="p-table">
                 <thead>
                     <tr>
-                        <th width="30">Sr.</th>
-                        <th>Product Description</th>
-                        <th width="80">Returned Qty</th>
-                        <th width="120">Refund Amount</th>
+                        <th width="40">Sr.</th>
+                        <th style="text-align: left;">Product Name / Description</th>
+                        <th width="100">Return Qty</th>
+                        <th width="150" style="text-align: right; padding-right: 15px;">Refund Amount</th>
                     </tr>
                 </thead>
                 <tbody id="p-items-body">
@@ -116,31 +165,37 @@
             </table>
         </div>
 
-        <div class="p-words">
-            Amount in words: <strong id="p-amount-words"></strong>
-        </div>
-
         <div class="p-footer">
             <div class="p-foot-left">
-                <p style="font-size: 9px;"><strong>Note:</strong> This is a computer generated Debit Note for purchase return items. Please adjust this amount in the next payment cycle.</p>
+                <p style="font-size: 10px; margin: 0; color: #444;">
+                    <strong>Terms:</strong><br>
+                    1. This is a Debit Note issued against the original purchase.<br>
+                    2. Goods once returned are subject to verification.<br>
+                    3. Amount will be adjusted in the upcoming ledger balance.
+                </p>
             </div>
             <div class="p-foot-right">
                 <table class="p-totals-tbl">
-                    <tr style="font-weight:bold; background:#eee;">
-                        <td style="text-align: left;">Total Refund</td>
+                    <tr class="total-row">
+                        <td style="text-align: left; padding-left: 15px;">TOTAL REFUND</td>
                         <td id="p-sum-net">₹0.00</td>
                     </tr>
                 </table>
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding: 20px;">
-            <div style="font-size: 10px; border-top: 1px solid black; width: 150px; text-align: center;"><strong>Receiver's Sign</strong></div>
-            <div style="font-size: 10px; border-top: 1px solid black; width: 150px; text-align: center;"><strong>For Shree Datarekha</strong></div>
+        <div class="p-words">
+            Amount in words: <strong id="p-amount-words"></strong>
+        </div>
+
+        <div class="sign-section">
+            <div class="sign-box">Supplier's Signature</div>
+            <div class="sign-box">For Shree Datarekha Enterprises</div>
         </div>    
     </div>
 
     <script>
+        // Standard Amount to Words function
         function amountToWords(amount) {
             var words = new Array();
             words[0] = ''; words[1] = 'One'; words[2] = 'Two'; words[3] = 'Three'; words[4] = 'Four';
@@ -182,42 +237,30 @@
         }
 
         window.onload = function() {
-            // Get data from localStorage
             const data = JSON.parse(localStorage.getItem("lastReturn"));
-            if(!data) {
-                alert("No return data found!");
-                return;
-            }
+            if(!data) return;
 
-            // Fill Header Info
             document.getElementById('p-date').innerText = data.date;
             document.getElementById('p-ref-bill').innerText = data.billNo;
             document.getElementById('p-suppname').innerText = data.supplier;
 
-            // Fill Table
             const tbody = document.getElementById('p-items-body');
             tbody.innerHTML = `
                 <tr>
                     <td>1</td>
-                    <td style="text-align: left;">${data.productName}</td>
-                    <td>${data.returnQty}</td>
-                    <td>${data.refundAmt}</td>
+                    <td style="text-align: left; font-weight: bold;">${data.productName}</td>
+                    <td>${data.returnQty} Nos</td>
+                    <td style="text-align: right; padding-right: 15px;">${data.refundAmt}</td>
                 </tr>
             `;
 
-            // Fill Summary
             document.getElementById('p-sum-net').innerText = data.refundAmt;
 
-            // Convert refund amount to words (removing the ₹ symbol)
             const numericAmount = parseFloat(data.refundAmt.replace(/[^\d.-]/g, ''));
             document.getElementById('p-amount-words').innerText = amountToWords(numericAmount);
 
-            // Auto Print
-            setTimeout(() => { 
-                window.print(); 
-                // Optional: Go back to return page after printing
-                // window.location.href = "purchase-return.html";
-            }, 800);
+            // Auto-trigger print
+            setTimeout(() => { window.print(); }, 1000);
         };
     </script>
 </body>
