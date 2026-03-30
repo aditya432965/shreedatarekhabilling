@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <title>Purchase Return Receipt</title>
     <style>
+        /* --- FIXED DIMENSIONS FOR YOUR PAPER --- */
         :root {
-            --bill-width: 195mm; /* Fixed width to fit paper */
+            --bill-width: 195mm; 
             --item-row-height: 25px;
         }
 
         body { font-family: 'Arial', sans-serif; padding: 0; margin: 0; background: white; color: black; }
         
+        /* Main Container with Fixed Width */
         .p-container { 
             border: 1px solid black; 
             background: white; 
@@ -28,64 +30,69 @@
             padding: 4px 10px; 
             display: flex; 
             justify-content: space-between;
-            font-weight: bold;
+            background: #f0f0f0;
         }
 
         .p-header { display: flex; border-bottom: 1px solid black; }
         .p-comp-info { width: 60%; padding: 10px; border-right: 1px solid black; display: flex; gap: 12px; align-items: center; }
-        .p-logo-print { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
-        .p-cust-info { width: 40%; padding: 10px; }
+        .p-logo-print { width: 70px; height: 70px; border-radius: 50%; border: 1px solid #eee; }
+        .p-cust-info { width: 40%; padding: 10px; background: #fafafa; }
         
-        /* FIXED ITEM SECTION - Set height to fit exactly 10 rows */
+        /* Fixed Height Item Section */
         .item-section {
-            min-height: 300px; 
+            min-height: 150px; 
             border-bottom: 1px solid black;
         }
 
         .p-table { width: 100%; border-collapse: collapse; }
-        .p-table th { border: 1px solid black; padding: 5px; text-align: center; font-size: 11px; background: #f2f2f2; }
-        .p-table td { padding: 5px; text-align: center; font-size: 12px; height: var(--item-row-height); border-right: 1px solid black; border-left: 1px solid black; }
-        .p-table tr.item-row { border-bottom: 1px solid #eee; }
+        .p-table th { border: 1px solid black; padding: 5px; text-align: center; font-size: 11px; background: #eee; }
+        .p-table td { padding: 8px 5px; text-align: center; font-size: 12px; border-bottom: 1px solid #eee; }
 
         .p-footer { display: flex; border-top: 1px solid black; }
-        .p-foot-left { width: 60%; padding: 10px; border-right: 1px solid black; } 
+        .p-foot-left { width: 60%; padding: 10px; border-right: 1px solid black; font-size: 10px; } 
         .p-foot-right { width: 40%; }
         
         .p-totals-tbl { width: 100%; border-collapse: collapse; }
-        .p-totals-tbl td { border-bottom: 1px solid black; padding: 8px; text-align: right; font-size: 13px; }
+        .p-totals-tbl td { border-bottom: 1px solid black; padding: 10px; text-align: right; font-size: 12px; }
         
         .p-words { 
-            font-size: 11px; 
+            font-size: 10px; 
             text-transform: uppercase; 
             padding: 10px;
             border-bottom: 1px solid black;
+            background: #fdfdfd;
         }
         
-        .sign-section { display: flex; justify-content: space-between; align-items: flex-end; padding: 30px 15px 10px 15px; }
+        .sig-section {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            padding: 30px 15px 10px 15px;
+        }
 
         @media print {
-            @page { size: portrait; margin: 0; }
+            @page { size: auto; margin: 5mm; }
             body { margin: 0; }
-            .p-container { border: 1px solid black; margin: 0 auto; }
+            .p-container { border: 1px solid black; margin: 0; }
             .no-print { display: none; }
         }
     </style>
 </head>
 <body>
+
     <div class="p-container" id="printable-area">
         <div class="p-top-bar">
-            <span>DEBIT NOTE</span>
-            <span>PURCHASE RETURN RECEIPT</span>
-            <span>ORIGINAL</span>
+            <span>PURCHASE RETURN VOUCHER</span>
+            <span style="font-weight: bold;">ORIGINAL RECEIPT</span>
         </div>
 
         <div class="p-header">
             <div class="p-comp-info">
                 <img src="eat.png" class="p-logo-print" onerror="this.style.display='none'">
                 <div>
-                    <h2 style="margin: 0; font-size: 20px;">SHREE DATTAREKHA ENTERPRISES</h2>
-                    <p style="font-size: 11px; margin-top: 4px; line-height: 1.3;">
-                        Gunwadi Rd, Baramati<br>
+                    <h2 style="margin: 0; font-size: 18px; color: #8e1446;">SHREE DATTAREKHA ENTERPRISES</h2>
+                    <p style="font-size: 10px; margin-top: 4px; line-height: 1.4;">
+                        Gunwadi Rd, Baramati, Dist - Pune<br>
                         Mob: 9503984711 / 9075621737<br>
                         GST: 27AEOPL5652H1Z4
                     </p>
@@ -93,11 +100,10 @@
             </div>
             <div class="p-cust-info">
                 <p style="font-size: 11px; margin: 0;"><strong>Date:</strong> <span id="p-date"></span></p>
-                <p style="font-size: 11px; margin: 5px 0;"><strong>Ref Bill No:</strong> <span id="p-billno"></span></p>
-                <div style="margin-top: 10px; border-top: 1px solid #ccc; pt: 5px;">
-                    <p style="font-size: 10px; color: #555; margin-bottom: 2px;">Returned To:</p>
-                    <strong id="p-suppname" style="font-size: 13px;"></strong>
-                </div>
+                <p style="font-size: 11px; margin: 5px 0;"><strong>Ref Bill No:</strong> <span id="p-ref-bill"></span></p>
+                <hr style="border: 0; border-top: 1px solid #ddd;">
+                <p style="font-size: 10px; margin: 0;">Returned To:</p>
+                <p style="font-size: 13px; margin: 2px 0;"><strong id="p-supplier"></strong></p>
             </div>
         </div>
 
@@ -105,10 +111,10 @@
             <table class="p-table">
                 <thead>
                     <tr>
-                        <th width="40">Sr.</th>
-                        <th>Product Description</th>
-                        <th width="100">Return Qty</th>
-                        <th width="120">Refund Amount</th>
+                        <th width="10%">Sr.</th>
+                        <th width="60%">Product Description</th>
+                        <th width="15%">Return Qty</th>
+                        <th width="15%">Refund Amt</th>
                     </tr>
                 </thead>
                 <tbody id="p-items-body">
@@ -122,89 +128,85 @@
 
         <div class="p-footer">
             <div class="p-foot-left">
-                <p style="font-size: 10px; line-height: 1.4;">
-                    <strong>Terms:</strong><br>
-                    1. This is a computer generated Debit Note.<br>
-                    2. Stock has been adjusted in the inventory.<br>
-                    3. Refund amount subject to supplier verification.
-                </p>
+                <strong>Terms:</strong><br>
+                1. This is a computer generated return voucher.<br>
+                2. Goods once returned against valid bills only.<br>
+                3. Subject to Baramati Jurisdiction.
             </div>
             <div class="p-foot-right">
                 <table class="p-totals-tbl">
                     <tr style="font-weight:bold; background:#eee;">
                         <td style="text-align: left;">Total Refund</td>
-                        <td id="p-sum-net">0.00</td>
+                        <td id="p-sum-net" style="font-size: 14px;">0.00</td>
                     </tr>
                 </table>
             </div>
         </div>
 
-        <div class="sign-section">
+        <div class="sig-section">
             <div style="font-size: 11px; text-align: center; border-top: 1px solid black; width: 150px; padding-top: 5px;">Receiver's Sign</div>
             <div style="font-size: 11px; text-align: center; border-top: 1px solid black; width: 150px; padding-top: 5px;">For Shree Datarekha</div>
         </div>    
     </div>
 
     <script>
+        // Simple Amount to Words conversion
         function amountToWords(amount) {
-            let words = {
-                0: '', 1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six', 7: 'Seven', 8: 'Eight', 9: 'Nine',
-                10: 'Ten', 11: 'Eleven', 12: 'Twelve', 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen', 
-                17: 'Seventeen', 18: 'Eighteen', 19: 'Nineteen', 20: 'Twenty', 30: 'Thirty', 40: 'Forty', 
-                50: 'Fifty', 60: 'Sixty', 70: 'Seventy', 80: 'Eighty', 90: 'Ninety'
-            };
+            if (amount == 0) return "Zero Rupees Only";
+            var a = ['','One ','Two ','Three ','Four ','Five ','Six ','Seven ','Eight ','Nine ','Ten ','Eleven ','Twelve ','Thirteen ','Fourteen ','Fifteen ','Sixteen ','Seventeen ','Eighteen ','Nineteen '];
+            var b = ['', '', 'Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
             
-            amount = Math.floor(amount);
-            if (amount === 0) return "Zero Rupees Only";
-
-            function convert(n) {
-                if (n < 20) return words[n];
-                if (n < 100) return words[Math.floor(n / 10) * 10] + (n % 10 !== 0 ? " " + words[n % 10] : "");
-                if (n < 1000) return words[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " and " + convert(n % 100) : "");
-                if (n < 100000) return convert(Math.floor(n / 1000)) + " Thousand" + (n % 1000 !== 0 ? " " + convert(n % 1000) : "");
-                return n;
+            function inWords (num) {
+                if ((num = num.toString()).length > 9) return 'overflow';
+                var n = ('000000000' + num).substr(-9).match(/^(\hd{2})(\hd{2})(\hd{2})(\hd{1})(\hd{2})$/);
+                if (!n) return; var str = '';
+                str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+                str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+                str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+                str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+                str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Rupees Only' : '';
+                return str;
             }
-
-            return convert(amount) + " Rupees Only";
+            return inWords(Math.floor(amount));
         }
 
         window.onload = function() {
-            // Get data from localStorage saved by purchase-return.html
             const data = JSON.parse(localStorage.getItem("lastReturn"));
             if(!data) {
                 alert("No return data found!");
                 return;
             }
 
-            document.getElementById('p-date').innerText = data.date;
-            document.getElementById('p-billno').innerText = data.billNo;
-            document.getElementById('p-suppname').innerText = data.supplier;
-            
-            // Generate rows
-            let rows = "";
-            // Item row
-            rows += `<tr class="item-row">
-                <td>1</td>
-                <td style="text-align: left; padding-left: 15px;">${data.productName}</td>
-                <td>${data.returnQty}</td>
-                <td style="text-align: right; padding-right: 15px;">${data.refundAmt}</td>
-            </tr>`;
+            // Fill Header
+            document.getElementById('p-date').innerText = data.date || new Date().toLocaleDateString();
+            document.getElementById('p-ref-bill').innerText = data.billNo;
+            document.getElementById('p-supplier').innerText = data.supplier;
 
-            // Add 9 empty rows to keep the bill size fixed (Total 10 rows)
-            for(let i = 1; i < 10; i++) {
-                rows += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
+            // Fill Table
+            const tbody = document.getElementById('p-items-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td>1</td>
+                    <td style="text-align: left;">${data.productName}</td>
+                    <td>${data.returnQty}</td>
+                    <td>${data.refundAmt}</td>
+                </tr>
+            `;
+
+            // Fill empty rows to maintain fixed height
+            for(let i=0; i<3; i++) {
+                tbody.innerHTML += `<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>`;
             }
 
-            document.getElementById('p-items-body').innerHTML = rows;
-            document.getElementById('p-sum-net').innerText = data.refundAmt;
-
-            // Handle Words (Remove ₹ symbol for calculation)
-            const numericValue = parseFloat(data.refundAmt.replace(/[^\d.-]/g, ''));
-            document.getElementById('p-amount-words').innerText = amountToWords(numericValue);
+            // Totals
+            const refundClean = data.refundAmt.replace('₹', '');
+            document.getElementById('p-sum-net').innerText = "₹" + refundClean;
+            document.getElementById('p-amount-words').innerText = amountToWords(parseFloat(refundClean));
 
             // Auto Print
-            setTimeout(() => {
-                window.print();
+            setTimeout(() => { 
+                window.print(); 
+                // Optional: window.location.href = "purchase-return.html"; 
             }, 800);
         };
     </script>
