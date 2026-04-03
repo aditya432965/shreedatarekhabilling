@@ -20,8 +20,8 @@
         .input-group { flex: 1; display: flex; flex-direction: column; min-width: 250px; }
         
         .input-group label { font-size: 12px; color: #a0d8ef; margin-bottom: 5px; }
-        select, input { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; transition: 0.3s; width: 100%; }
-        input:focus { border-color: var(--primary); }
+        select, input, textarea { padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; transition: 0.3s; width: 100%; }
+        input:focus, textarea:focus { border-color: var(--primary); }
         
         .table-container { overflow-x: auto; background: #1e293b; border-radius: 12px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 1300px; }
@@ -33,7 +33,7 @@
         .summary-box { border-bottom: 1px solid #334155; padding-bottom: 5px; }
         .summary-box span { display: block; font-size: 11px; color: #94a3b8; }
         .summary-box strong { font-size: 18px; color: #10b981; }
-        .summary-box input { background: transparent; border: 1px dashed #334155; padding: 2px 5px; font-size: 18px; color: #f87171; font-weight: bold; }
+        .summary-box input { background: transparent; border: 1px dashed #334155; padding: 2px 5px; font-size: 18px; color: #f87171; font-weight: bold; width: 100%; margin-top: 5px;}
 
         .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; align-items: flex-end; }
         button { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
@@ -134,16 +134,22 @@
     </table>
 </div>
 
-<div style="display: flex; gap: 10px;">
-    <button onclick="addRow()" style="background:#334155; color:white; margin-bottom:15px; padding: 10px 20px; border-radius: 8px; cursor: pointer;">+ Add Item</button>
-    <button onclick="toggleAddDisc()" style="background:#4b5563; color:white; margin-bottom:15px; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Additional Discount</button>
+<div style="display: flex; gap: 15px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <button onclick="addRow()" style="background:#334155; color:white; padding: 10px 20px; border-radius: 8px; cursor: pointer;">+ Add Item</button>
+        <button onclick="toggleAddDisc()" style="background:#4b5563; color:white; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Additional Discount</button>
+    </div>
+    <div class="input-group" style="min-width: 300px; flex: 1;">
+        <label>Remark / Note (Visible on Bill)</label>
+        <input type="text" id="billRemark" placeholder="e.g. Warranty 1 Year, Paid by GPay, etc.">
+    </div>
 </div>
 
-<div class="summary-grid">
+<div class="summary-grid" style="margin-top: 20px;">
     <div class="summary-box"><span>Gross Total</span><strong id="sumTotalSale">0.00</strong></div>
-    <div class="summary-box"><span>Total Disc</span><strong id="sumTotalDisc">0.00</strong></div>
+    <div class="summary-box"><span>Total Disc (Items)</span><strong id="sumTotalDisc">0.00</strong></div>
     <div class="summary-box" id="addDiscBox" style="display: none;">
-        <span>Additional Disc (₹)</span>
+        <span>Addl. Discount (₹)</span>
         <input type="number" id="addDiscAmt" value="0" oninput="window.calculateFinal()">
     </div>
     <div class="summary-box"><span>Total GST</span><strong id="sumGST">0.00</strong></div>
@@ -206,8 +212,8 @@ window.toggleAddDisc = function() {
     box.style.display = box.style.display === 'none' ? 'block' : 'none';
     if(box.style.display === 'none') {
         document.getElementById('addDiscAmt').value = 0;
-        window.calculateFinal();
     }
+    window.calculateFinal();
 }
 
 window.updatePartyDetails = function() {
@@ -276,7 +282,7 @@ window.handleTaxModeChange = function() {
 window.calculateFinal = function() {
     let tGross = 0, tDisc = 0, tGst = 0, tNet = 0;
     const mode = document.getElementById('taxMode').value;
-    const addDisc = parseFloat(document.getElementById('addDiscAmt').value) || 0;
+    const addDiscAmt = parseFloat(document.getElementById('addDiscAmt').value) || 0;
 
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const displayedRate = parseFloat(row.querySelector('.rate').value) || 0;
@@ -313,10 +319,11 @@ window.calculateFinal = function() {
     });
 
     document.getElementById('sumTotalSale').innerText = tGross.toFixed(2);
-    document.getElementById('sumTotalDisc').innerText = (tDisc + addDisc).toFixed(2);
+    document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
     document.getElementById('sumGST').innerText = (mode === "WITHOUT_GST") ? "0.00" : tGst.toFixed(2);
     
-    const finalRounded = Math.round(tNet - addDisc);
+    // Net total is Items Net Total minus the separate Additional Discount
+    const finalRounded = Math.round(tNet - addDiscAmt);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
     const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
     document.getElementById('sumBalance').innerText = (finalRounded - paid).toFixed(2);
@@ -369,10 +376,11 @@ window.saveSale = async function(shouldPrint = false) {
         taxMode: document.getElementById('taxMode').value,
         custMeta: document.getElementById('partyMeta').value,
         date: document.getElementById('saleDate').value,
+        remark: document.getElementById('billRemark').value,
         items: billItems,
         summary: {
             gross: document.getElementById('sumTotalSale').innerText,
-            disc: document.getElementById('sumTotalDisc').innerText,
+            itemTotalDisc: document.getElementById('sumTotalDisc').innerText,
             additionalDisc: document.getElementById('addDiscAmt').value,
             gst: calculateTotalGstInternal(),
             net: document.getElementById('sumNet').innerText
