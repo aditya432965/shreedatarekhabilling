@@ -57,9 +57,9 @@
         .p-table td { padding: 3px; text-align: center; font-size: 9px; height: var(--item-row-height); border: none; }
         .has-border td { border: 1px solid #d1d1d1; }
 
-        .p-footer { display: flex; solid black; }
-        .p-foot-left { width: 35%; padding: 5px;  solid black; } 
-        .p-foot-mid { width: 25%; padding: 5px; text-align: center; solid black; } 
+        .p-footer { display: flex; }
+        .p-foot-left { width: 35%; padding: 5px; } 
+        .p-foot-mid { width: 25%; padding: 5px; text-align: center; } 
         .p-qr-img { width: 70px; height: 70px; object-fit: contain; padding-left: 100px; }
         .p-foot-right { width: 40%; }
         
@@ -128,6 +128,7 @@
                     <tr>
                         <th width="5">Sr.</th>
                         <th width="180">Item Name </th>
+                        <th width="30">Unit</th>
                         <th width="50">HSN</th>
                         <th width="5">Qty</th>
                         <th width="5">Free</th>
@@ -145,13 +146,16 @@
 
         <div class="p-footer">
             <div class="p-foot-left">
+                <div style="margin-bottom: 5px; font-size: 9px;">
+                    <strong>Remark:</strong> <span id="p-remark-box">NA</span>
+                </div>
                 <div class="p-bank">
                     <strong>Bank Details</strong><br>
                     Bank: YES Bank, Baramati<br>
                     A/C: 049061900000596<br>
                     IFSC: YESB0000490
                 </div>
-                <p style="font-size: 8px; line-height: 1;">Remark: Certified that the particulars given above are true and correct.</p>
+                <p style="font-size: 8px; line-height: 1;"><strong>Declaration:</strong> Certified that the particulars given above are true and correct.</p>
             </div>
             <div class="p-foot-mid" style="display: flex; align-items: center; justify-content: center;">
                 <img src="qr-code.jpg" class="p-qr-img">
@@ -161,6 +165,7 @@
                     <tr><td>Gross Total</td><td id="p-sum-total">0.00</td></tr>
                     <tr><td>Total Disc.</td><td id="p-sum-disc">0.00</td></tr>
                     <tr class="tax-row"><td>GST Total</td><td id="p-sum-gst">0.00</td></tr>
+                    <tr id="p-row-add-disc" style="display:none; color: #d00;"><td>Addl. Discount</td><td id="p-sum-add-disc">0.00</td></tr>
                     <tr style="font-weight:bold; background:#eee;"><td>Net Amount</td><td id="p-sum-net">0.00</td></tr>
                 </table>
             </div>
@@ -223,10 +228,7 @@
             const itemCount = data.items.length;
             const container = document.getElementById('printable-area');
 
-            // Threshold set to 10 items
-            if (itemCount > 10) {
-                container.classList.add('full-a4');
-            }
+            if (itemCount > 10) { container.classList.add('full-a4'); }
 
             const taxMode = (data.taxMode || "").trim().toUpperCase();
             if(taxMode === "WITH_GST") {
@@ -253,6 +255,9 @@
                 document.getElementById('p-custmeta').innerHTML = data.custMeta.split('|').map(item => item.trim()).join('<br>');
             }
 
+            // Set Remark
+            document.getElementById('p-remark-box').innerText = data.remark || "NA";
+
             let rows = "";
             let totalGstCalculated = 0;
 
@@ -274,6 +279,7 @@
                 rows += `<tr class="has-border">
                     <td>${i+1}</td>
                     <td style="text-align: left; padding-left: 5px;">${item.name}</td>
+                    <td>${item.unit || '-'}</td>
                     <td>${item.hsn || '9109'}</td>
                     <td>${item.qty}</td>
                     <td>${item.free || 0}</td>
@@ -286,11 +292,10 @@
                 </tr>`;
             });
 
-            // Adjusted loop to fill up to exactly 10 rows
             if(itemCount < 10) {
                 for(let k = itemCount; k < 10; k++) {
                     rows += `<tr>
-                        <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        <td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                         <td class="tax-col"></td><td class="tax-col"></td><td></td>
                     </tr>`;
                 }
@@ -298,9 +303,16 @@
 
             document.getElementById('p-items-body').innerHTML = rows;
             document.getElementById('p-sum-total').innerText = data.summary.gross;
-            document.getElementById('p-sum-disc').innerText = data.summary.disc;
+            document.getElementById('p-sum-disc').innerText = data.summary.itemTotalDisc || data.summary.disc;
             document.getElementById('p-sum-gst').innerText = totalGstCalculated.toFixed(2);
             document.getElementById('p-sum-net').innerText = data.summary.net;
+
+            // Handle Additional Discount Visibility
+            const addDisc = parseFloat(data.summary.additionalDisc) || 0;
+            if(addDisc > 0) {
+                document.getElementById('p-row-add-disc').style.display = 'table-row';
+                document.getElementById('p-sum-add-disc').innerText = addDisc.toFixed(2);
+            }
             
             const finalNet = Math.round(parseFloat(data.summary.net));
             document.getElementById('p-amount-words').innerText = amountToWords(finalNet);
