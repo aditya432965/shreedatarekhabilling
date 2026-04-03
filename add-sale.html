@@ -27,7 +27,9 @@
         table { width: 100%; border-collapse: collapse; min-width: 1300px; }
         th { background: #334155; padding: 12px; font-size: 13px; color: #a0d8ef; text-align: left; }
         td { padding: 8px; border-bottom: 1px solid #334155; }
-        .row-input { width: 100%; background: transparent; border: none; color: white; }
+        .row-input { width: 100%; background: transparent; border: none; color: white; outline: none; }
+        /* Ensuring readonly inputs are still clearly visible */
+        .row-input[readonly] { color: #a0d8ef; cursor: default; }
 
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
         .summary-box { border-bottom: 1px solid #334155; padding-bottom: 5px; }
@@ -230,9 +232,9 @@ window.addRow = function() {
     const row = tbody.insertRow();
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><input type="text" class="row-input i-group" placeholder="Group" readonly tabindex="-1"></td>
+        <td><input type="text" class="row-input i-group" placeholder="Group" readonly></td>
         <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)"></td>
-        <td><input type="text" class="row-input i-unit" placeholder="Unit" readonly tabindex="-1"></td>
+        <td><input type="text" class="row-input i-unit" placeholder="Unit" readonly></td>
         <td><input type="number" class="row-input mrp" value="0" readonly></td>
         <td><input type="number" class="row-input rate" value="0" data-base-rate="0" oninput="window.calculateFinal()"></td>
         <td><input type="number" class="row-input disc" value="0" oninput="window.calculateFinal()"></td>
@@ -247,11 +249,12 @@ window.autoFillByName = function(input) {
     const row = input.closest('tr');
     const item = items.find(i => i.name === input.value);
     const mode = document.getElementById('taxMode').value;
+    
     if(item) {
         const baseRate = item.sale || 0;
         const gstPerc = item.gst || 0;
         
-        // Fix for Unit column not appearing
+        // Directly setting values to ensure they appear
         row.querySelector('.i-group').value = item.group || ''; 
         row.querySelector('.i-unit').value = item.unit || ''; 
         row.querySelector('.mrp').value = item.mrp || 0;
@@ -264,6 +267,11 @@ window.autoFillByName = function(input) {
             row.querySelector('.rate').value = baseRate;
         }
         window.calculateFinal();
+    } else {
+        // Clear row if item name is deleted
+        row.querySelector('.i-group').value = '';
+        row.querySelector('.i-unit').value = '';
+        row.querySelector('.mrp').value = 0;
     }
 };
 
@@ -358,7 +366,7 @@ window.saveSale = async function(shouldPrint = false) {
             billItems.push({
                 group: row.querySelector('.i-group').value,
                 name: name,
-                unit: row.querySelector('.i-unit').value, // Saved correctly
+                unit: row.querySelector('.i-unit').value,
                 qty: qty,
                 rate: dispRate,
                 mrp: row.querySelector('.mrp').value,
@@ -397,7 +405,7 @@ window.saveSale = async function(shouldPrint = false) {
             localStorage.setItem("lastBill", JSON.stringify(saleData));
             document.getElementById('printModal').style.display = 'flex';
         } else {
-            alert("Success! Saved for Tax Reports.");
+            alert("Success! Saved.");
             location.reload();
         }
     } catch (e) { alert("Error: " + e.message); }
