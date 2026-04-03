@@ -76,6 +76,7 @@
             padding-left: 450px;
             margin-bottom: -15px;
             margin-top: -10px;
+            font-weight: bold !important;
         }
         
         .tax-col, .tax-row { display: none; }
@@ -130,10 +131,10 @@
                         <th width="180">Item Name </th>
                         <th width="30">Unit</th>
                         <th width="50">HSN</th>
-                        <th width="5">Qty</th>
+                        <th width="20">Qty</th>
                         <th width="5">Free</th>
                         <th width="40">MRP</th>
-                        <th width="40">Rate</th>
+                        <th width="35">Rate</th>
                         <th width="30">Disc</th> 
                         <th class="tax-col" width="30">GST%</th>
                         <th class="tax-col" width="40">GST Amt</th>
@@ -162,7 +163,10 @@
             </div>
             <div class="p-foot-right">
                 <table class="p-totals-tbl">
-                    <tr><td>Gross Total</td><td id="p-sum-total">0.00</td></tr>
+                <tr>
+    <td style="border-top: none !important;">Gross Total</td>
+    <td id="p-sum-total" style="border-top: none !important;">0.00</td>
+</tr>
                     <tr><td>Total Disc.</td><td id="p-sum-disc">0.00</td></tr>
                     <tr class="tax-row"><td>GST Total</td><td id="p-sum-gst">0.00</td></tr>
                     <tr id="p-row-add-disc" style="display:none; color: #d00;"><td>Addl. Discount</td><td id="p-sum-add-disc">0.00</td></tr>
