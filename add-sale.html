@@ -250,6 +250,8 @@ window.autoFillByName = function(input) {
     if(item) {
         const baseRate = item.sale || 0;
         const gstPerc = item.gst || 0;
+        
+        // Fix for Unit column not appearing
         row.querySelector('.i-group').value = item.group || ''; 
         row.querySelector('.i-unit').value = item.unit || ''; 
         row.querySelector('.mrp').value = item.mrp || 0;
@@ -322,7 +324,6 @@ window.calculateFinal = function() {
     document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
     document.getElementById('sumGST').innerText = (mode === "WITHOUT_GST") ? "0.00" : tGst.toFixed(2);
     
-    // Net total is Items Net Total minus the separate Additional Discount
     const finalRounded = Math.round(tNet - addDiscAmt);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
     const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
@@ -357,7 +358,7 @@ window.saveSale = async function(shouldPrint = false) {
             billItems.push({
                 group: row.querySelector('.i-group').value,
                 name: name,
-                unit: row.querySelector('.i-unit').value,
+                unit: row.querySelector('.i-unit').value, // Saved correctly
                 qty: qty,
                 rate: dispRate,
                 mrp: row.querySelector('.mrp').value,
