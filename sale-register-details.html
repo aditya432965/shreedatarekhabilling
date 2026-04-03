@@ -39,7 +39,6 @@
         .btn-pdf { background: #059669 !important; color: white !important; display: none; }
         .btn-excel { background: #1d4ed8 !important; color: white !important; display: none; margin-left: 10px; }
 
-        /* Report Preview Styled to match PDF structure exactly */
         #reportPreview {
             background: white;
             padding: 15mm;
@@ -57,7 +56,6 @@
 
         .report-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         
-        /* Matching the PDF "Plain" theme with specific borders */
         .report-table th { 
             border-top: 1px solid #000; 
             border-bottom: 1px solid #000; 
@@ -66,12 +64,11 @@
             background: #fff;
         }
         
-        .report-table td { padding: 6px 4px; vertical-align: top; border: none; font-weight: bold; }
+        .report-table td { padding: 6px 4px; vertical-align: top; border: none; }
         
-        /* The specific PDF layout borders applied to the screen view */
-        .party-name-row td { border-top: 1px solid #000 !important; padding-top: 8px; }
-        .subtotal-row td { border-bottom: 1px solid #000 !important; padding-bottom: 8px; }
-        .total-footer td { border-top: 1px solid #000 !important; border-bottom: 1px solid #000 !important; padding: 10px 4px; font-size: 14px; }
+        .party-name-row td { border-top: 1px solid #000 !important; padding-top: 8px; font-weight: bold; }
+        .subtotal-row td { border-bottom: 1px solid #000 !important; padding-bottom: 8px; font-weight: bold; }
+        .total-footer td { border-top: 1px solid #000 !important; border-bottom: 1px solid #000 !important; padding: 10px 4px; font-size: 14px; font-weight: bold !important; }
         
         .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; }
 
@@ -224,7 +221,7 @@
                 let breakdownStr = breakdownArr.length > 0 ? `<br><small>(${breakdownArr.join(' | ')})</small>` : '';
 
                 body.innerHTML += `<tr class="subtotal-row">
-                    <td colspan="4" style="text-align: right;">Bill Total (No: ${sale.billNo}) ===></td>
+                    <td colspan="4" style="text-align: right;">Bill Total ===></td>
                     <td style="text-align: right"><b>${totalTaxable.toFixed(2)}</b></td>
                     <td colspan="2" style="text-align: right; font-size: 11px;">
                         <b>Total GST: ${totalGst.toFixed(2)}</b>${breakdownStr}
@@ -243,21 +240,29 @@
         else if (activeReportType === 'DETAILS') {
             title.innerText = "GST Sale Register (Detailed Report)";
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th style="text-align: left;">Item Name</th><th>MRP</th><th>Rate</th><th>Qty</th><th>Disc</th><th>GST%</th><th>GST Amt</th><th>Net Amt</th></tr>`;
+            let gQ = 0, gD = 0, gG = 0, gN = 0;
             fetchedSales.forEach(sale => {
                 body.innerHTML += `<tr class="party-name-row"><td colspan="10" style="text-align: left;"><b>${sale.billNo} | ${sale.customerName}</b></td></tr>`;
                 sale.items.forEach(item => {
                     body.innerHTML += `<tr><td></td><td>${formatDate(sale.date)}</td><td style="text-align: left;">${item.name}</td><td>${item.mrp}</td><td>${item.rate}</td><td>${item.qty}</td><td>${item.disc || 0}</td><td>${item.gst}%</td><td>${item.gstAmt || 0}</td><td><b>${item.net}</b></td></tr>`;
                 });
-                body.innerHTML += `<tr class="subtotal-row"><td colspan="5" align="right">Bill Sub Total ===></td><td><b>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</b></td><td>${sale.summary.disc}</td><td></td><td>${sale.summary.gst}</td><td><b>${sale.summary.net}</b></td></tr>`;
+                const sQ = sale.items.reduce((acc, i) => acc + Number(i.qty), 0);
+                body.innerHTML += `<tr class="subtotal-row"><td colspan="5" align="right">Bill Sub Total ===></td><td><b>${sQ}</b></td><td>${sale.summary.disc}</td><td></td><td>${sale.summary.gst}</td><td><b>${sale.summary.net}</b></td></tr>`;
+                gQ += sQ; gD += Number(sale.summary.disc); gG += Number(sale.summary.gst); gN += Number(sale.summary.net);
             });
+            body.innerHTML += `<tr class="total-footer"><td colspan="5" align="right">GRAND TOTALS ===></td><td>${gQ}</td><td>${gD.toFixed(2)}</td><td></td><td>${gG.toFixed(2)}</td><td>${gN.toFixed(2)}</td></tr>`;
         }
         else if (activeReportType === 'SUMMARY') {
             title.innerText = "GST Sale Register (Summary Report)";
             head.innerHTML = `<tr><th>Bill No</th><th>Date</th><th>Qty</th><th>Gross Amt</th><th>Disc Amt</th><th>CGST</th><th>SGST</th><th>Net Amount</th></tr>`;
+            let gQ = 0, gGr = 0, gD = 0, gC = 0, gS = 0, gN = 0;
             fetchedSales.forEach(sale => {
                 const tax = (parseFloat(sale.summary.gst) / 2).toFixed(2);
-                body.innerHTML += `<tr><td><b>${sale.billNo}</b></td><td>${formatDate(sale.date)}</td><td>${sale.items.reduce((acc, i) => acc + Number(i.qty), 0)}</td><td>${sale.summary.gross}</td><td>${sale.summary.disc}</td><td>${tax}</td><td>${tax}</td><td><b>${sale.summary.net}</b></td></tr>`;
+                const sQ = sale.items.reduce((acc, i) => acc + Number(i.qty), 0);
+                body.innerHTML += `<tr><td><b>${sale.billNo}</b></td><td>${formatDate(sale.date)}</td><td>${sQ}</td><td>${sale.summary.gross}</td><td>${sale.summary.disc}</td><td>${tax}</td><td>${tax}</td><td><b>${sale.summary.net}</b></td></tr>`;
+                gQ += sQ; gGr += Number(sale.summary.gross); gD += Number(sale.summary.disc); gC += Number(tax); gS += Number(tax); gN += Number(sale.summary.net);
             });
+            body.innerHTML += `<tr class="total-footer"><td colspan="2" align="right">GRAND TOTALS ===></td><td>${gQ}</td><td>${gGr.toFixed(2)}</td><td>${gD.toFixed(2)}</td><td>${gC.toFixed(2)}</td><td>${gS.toFixed(2)}</td><td>${gN.toFixed(2)}</td></tr>`;
         }
         else if (activeReportType === 'BRAND_DETAILS') {
             title.innerText = "Company Brand Wise Sale Register";
@@ -290,7 +295,7 @@
     window.downloadPDF = function() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-        doc.setFont("helvetica", "bold");
+        doc.setFont("courier", "bold");
         doc.text("SHREE DATAREKHA ENTERPRISES", 105, 15, { align: "center" });
         doc.setFontSize(10);
         doc.text(document.getElementById('reportTitle').innerText, 105, 20, { align: "center" });
@@ -300,11 +305,15 @@
             html: '#dataTable',
             startY: 30,
             theme: 'plain',
-            styles: { font: 'helvetica', fontSize: 8, cellPadding: 1.5, textColor: [0, 0, 0], fontStyle: 'bold' },
+            styles: { font: 'courier', fontSize: 8, cellPadding: 1.5, textColor: [0, 0, 0] },
             didParseCell: function(data) {
                 if (data.cell.raw && data.cell.raw.style && data.cell.raw.style.textAlign) {
                     data.cell.styles.halign = data.cell.raw.style.textAlign;
                 }
+                
+                // Keep everything bold to match the Courier look
+                data.cell.styles.fontStyle = 'bold';
+
                 if (data.section === 'head') {
                     data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
                     data.cell.styles.lineColor = [0, 0, 0];
@@ -321,6 +330,7 @@
                     else if (data.row.raw.classList.contains('total-footer')) {
                         data.cell.styles.lineWidth = { top: 0.5, bottom: 0.5, left: 0, right: 0 };
                         data.cell.styles.lineColor = [0, 0, 0];
+                        data.cell.styles.fontSize = 9;
                     }
                 }
             }
