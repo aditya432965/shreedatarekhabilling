@@ -233,7 +233,7 @@ window.updatePartyDetails = function() {
     const val = document.getElementById('partySearch').value;
     const c = customers.find(x => x.name === val);
     if(c) {
-        document.getElementById('partyMeta').value = `${c.gst || 'URD'} | Contact: ${c.contact || 'NA'} | ${c.address1 || ''}`;
+        document.getElementById('partyMeta').value = ` ${c.address1 || ''} | Contact: ${c.contact || 'NA'} | ${c.gst || 'URD'}`;
     }
 };
 
