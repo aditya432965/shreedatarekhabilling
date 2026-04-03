@@ -24,7 +24,7 @@
         input:focus { border-color: var(--primary); }
         
         .table-container { overflow-x: auto; background: #1e293b; border-radius: 12px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1250px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1300px; }
         th { background: #334155; padding: 12px; font-size: 13px; color: #a0d8ef; text-align: left; }
         td { padding: 8px; border-bottom: 1px solid #334155; }
         .row-input { width: 100%; background: transparent; border: none; color: white; }
@@ -33,6 +33,7 @@
         .summary-box { border-bottom: 1px solid #334155; padding-bottom: 5px; }
         .summary-box span { display: block; font-size: 11px; color: #94a3b8; }
         .summary-box strong { font-size: 18px; color: #10b981; }
+        .summary-box input { background: transparent; border: 1px dashed #334155; padding: 2px 5px; font-size: 18px; color: #f87171; font-weight: bold; }
 
         .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; align-items: flex-end; }
         button { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
@@ -41,7 +42,6 @@
         .btn-print { background: #f59e0b; color: white; }
         .btn-back { background: #334155; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; }
 
-        /* MODAL STYLES */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -118,8 +118,9 @@
         <thead>
             <tr>
                 <th width="40">Sr.</th>
-                <th width="150">Item Group</th>
+                <th width="120">Item Group</th>
                 <th>Item Name</th>
+                <th width="80">Unit</th>
                 <th width="90">MRP</th>
                 <th width="90">Rate</th>
                 <th width="70">Disc%</th>
@@ -133,11 +134,18 @@
     </table>
 </div>
 
-<button onclick="addRow()" style="background:#334155; color:white; margin-bottom:15px; padding: 10px 20px; border-radius: 8px; cursor: pointer;">+ Add Item</button>
+<div style="display: flex; gap: 10px;">
+    <button onclick="addRow()" style="background:#334155; color:white; margin-bottom:15px; padding: 10px 20px; border-radius: 8px; cursor: pointer;">+ Add Item</button>
+    <button onclick="toggleAddDisc()" style="background:#4b5563; color:white; margin-bottom:15px; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Additional Discount</button>
+</div>
 
 <div class="summary-grid">
     <div class="summary-box"><span>Gross Total</span><strong id="sumTotalSale">0.00</strong></div>
     <div class="summary-box"><span>Total Disc</span><strong id="sumTotalDisc">0.00</strong></div>
+    <div class="summary-box" id="addDiscBox" style="display: none;">
+        <span>Additional Disc (₹)</span>
+        <input type="number" id="addDiscAmt" value="0" oninput="window.calculateFinal()">
+    </div>
     <div class="summary-box"><span>Total GST</span><strong id="sumGST">0.00</strong></div>
     <div class="summary-box"><span>Net Total</span><strong id="sumNet">0.00</strong></div>
     <div class="summary-box"><span>Balance</span><strong id="sumBalance">0.00</strong></div>
@@ -193,6 +201,15 @@ async function init() {
     } catch (e) { console.error("Init Error:", e); }
 }
 
+window.toggleAddDisc = function() {
+    const box = document.getElementById('addDiscBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    if(box.style.display === 'none') {
+        document.getElementById('addDiscAmt').value = 0;
+        window.calculateFinal();
+    }
+}
+
 window.updatePartyDetails = function() {
     const val = document.getElementById('partySearch').value;
     const c = customers.find(x => x.name === val);
@@ -209,6 +226,7 @@ window.addRow = function() {
         <td>${rowCount}</td>
         <td><input type="text" class="row-input i-group" placeholder="Group" readonly tabindex="-1"></td>
         <td><input type="text" class="row-input i-name" list="itemList" oninput="window.autoFillByName(this)"></td>
+        <td><input type="text" class="row-input i-unit" placeholder="Unit" readonly tabindex="-1"></td>
         <td><input type="number" class="row-input mrp" value="0" readonly></td>
         <td><input type="number" class="row-input rate" value="0" data-base-rate="0" oninput="window.calculateFinal()"></td>
         <td><input type="number" class="row-input disc" value="0" oninput="window.calculateFinal()"></td>
@@ -227,6 +245,7 @@ window.autoFillByName = function(input) {
         const baseRate = item.sale || 0;
         const gstPerc = item.gst || 0;
         row.querySelector('.i-group').value = item.group || ''; 
+        row.querySelector('.i-unit').value = item.unit || ''; 
         row.querySelector('.mrp').value = item.mrp || 0;
         row.querySelector('.gst').value = gstPerc;
         row.querySelector('.rate').dataset.baseRate = baseRate;
@@ -257,19 +276,16 @@ window.handleTaxModeChange = function() {
 window.calculateFinal = function() {
     let tGross = 0, tDisc = 0, tGst = 0, tNet = 0;
     const mode = document.getElementById('taxMode').value;
+    const addDisc = parseFloat(document.getElementById('addDiscAmt').value) || 0;
+
     document.querySelectorAll('#tableBody tr').forEach(row => {
         const displayedRate = parseFloat(row.querySelector('.rate').value) || 0;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const dPerc = parseFloat(row.querySelector('.disc').value) || 0;
-        const schmAmt = parseFloat(row.querySelector('.schm').value) || 0; // The fixed "Schme" amount
+        const schmAmt = parseFloat(row.querySelector('.schm').value) || 0; 
         const gPerc = parseFloat(row.querySelector('.gst').value) || 0;
         
         let rowNet = 0, rowGross = 0, rowGst = 0, rowDisc = 0;
-
-        // Formula Logic:
-        // 1. Calculate Gross (Rate * Qty)
-        // 2. Calculate Discount (Gross * Disc%)
-        // 3. Subtract Schme (Fixed amount per qty)
         
         if (mode === "WITHOUT_GST") {
             const subtotal = displayedRate * qty;
@@ -280,13 +296,12 @@ window.calculateFinal = function() {
             rowGst = subtotal - baseValue;
         } else {
             const subtotal = displayedRate * qty;
-            rowDisc = (subtotal * (dPerc/100)); // Percentage discount
+            rowDisc = (subtotal * (dPerc/100)); 
             const afterDisc = subtotal - rowDisc;
-            const taxable = afterDisc - (schmAmt * qty); // Subtract Scheme after discount
+            const taxable = afterDisc - (schmAmt * qty); 
             rowGst = taxable * (gPerc/100);
             rowNet = taxable + rowGst;
             rowGross = subtotal;
-            // Total discount for summary includes Scheme
             rowDisc += (schmAmt * qty); 
         }
 
@@ -298,9 +313,10 @@ window.calculateFinal = function() {
     });
 
     document.getElementById('sumTotalSale').innerText = tGross.toFixed(2);
-    document.getElementById('sumTotalDisc').innerText = tDisc.toFixed(2);
+    document.getElementById('sumTotalDisc').innerText = (tDisc + addDisc).toFixed(2);
     document.getElementById('sumGST').innerText = (mode === "WITHOUT_GST") ? "0.00" : tGst.toFixed(2);
-    const finalRounded = Math.round(tNet);
+    
+    const finalRounded = Math.round(tNet - addDisc);
     document.getElementById('sumNet').innerText = finalRounded.toFixed(2);
     const paid = parseFloat(document.getElementById('paidAmt').value) || 0;
     document.getElementById('sumBalance').innerText = (finalRounded - paid).toFixed(2);
@@ -334,6 +350,7 @@ window.saveSale = async function(shouldPrint = false) {
             billItems.push({
                 group: row.querySelector('.i-group').value,
                 name: name,
+                unit: row.querySelector('.i-unit').value,
                 qty: qty,
                 rate: dispRate,
                 mrp: row.querySelector('.mrp').value,
@@ -356,6 +373,7 @@ window.saveSale = async function(shouldPrint = false) {
         summary: {
             gross: document.getElementById('sumTotalSale').innerText,
             disc: document.getElementById('sumTotalDisc').innerText,
+            additionalDisc: document.getElementById('addDiscAmt').value,
             gst: calculateTotalGstInternal(),
             net: document.getElementById('sumNet').innerText
         },
