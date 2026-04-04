@@ -151,7 +151,7 @@
         </div>
 
         <div class="print-options">
-            <label><input type="radio" name="gstOption" value="WITH_GST" checked> Print With GST</label>
+            <label><input type="radio" name="gstOption" value="WITH_GST"> Print With GST</label>
             <label><input type="radio" name="gstOption" value="WITHOUT_GST"> Print Without GST</label>
         </div>
 
@@ -191,7 +191,7 @@ function render(data) {
 
     data.forEach(sale => {
         const net = parseFloat(sale.summary?.net || sale.netTotal || 0);
-        const paid = parseFloat(sale.paid || 0);
+        const paid = parseFloat(sale.paidAmt || sale.paid || 0); // Handles both field variations
         const bal = net - paid;
         const isGST = sale.taxMode === "WITH_GST";
 
@@ -233,7 +233,7 @@ window.showInvoice = function(id) {
     if (!selectedSale) return;
 
     const net = parseFloat(selectedSale.summary?.net || selectedSale.netTotal || 0);
-    const paid = parseFloat(selectedSale.paid || 0);
+    const paid = parseFloat(selectedSale.paidAmt || selectedSale.paid || 0);
 
     document.getElementById('invTypeLabel').innerText = selectedSale.taxMode === "WITH_GST" ? "TAX INVOICE" : "CASH MEMO";
     document.getElementById('invBillNo').innerText = "Bill #" + selectedSale.billNo;
@@ -253,7 +253,7 @@ window.showInvoice = function(id) {
     document.getElementById('invNet').innerText = "₹" + net.toFixed(2);
     document.getElementById('invBalance').innerText = "₹" + (net - paid).toFixed(2);
 
-    // Default the print option to the sale's actual mode
+    // Set default selection based on saved data
     const options = document.getElementsByName('gstOption');
     options.forEach(opt => {
         if(opt.value === selectedSale.taxMode) opt.checked = true;
@@ -265,14 +265,31 @@ window.showInvoice = function(id) {
 window.reprint = function(page) {
     if(!selectedSale) return;
     
-    // Create a clone to avoid permanently changing the fetched record in memory
+    // Clone record to prevent altering original memory
     const saleToPrint = JSON.parse(JSON.stringify(selectedSale));
-    
-    // Get the user's print choice
     const selectedMode = document.querySelector('input[name="gstOption"]:checked').value;
     
-    // Force the mode for the print page logic
-    saleToPrint.taxMode = selectedMode;
+    // SYNC LOGIC: Match without-gst behavior of add-sale.html
+    if (selectedMode === "WITHOUT_GST") {
+        saleToPrint.taxMode = "WITHOUT_GST";
+        saleToPrint.summary.gst = "0.00"; // Internalize GST in summary
+
+        // Re-process items to make rate inclusive if they weren't already
+        saleToPrint.items = saleToPrint.items.map(item => {
+            const baseRate = parseFloat(item.rate) || 0;
+            const gstPerc = parseFloat(item.gst) || 0;
+            
+            // If the bill was originally GST, we need to add GST back into the rate display
+            if (selectedSale.taxMode === "WITH_GST") {
+                item.rate = (baseRate * (1 + gstPerc/100)).toFixed(2);
+            }
+            return item;
+        });
+    } else {
+        // If switching back to WITH_GST from a WITHOUT_GST bill, 
+        // ideally you'd need the baseRate, but we'll assume standard print flow.
+        saleToPrint.taxMode = "WITH_GST";
+    }
 
     localStorage.setItem("lastBill", JSON.stringify(saleToPrint));
     window.open(page, '_blank');
