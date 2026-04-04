@@ -72,7 +72,25 @@
         
         .brand-header { font-weight: bold; text-decoration: underline; font-size: 14px; }
 
-        @media print { .control-panel { display: none; } #reportPreview { border: none; width: 100%; padding: 0; margin: 0; } }
+        /* --- PRINT SETTINGS TO REMOVE HTTP URL AND DATE --- */
+        @media print {
+            @page {
+                margin: 0; /* Hides Browser Header/Footer (URL & Date) */
+            }
+            body {
+                margin: 1.5cm; /* Adds space back so content isn't at the very edge */
+                background: white;
+            }
+            .control-panel { display: none !important; }
+            #reportPreview { 
+                border: none; 
+                width: 100%; 
+                padding: 0; 
+                margin: 0; 
+                display: block !important; 
+                box-shadow: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -304,6 +322,7 @@
         doc.autoTable({
             html: '#dataTable',
             startY: 30,
+            margin: { left: 10, right: 10 },
             theme: 'plain',
             styles: { font: 'courier', fontSize: 8, cellPadding: 1.5, textColor: [0, 0, 0] },
             didParseCell: function(data) {
@@ -311,7 +330,6 @@
                     data.cell.styles.halign = data.cell.raw.style.textAlign;
                 }
                 
-                // Keep everything bold to match the Courier look
                 data.cell.styles.fontStyle = 'bold';
 
                 if (data.section === 'head') {
